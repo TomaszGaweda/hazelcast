@@ -35,6 +35,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.hazelcast.jet.Util.entry;
+
 /**
  * Contains factory methods for creating Amazon Kinesis Data Streams
  * (KDS) sources.
@@ -164,7 +166,7 @@ public final class KinesisSources {
 
         private Builder(@Nonnull String stream) {
             this.stream = stream;
-            this.projectionFn = (record, shard) -> (T) toArray(record, shard);
+            this.projectionFn = (record, shard) -> (T) entry(record.getPartitionKey(), toArray(record, shard));
         }
 
         /**
@@ -299,9 +301,9 @@ public final class KinesisSources {
          */
         @Nonnull
         @SuppressWarnings("unchecked") // here we base on Java's type erasure, that's why we use that casting
-        public <NT> Builder<NT> withProjectionFn(@Nonnull BiFunctionEx<Record, Shard, NT> projectionFn) {
+        public <T_NEW> Builder<T_NEW> withProjectionFn(@Nonnull BiFunctionEx<Record, Shard, T_NEW> projectionFn) {
             this.projectionFn = (BiFunctionEx<Record, Shard, T>) projectionFn;
-            return (Builder<NT>) this;
+            return (Builder<T_NEW>) this;
         }
 
         /**
@@ -313,6 +315,7 @@ public final class KinesisSources {
             AwsConfig awsConfig = this.awsConfig;
             RetryStrategy retryStrategy = this.retryStrategy;
             InitialShardIterators initialShardIterators = this.initialShardIterators;
+            BiFunctionEx<? super Record, ? super Shard, ? extends T> projectionFn = this.projectionFn;
             return Sources.streamFromProcessorWithWatermarks(
                     "Kinesis Source (" + stream + ")",
                     true,
