@@ -106,10 +106,10 @@
         <jsr107.api.version>1.1.1</jsr107.api.version> <!-- JCache -->
         <jsr250.api.version>1.2</jsr250.api.version> <!-- javax.annotations -->
         <kafka.version>2.2.2</kafka.version>
-        <kotlin.version>1.3.61</kotlin.version>
+        <kotlin.version>1.5.32</kotlin.version>
         <log4j.version>1.2.17</log4j.version>
         <log4j2.slf4j.binding.version>2.13.2</log4j2.slf4j.binding.version>
-        <log4j2.version>2.14.0</log4j2.version>
+        <log4j2.version>2.15.0</log4j2.version>
         <mysql.connector.version>8.0.20</mysql.connector.version>
         <netty.version>4.1.63.Final</netty.version>
         <osgi.version>4.2.0</osgi.version>
@@ -128,7 +128,7 @@
         <activemq.version>5.15.11</activemq.version>
         <assertj.version>3.15.0</assertj.version>
         <atomikos.version>3.9.3</atomikos.version>
-        <bytebuddy.version>1.10.21</bytebuddy.version>
+        <bytebuddy.version>1.12.3</bytebuddy.version>
         <commons-codec.version>1.15</commons-codec.version>
         <commons-io.version>2.8.0</commons-io.version>
         <commons-lang3.version>3.11</commons-lang3.version>
@@ -1823,7 +1823,7 @@
         <dependency>
             <groupId>nl.jqno.equalsverifier</groupId>
             <artifactId>equalsverifier</artifactId>
-            <version>3.5.5</version>
+            <version>3.8</version>
             <scope>test</scope>
         </dependency>
         <dependency>
