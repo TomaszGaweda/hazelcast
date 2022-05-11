@@ -33,7 +33,7 @@
     </parent>
 
     <properties>
-        <debezium.version>1.2.5.Final</debezium.version>
+        <debezium.version>1.8.1.Final</debezium.version>
 
         <!-- needed for CheckStyle -->
         <checkstyle.headerLocation>${main.basedir}/checkstyle/ClassHeaderApache.txt</checkstyle.headerLocation>
@@ -125,6 +125,12 @@
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>net.java.dev.jna</groupId>-->
+<!--            <artifactId>jna</artifactId>-->
+<!--            <version>5.7.0</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
