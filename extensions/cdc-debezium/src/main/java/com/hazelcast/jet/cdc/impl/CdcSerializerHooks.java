@@ -23,6 +23,7 @@ import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.SerializerHook;
 import com.hazelcast.nio.serialization.StreamSerializer;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,19 +52,21 @@ public class CdcSerializerHooks {
                 }
 
                 @Override
-                public void write(ObjectDataOutput out, ChangeRecordImpl record) throws IOException {
+                public void write(@Nonnull ObjectDataOutput out, @Nonnull ChangeRecordImpl record) throws IOException {
                     out.writeLong(record.sequenceSource());
                     out.writeLong(record.sequenceValue());
-                    out.writeUTF(record.getKeyJson());
-                    out.writeUTF(record.getValueJson());
+                    out.writeString(record.getKeyJson());
+                    out.writeString(record.getValueJson());
                 }
 
+                @Nonnull
                 @Override
-                public ChangeRecordImpl read(ObjectDataInput in) throws IOException {
+                @SuppressWarnings("ConstantConditions")
+                public ChangeRecordImpl read(@Nonnull ObjectDataInput in) throws IOException {
                     long sequenceSource = in.readLong();
                     long sequenceValue = in.readLong();
-                    String keyJson = in.readUTF();
-                    String valueJson = in.readUTF();
+                    String keyJson = in.readString();
+                    String valueJson = in.readString();
                     return new ChangeRecordImpl(sequenceSource, sequenceValue, keyJson, valueJson);
                 }
             };
@@ -90,13 +93,14 @@ public class CdcSerializerHooks {
                 }
 
                 @Override
-                public void write(ObjectDataOutput out, RecordPartImpl part) throws IOException {
-                    out.writeUTF(part.toJson());
+                public void write(@Nonnull ObjectDataOutput out, @Nonnull RecordPartImpl part) throws IOException {
+                    out.writeString(part.toJson());
                 }
 
+                @Nonnull
                 @Override
-                public RecordPartImpl read(ObjectDataInput in) throws IOException {
-                    String json = in.readUTF();
+                public RecordPartImpl read(@Nonnull ObjectDataInput in) throws IOException {
+                    String json = in.readString();
                     return new RecordPartImpl(json);
                 }
             };
@@ -123,7 +127,7 @@ public class CdcSerializerHooks {
                 }
 
                 @Override
-                public void write(ObjectDataOutput out, CdcSourceP.State state) throws IOException {
+                public void write(@Nonnull ObjectDataOutput out, @Nonnull CdcSourceP.State state) throws IOException {
                     out.writeObject(state.getPartitionsToOffset());
 
                     // workaround for https://github.com/hazelcast/hazelcast/issues/18129
@@ -137,8 +141,9 @@ public class CdcSerializerHooks {
                     out.writeObject(null);
                 }
 
+                @Nonnull
                 @Override
-                public CdcSourceP.State read(ObjectDataInput in) throws IOException {
+                public CdcSourceP.State read(@Nonnull ObjectDataInput in) throws IOException {
                     Map<Map<String, ?>, Map<String, ?>> partitionsToOffset = in.readObject();
 
                     // workaround for https://github.com/hazelcast/hazelcast/issues/18129
