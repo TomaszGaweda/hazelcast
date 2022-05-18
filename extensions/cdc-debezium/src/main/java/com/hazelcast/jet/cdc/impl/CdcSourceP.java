@@ -238,7 +238,7 @@ public abstract class CdcSourceP<T> extends AbstractProcessor {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private SourceConnector startNewConnector() {
         SourceConnector connector = newInstance(properties.getProperty(CONNECTOR_CLASS_PROPERTY), "connector");
         connector.initialize(new JetConnectorContext());
