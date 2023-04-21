@@ -214,7 +214,7 @@ class FieldResolver {
                 fields.put("operationType", new DocumentField(BsonType.STRING, "operationType"));
                 fields.put("resumeToken", new DocumentField(BsonType.STRING, "resumeToken"));
                 fields.put("wallTime", new DocumentField(BsonType.DATE_TIME, "wallTime"));
-                fields.put("ts", new DocumentField(BsonType.DATE_TIME, "ts"));
+                fields.put("ts", new DocumentField(BsonType.INT64, "ts"));
                 fields.put("clusterTime", new DocumentField(BsonType.TIMESTAMP, "clusterTime"));
             }
         }
