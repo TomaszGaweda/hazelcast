@@ -74,6 +74,16 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
         </dependency>
+        <dependency>
+            <groupId>cdata.jdbc</groupId>
+            <artifactId>amazons3</artifactId>
+            <version>23.0</version>
+        </dependency>
+        <dependency>
+            <groupId>cdata.jdbc</groupId>
+            <artifactId>csv</artifactId>
+            <version>23.0</version>
+        </dependency>
 
         <!-- TEST -->
         <dependency>

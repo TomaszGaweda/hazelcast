@@ -82,6 +82,7 @@ public class S3MockTest extends S3TestBase {
         s3MockContainer.start();
         s3MockContainer.followOutput(outputFrame -> logger.info(outputFrame.getUtf8String().trim()));
         s3Client = s3Client(s3MockContainer.getHttpEndpoint());
+        System.setProperty("s3CustomUrl", s3MockContainer.getHttpEndpoint());
     }
 
     @AfterClass
@@ -95,6 +96,7 @@ public class S3MockTest extends S3TestBase {
                 s3MockContainer.stop();
             }
         }
+        System.clearProperty("s3CustomUrl");
     }
 
     @Before

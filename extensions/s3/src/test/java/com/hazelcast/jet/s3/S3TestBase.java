@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -191,8 +192,11 @@ abstract class S3TestBase extends JetTestSupport {
     private void assertCausedByNoSuchBucketException(Exception e) {
         Throwable cause = e;
         while (cause != null) {
-            if (cause instanceof NoSuchBucketException) {
-                return;
+            if (cause instanceof SQLException) {
+                var exc = (SQLException) cause;
+                if (exc.getMessage().contains("NoSuchBucket")) {
+                    return;
+                }
             }
             cause = cause.getCause();
         }

@@ -25,10 +25,14 @@ import com.hazelcast.jet.function.TriFunction;
 import com.hazelcast.jet.pipeline.BatchSource;
 import com.hazelcast.jet.pipeline.SourceBuilder;
 import com.hazelcast.jet.pipeline.SourceBuilder.SourceBuffer;
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 import javax.annotation.Nonnull;
@@ -36,13 +40,22 @@ import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.stream.Stream;
 
+import static com.hazelcast.internal.util.ExceptionUtil.rethrow;
 import static com.hazelcast.jet.Traversers.traverseStream;
 import static com.hazelcast.jet.Util.entry;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -173,11 +186,11 @@ public final class S3Sources {
                 (inputStream, key, bucketName) -> readFileFn.apply(inputStream);
         return SourceBuilder
                 .batch("s3-source", context ->
-                        new S3SourceContext<I, T>(bucketNames, prefix, context, clientSupplier, adaptedFunction,
+                        new S3CDataSourceContext<I, T>(bucketNames, prefix, context, clientSupplier, adaptedFunction,
                                 mapFn))
-                .<T>fillBufferFn(S3SourceContext::fillBuffer)
+                .<T>fillBufferFn(S3CDataSourceContext::fillBuffer)
                 .distributed(LOCAL_PARALLELISM)
-                .destroyFn(S3SourceContext::close)
+                .destroyFn(S3CDataSourceContext::close)
                 .build();
     }
 
@@ -229,11 +242,11 @@ public final class S3Sources {
     ) {
         return SourceBuilder
                 .batch("s3Source", context ->
-                        new S3SourceContext<I, T>(bucketNames, prefix, context, clientSupplier, readFileFn,
+                        new S3CDataSourceContext<I, T>(bucketNames, prefix, context, clientSupplier, readFileFn,
                                 mapFn))
-                .<T>fillBufferFn(S3SourceContext::fillBuffer)
+                .<T>fillBufferFn(S3CDataSourceContext::fillBuffer)
                 .distributed(LOCAL_PARALLELISM)
-                .destroyFn(S3SourceContext::close)
+                .destroyFn(S3CDataSourceContext::close)
                 .build();
     }
 
@@ -266,7 +279,7 @@ public final class S3Sources {
             this.readFileFn = readFileFn;
             this.mapFn = mapFn;
             this.processorIndex = context.globalProcessorIndex();
-            this.totalParallelism = context.totalParallelism();
+            this.totalParallelism = context.totalParallelism()  ;
             this.objectIterator = bucketNames
                     .stream()
                     .flatMap(bucket -> amazonS3.listObjectsV2Paginator(b ->
@@ -301,6 +314,172 @@ public final class S3Sources {
                 // iterator is empty, we've exhausted all the objects
                 buffer.close();
                 objectIterator = null;
+            }
+        }
+
+        private void addBatchToBuffer(SourceBuffer<? super T> buffer) {
+            assert currentKey != null : "currentKey must not be null";
+            for (int i = 0; i < BATCH_COUNT; i++) {
+                I item = itemTraverser.next();
+                if (item == null) {
+                    itemTraverser = null;
+                    currentKey = null;
+                    return;
+                }
+                buffer.add(mapFn.apply(currentKey, item));
+            }
+        }
+
+        private boolean belongsToThisProcessor(String key) {
+            return Math.floorMod(key.hashCode(), totalParallelism) == processorIndex;
+        }
+
+        private void close() {
+            amazonS3.close();
+        }
+    }
+
+    private static final class S3CDataSourceContext<I, T> {
+
+        private static final int BATCH_COUNT = 1024;
+
+        private final String prefix;
+        private final S3Client amazonS3;
+        private final TriFunction<? super InputStream, String, String, ? extends Stream<I>> readFileFn;
+        private final BiFunctionEx<String, ? super I, ? extends T> mapFn;
+        private final int processorIndex;
+        private final int totalParallelism;
+
+        // (bucket, key)
+        private Iterator<Entry<String, String>> objectIterator;
+        private Traverser<I> itemTraverser;
+        private String currentKey;
+
+        @SuppressWarnings("checkstyle:ExecutableStatementCount")
+        private S3CDataSourceContext(
+                List<String> bucketNames,
+                String prefix,
+                Context context,
+                SupplierEx<? extends S3Client> clientSupplier,
+                TriFunction<? super InputStream, String, String, ? extends Stream<I>> readFileFn,
+                BiFunctionEx<String, ? super I, ? extends T> mapFn
+        ) {
+            this.prefix = prefix;
+            this.amazonS3 = clientSupplier.get();
+            this.readFileFn = readFileFn;
+            this.mapFn = mapFn;
+            this.processorIndex = context.globalProcessorIndex();
+            this.totalParallelism = context.totalParallelism()  ;
+            this.objectIterator = bucketNames
+                    .stream()
+                    .flatMap(bucket -> {
+                        Properties props = new Properties();
+//                        String cdataS3License = System.getenv("CDATA_S3_LICENSE");
+                        String cdataS3License = "5358524A565A30383031323333305745425452314131000000000" +
+                                "00000000000000000000000000048415A454C43415300005633454A36394B5431364B540000";
+                        props.put("RTK", cdataS3License);
+                        props.put("CustomURL", System.getProperty("s3CustomUrl"));
+                        props.put("AWSAccessKey", "<placeholder>");
+                        props.put("AWSSecretKey", "<placeholder>");
+                        try (
+                                var connection = DriverManager.getConnection("jdbc:cdata:amazons3:", props);
+                                var stmt = connection.prepareStatement(
+                                        "SELECT Object FROM Objects " +
+                                                "WHERE Bucket=? and Object like ?")
+                        ) {
+                            stmt.setString(1, bucket);
+                            stmt.setString(2, prefix + "%");
+                            try (ResultSet set = stmt.executeQuery()) {
+                                List<Map.Entry<String, String>> result = new ArrayList<>();
+                                while (set.next()) {
+                                    String objectName = set.getString(1);
+
+                                    if (belongsToThisProcessor(objectName)) {
+                                        result.add(entry(bucket, objectName));
+                                    }
+                                }
+                                return result.stream();
+                            }
+                        } catch (SQLException e) {
+                            throw rethrow(e);
+                        }
+                    }).iterator();
+        }
+
+        private void fillBuffer(SourceBuffer<? super T> buffer) {
+            if (itemTraverser != null) {
+                addBatchToBuffer(buffer);
+                return;
+            }
+
+            if (objectIterator.hasNext()) {
+                Entry<String, String> entry = objectIterator.next();
+                String bucketName = entry.getKey();
+                String key = entry.getValue();
+
+                List<I> contents = readContent(bucketName, key);
+                currentKey = key;
+                itemTraverser = traverseStream(contents.stream());
+                addBatchToBuffer(buffer);
+            } else {
+                // iterator is empty, we've exhausted all the objects
+                buffer.close();
+                objectIterator = null;
+            }
+        }
+
+        private List<I> readContent(String bucketName, String key) {
+            Properties props = new Properties();
+            props.put("RTK", System.getenv("CDATA_S3_LICENSE"));
+            props.put("URI", "s3://" + bucketName + "/" + key);
+            props.put("FMT", "<placeholder>");
+            props.put("StorageBaseURL", "s3://" + System.getProperty("s3CustomUrl"));
+            props.put("AWSAccessKey", "<nothingToSeeHere>");
+            props.put("AWSSecretKey", "<placeholder>");
+            props.put("AWSRegion", "<placeholder>");
+            props.put("Logfile", "/Users/tgaweda/cdata.log");
+
+            S3Client client = S3Client
+                    .builder()
+                    .credentialsProvider(AnonymousCredentialsProvider.create())
+                    .region(Region.US_EAST_1)
+                    .endpointOverride(URI.create(System.getProperty("s3CustomUrl")))
+                    .forcePathStyle(true)
+                    .build();
+            var listObjectV2 = ListObjectsV2Request.builder().bucket(bucketName).prefix(key).build();
+            ListObjectsV2Response listed = client.listObjectsV2(listObjectV2);
+            for (S3Object content : listed.contents()) {
+                System.out.println("from api: " + content.key());
+            }
+
+            try (var connection = DriverManager.getConnection("jdbc:cdata:csv:", props);) {
+                DatabaseMetaData tableMeta = connection.getMetaData();
+                ResultSet rs = tableMeta.getTables(null, null, "%", null);
+                while(rs.next()){
+                    System.out.println("TABLE " + rs.getString("TABLE_NAME"));
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+            try (
+                    var connection = DriverManager.getConnection("jdbc:cdata:csv:", props);
+                    var stmt = connection.prepareStatement("SELECT * FROM \"" + key + "\"")
+            ) {
+                try (ResultSet set = stmt.executeQuery()) {
+                    List<String> result = new ArrayList<>();
+                    while (set.next()) {
+                        String line = set.getString(1);
+
+                        if (belongsToThisProcessor(line)) {
+                            result.add(line);
+                        }
+                    }
+                    // dirty poc-only hack
+                    return (List<I>) result;
+                }
+            } catch (SQLException e) {
+                throw rethrow(e);
             }
         }
 

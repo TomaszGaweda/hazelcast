@@ -18,7 +18,7 @@ package com.hazelcast.jet.sql.impl.connector.jdbc;
 
 import com.hazelcast.jet.sql.impl.connector.jdbc.h2.H2UpsertQueryBuilder;
 import com.hazelcast.jet.sql.impl.connector.jdbc.mysql.MySQLUpsertQueryBuilder;
-import com.hazelcast.jet.sql.impl.connector.jdbc.postgres.PostgresUpsertQueryBuilder;
+import com.hazelcast.jet.sql.impl.connector.jdbc.postgres.CDataPostgresUpsertQueryBuilder;
 import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.dialect.H2SqlDialect;
 import org.apache.calcite.sql.dialect.MysqlSqlDialect;
@@ -37,9 +37,8 @@ final class UpsertBuilder {
             query = builder.query();
 
         } else if (dialect instanceof PostgresqlSqlDialect) {
-            PostgresUpsertQueryBuilder builder = new PostgresUpsertQueryBuilder(jdbcTable, dialect);
+            CDataPostgresUpsertQueryBuilder builder = new CDataPostgresUpsertQueryBuilder(jdbcTable, dialect);
             query = builder.query();
-
         } else if (dialect instanceof H2SqlDialect) {
             H2UpsertQueryBuilder builder = new H2UpsertQueryBuilder(jdbcTable, dialect);
             query = builder.query();
