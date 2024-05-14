@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class MBeanTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testMultiMap() throws Exception {
+    public void testMultiMap() {
         MultiMap map = holder.getHz().getMultiMap("multimap");
         map.size();
 
@@ -67,7 +67,7 @@ public class MBeanTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testTopic() throws Exception {
+    public void testTopic() {
         ITopic<String> topic = holder.getHz().getTopic("topic");
         topic.publish("foo");
 
@@ -107,7 +107,7 @@ public class MBeanTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testReplicatedMap() throws Exception {
+    public void testReplicatedMap() {
         String replicatedMapName = randomString();
         ReplicatedMap replicatedMap = holder.getHz().getReplicatedMap(replicatedMapName);
         replicatedMap.size();

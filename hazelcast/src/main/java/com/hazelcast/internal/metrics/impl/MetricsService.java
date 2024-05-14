@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ import static java.util.stream.Collectors.joining;
 public class MetricsService implements ManagedService, LiveOperationsTracker {
     public static final String SERVICE_NAME = "hz:impl:metricsService";
 
-    private final NodeEngineImpl nodeEngine;
+    private final NodeEngine nodeEngine;
     private final ILogger logger;
     private final MetricsConfig config;
     private final LiveOperationRegistry liveOperationRegistry;
@@ -82,7 +82,7 @@ public class MetricsService implements ManagedService, LiveOperationsTracker {
     }
 
     public MetricsService(NodeEngine nodeEngine, Supplier<MetricsRegistry> metricsRegistrySupplier) {
-        this.nodeEngine = (NodeEngineImpl) nodeEngine;
+        this.nodeEngine = nodeEngine;
         this.logger = nodeEngine.getLogger(getClass());
         this.config = nodeEngine.getConfig().getMetricsConfig();
         this.liveOperationRegistry = new LiveOperationRegistry();

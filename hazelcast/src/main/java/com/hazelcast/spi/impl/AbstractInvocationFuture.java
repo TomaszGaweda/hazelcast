@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1009,9 +1009,7 @@ public abstract class AbstractInvocationFuture<V> extends InternalCompletableFut
         }
         // both futures are done
         if (otherFuture.isCompletedExceptionally()) {
-            otherFuture.whenCompleteAsync((v, t) -> {
-                future.completeExceptionally(t);
-            }, CALLER_RUNS);
+            otherFuture.whenCompleteAsync((v, t) -> future.completeExceptionally(t), CALLER_RUNS);
             return;
         }
         U otherValue = otherFuture.join();
@@ -1057,9 +1055,7 @@ public abstract class AbstractInvocationFuture<V> extends InternalCompletableFut
         }
         // both futures are done
         if (otherFuture.isCompletedExceptionally()) {
-            otherFuture.whenCompleteAsync((v, t) -> {
-                future.completeExceptionally(t);
-            }, CALLER_RUNS);
+            otherFuture.whenCompleteAsync((v, t) -> future.completeExceptionally(t), CALLER_RUNS);
             return;
         }
         U otherValue = otherFuture.join();
@@ -1104,9 +1100,7 @@ public abstract class AbstractInvocationFuture<V> extends InternalCompletableFut
         }
         // both futures are done
         if (otherFuture.isCompletedExceptionally()) {
-            otherFuture.whenCompleteAsync((v, t) -> {
-                future.completeExceptionally(t);
-            }, CALLER_RUNS);
+            otherFuture.whenCompleteAsync((v, t) -> future.completeExceptionally(t), CALLER_RUNS);
             return;
         }
         runAfter0(future, action, executor);

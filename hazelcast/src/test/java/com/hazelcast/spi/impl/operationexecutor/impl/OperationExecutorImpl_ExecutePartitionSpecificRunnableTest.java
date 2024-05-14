@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.hazelcast.spi.impl.operationexecutor.impl;
 
 import com.hazelcast.spi.impl.PartitionSpecificRunnable;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.annotation.QuickTest;
 import org.junit.Test;
@@ -41,7 +40,7 @@ public class OperationExecutorImpl_ExecutePartitionSpecificRunnableTest extends 
     public void whenPartitionSpecific() {
         initExecutor();
 
-        final AtomicReference<Thread> executingThead = new AtomicReference<Thread>();
+        final AtomicReference<Thread> executingThead = new AtomicReference<>();
 
         PartitionSpecificRunnable task = new PartitionSpecificRunnable() {
             @Override
@@ -56,19 +55,14 @@ public class OperationExecutorImpl_ExecutePartitionSpecificRunnableTest extends 
         };
         executor.execute(task);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertInstanceOf(PartitionOperationThread.class, executingThead.get());
-            }
-        });
+        assertTrueEventually(() -> assertInstanceOf(PartitionOperationThread.class, executingThead.get()));
     }
 
     @Test
     public void whenGeneric() {
         initExecutor();
 
-        final AtomicReference<Thread> executingThead = new AtomicReference<Thread>();
+        final AtomicReference<Thread> executingThead = new AtomicReference<>();
 
         PartitionSpecificRunnable task = new PartitionSpecificRunnable() {
             @Override
@@ -83,11 +77,6 @@ public class OperationExecutorImpl_ExecutePartitionSpecificRunnableTest extends 
         };
         executor.execute(task);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertInstanceOf(GenericOperationThread.class, executingThead.get());
-            }
-        });
+        assertTrueEventually(() -> assertInstanceOf(GenericOperationThread.class, executingThead.get()));
     }
 }

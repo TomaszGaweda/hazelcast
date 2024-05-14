@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.map.MapStore;
 import com.hazelcast.map.MapStoreAdapter;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.NightlyTest;
@@ -42,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 public class WriteBehindWriteDelaySecondsTest extends HazelcastTestSupport {
 
     @Test
-    public void testUpdatesInWriteDelayWindowDone_withStoreAllMethod() throws Exception {
+    public void testUpdatesInWriteDelayWindowDone_withStoreAllMethod() {
         final TestMapStore store = new TestMapStore();
         Config config = newMapStoredConfig(store, 20);
         HazelcastInstance instance = createHazelcastInstance(config);
@@ -55,12 +54,7 @@ public class WriteBehindWriteDelaySecondsTest extends HazelcastTestSupport {
             sleepSeconds(4);
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(store.toString(), 1, store.getStoreAllMethodCallCount());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(store.toString(), 1, store.getStoreAllMethodCallCount()));
     }
 
     private Config newMapStoredConfig(MapStore store, int writeDelaySeconds) {
@@ -112,8 +106,8 @@ public class WriteBehindWriteDelaySecondsTest extends HazelcastTestSupport {
      * Updates on same key should not shift store time.
      */
     @Test
-    public void continuouslyUpdatedKey_shouldBeStored_inEveryWriteDelayTimeWindow() throws Exception {
-        final MapStoreWithCounter<Integer, Integer> mapStore = new MapStoreWithCounter<Integer, Integer>();
+    public void continuouslyUpdatedKey_shouldBeStored_inEveryWriteDelayTimeWindow() {
+        final MapStoreWithCounter<Integer, Integer> mapStore = new MapStoreWithCounter<>();
         final IMap<Integer, Integer> map = TestMapUsingMapStoreBuilder.<Integer, Integer>create()
                 .withMapStore(mapStore)
                 .withNodeCount(1)
@@ -137,17 +131,14 @@ public class WriteBehindWriteDelaySecondsTest extends HazelcastTestSupport {
 
     private void assertMinMaxStoreOperationsCount(final int minimumExpectedStoreOperationCount,
                                                   final MapStoreWithCounter mapStore) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                final Object value = mapStore.store.get(1);
-                final int countStore = mapStore.countStore.get();
+        assertTrueEventually(() -> {
+            final Object value = mapStore.store.get(1);
+            final int countStore = mapStore.countStore.get();
 
-                assertEquals(60, value);
-                assertTrue("Minimum store operation count should be bigger than "
-                                + minimumExpectedStoreOperationCount + " but found = " + countStore,
-                        countStore >= minimumExpectedStoreOperationCount);
-            }
+            assertEquals(60, value);
+            assertTrue("Minimum store operation count should be bigger than "
+                            + minimumExpectedStoreOperationCount + " but found = " + countStore,
+                    countStore >= minimumExpectedStoreOperationCount);
         });
     }
 }

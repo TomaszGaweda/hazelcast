@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import java.util.UUID;
  * Provides {@link com.hazelcast.config.InMemoryFormat InMemoryFormat} specific
  * operations for {@link IMap IMap}.
  */
+@SuppressWarnings("MethodCount")
 public interface MapOperationProvider {
 
     MapOperation createPutOperation(String name, Data key, Data value, long ttl, long maxIdle);

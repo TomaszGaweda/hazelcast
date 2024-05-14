@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import java.util.Queue;
 import static com.hazelcast.jet.impl.Networking.PACKET_HEADER_SIZE;
 import static com.hazelcast.jet.impl.execution.DoneItem.DONE_ITEM;
 import static com.hazelcast.jet.impl.util.ExceptionUtil.rethrow;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFinest;
 import static com.hazelcast.jet.impl.util.PrefixedLogger.prefixedLogger;
 import static java.lang.Math.ceil;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -167,8 +166,8 @@ public class ReceiverTasklet implements Tasklet {
                 assert inbox.peek() == null : "Found something in the queue beyond the DONE_ITEM: " + inbox.remove();
                 break;
             }
-            ProgressState outcome = item instanceof BroadcastItem
-                    ? collector.offerBroadcast((BroadcastItem) item)
+            ProgressState outcome = item instanceof BroadcastItem broadcastItem
+                    ? collector.offerBroadcast(broadcastItem)
                     : collector.offer(item, o.getPartitionId());
             if (!outcome.isDone()) {
                 tracker.madeProgress(outcome.isMadeProgress());
@@ -251,7 +250,7 @@ public class ReceiverTasklet implements Tasklet {
             rwinDiff /= 2;
             receiveWindowCompressed += rwinDiff;
             if (rwinDiff != 0) {
-                logFinest(logger, "receiveWindowCompressed changed by %d to %d", rwinDiff, receiveWindowCompressed);
+                logger.finest("receiveWindowCompressed changed by %d to %d", rwinDiff, receiveWindowCompressed);
             }
         }
         return ackedSeqCompressed + receiveWindowCompressed;

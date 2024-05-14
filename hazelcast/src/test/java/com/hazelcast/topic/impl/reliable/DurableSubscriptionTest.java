@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.topic.impl.reliable;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.topic.ITopic;
 import com.hazelcast.topic.Message;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -45,17 +44,12 @@ public class DurableSubscriptionTest extends HazelcastTestSupport {
         HazelcastInstance local = createHazelcastInstance();
 
         ITopic<String> topic = local.getReliableTopic("topic");
-        final DurableMessageListener<String> listener = new DurableMessageListener<String>();
+        final DurableMessageListener<String> listener = new DurableMessageListener<>();
 
         UUID id = topic.addMessageListener(listener);
         topic.publish("item1");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertContains(listener.objects, "item1");
-            }
-        });
+        assertTrueEventually(() -> assertContains(listener.objects, "item1"));
 
         topic.removeMessageListener(id);
 
@@ -65,12 +59,9 @@ public class DurableSubscriptionTest extends HazelcastTestSupport {
 
         topic.addMessageListener(listener);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(asList("item1", "item2", "item3"), listener.objects);
-                assertEquals(asList(0L, 1L, 2L), listener.sequences);
-            }
+        assertTrueEventually(() -> {
+            assertEquals(asList("item1", "item2", "item3"), listener.objects);
+            assertEquals(asList(0L, 1L, 2L), listener.sequences);
         });
     }
 
@@ -80,8 +71,8 @@ public class DurableSubscriptionTest extends HazelcastTestSupport {
 
     public static class DurableMessageListener<V> implements ReliableMessageListener<V> {
 
-        public final List<V> objects = new CopyOnWriteArrayList<V>();
-        public final List<Long> sequences = new CopyOnWriteArrayList<Long>();
+        public final List<V> objects = new CopyOnWriteArrayList<>();
+        public final List<Long> sequences = new CopyOnWriteArrayList<>();
         public volatile long sequence = -1;
 
         @Override

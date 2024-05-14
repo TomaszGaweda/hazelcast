@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,7 +160,7 @@ public final class ReflectionUtils {
     }
 
     public static Map<String, Field> getAllFieldsByName(Class<?> clazz) {
-        ConcurrentMap<String, Field> fields = new ConcurrentHashMap<String, Field>();
+        ConcurrentMap<String, Field> fields = new ConcurrentHashMap<>();
         Field[] ownFields = clazz.getDeclaredFields();
         for (Field field : ownFields) {
             fields.put(field.getName(), field);
@@ -184,8 +184,7 @@ public final class ReflectionUtils {
     public static Object getDelegateFromProxyClass(Object arg) {
         if (isProxyClass(arg.getClass())) {
             InvocationHandler invocationHandler = getInvocationHandler(arg);
-            if (invocationHandler instanceof ProxyInvocationHandler) {
-                ProxyInvocationHandler proxyInvocationHandler = (ProxyInvocationHandler) invocationHandler;
+            if (invocationHandler instanceof ProxyInvocationHandler proxyInvocationHandler) {
                 return proxyInvocationHandler.getDelegate();
             }
         }

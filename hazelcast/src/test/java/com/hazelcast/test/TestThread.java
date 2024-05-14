@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,12 +62,7 @@ public abstract class TestThread extends Thread {
      * Asserts that the thread eventually completes, no matter if there is an error or not.
      */
     public void assertTerminates() {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertFalse(format("Thread %s is still alive", getName()), isAlive());
-            }
-        });
+        assertTrueEventually(() -> assertFalse(format("Thread %s is still alive", getName()), isAlive()));
     }
 
     /**

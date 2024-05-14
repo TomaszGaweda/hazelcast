@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,40 +21,61 @@ import com.hazelcast.client.config.ClientNetworkConfig;
 import com.hazelcast.client.impl.clientside.ClientTestUtil;
 import com.hazelcast.client.impl.clientside.HazelcastClientInstanceImpl;
 import com.hazelcast.client.impl.connection.ClientConnectionManager;
+import com.hazelcast.client.impl.connection.tcp.RoutingMode;
 import com.hazelcast.client.properties.ClientProperty;
 import com.hazelcast.client.test.ClientTestSupport;
 import com.hazelcast.client.test.TestHazelcastFactory;
+import com.hazelcast.client.util.ConfigRoutingUtil;
 import com.hazelcast.cluster.Address;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.internal.nio.Connection;
 import com.hazelcast.internal.nio.ConnectionListener;
-import com.hazelcast.test.AssertTask;
-import com.hazelcast.test.HazelcastParallelClassRunner;
+import com.hazelcast.test.HazelcastParallelParametersRunnerFactory;
+import com.hazelcast.test.HazelcastParametrizedRunner;
+import com.hazelcast.test.OverridePropertyRule;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
-
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.hazelcast.client.impl.connection.tcp.RoutingMode.SMART;
+import static com.hazelcast.client.impl.connection.tcp.RoutingMode.SUBSET;
+import static com.hazelcast.client.impl.connection.tcp.RoutingMode.UNISOCKET;
+import static com.hazelcast.instance.BuildInfoProvider.HAZELCAST_INTERNAL_OVERRIDE_ENTERPRISE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-@RunWith(HazelcastParallelClassRunner.class)
+@RunWith(HazelcastParametrizedRunner.class)
+@Parameterized.UseParametersRunnerFactory(HazelcastParallelParametersRunnerFactory.class)
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class TcpClientConnectionTest extends ClientTestSupport {
+
+    @Rule
+    // needed for SUBSET routing mode
+    public OverridePropertyRule setProp = OverridePropertyRule.set(HAZELCAST_INTERNAL_OVERRIDE_ENTERPRISE, "true");
+
+    @Parameterized.Parameter
+    public RoutingMode routingMode;
+
+    @Parameterized.Parameters(name = "{index}: routingMode={0}")
+    public static Iterable<?> parameters() {
+        return Arrays.asList(UNISOCKET, RoutingMode.SMART, SUBSET);
+    }
 
     private final TestHazelcastFactory hazelcastFactory = new TestHazelcastFactory();
 
@@ -68,7 +89,7 @@ public class TcpClientConnectionTest extends ClientTestSupport {
         String illegalAddress = randomString();
 
         hazelcastFactory.newHazelcastInstance();
-        ClientConfig config = new ClientConfig();
+        ClientConfig config = newClientConfig();
         config.getConnectionStrategyConfig().getConnectionRetryConfig().setClusterConnectTimeoutMillis(2000);
         config.getNetworkConfig().addAddress(illegalAddress);
         assertThrows(IllegalStateException.class, () -> HazelcastClient.newHazelcastClient(config));
@@ -76,19 +97,19 @@ public class TcpClientConnectionTest extends ClientTestSupport {
 
     @Test
     public void testEmptyStringAsAddress() {
-        ClientNetworkConfig networkConfig = new ClientConfig().getNetworkConfig();
+        ClientNetworkConfig networkConfig = newClientConfig().getNetworkConfig();
         assertThrows(IllegalArgumentException.class, () -> networkConfig.addAddress(""));
     }
 
     @Test
     public void testNullAsAddress() {
-        ClientNetworkConfig networkConfig = new ClientConfig().getNetworkConfig();
+        ClientNetworkConfig networkConfig = newClientConfig().getNetworkConfig();
         assertThrows(IllegalArgumentException.class, () -> networkConfig.addAddress((String[]) null));
     }
 
     @Test
     public void testNullAsAddresses() {
-        ClientNetworkConfig networkConfig = new ClientConfig().getNetworkConfig();
+        ClientNetworkConfig networkConfig = newClientConfig().getNetworkConfig();
         assertThrows(IllegalArgumentException.class, () -> networkConfig.addAddress(null, null));
     }
 
@@ -98,7 +119,7 @@ public class TcpClientConnectionTest extends ClientTestSupport {
 
         HazelcastInstance server = hazelcastFactory.newHazelcastInstance();
         Address serverAddress = server.getCluster().getLocalMember().getAddress();
-        ClientConfig config = new ClientConfig();
+        ClientConfig config = newClientConfig();
         config.setProperty(ClientProperty.SHUFFLE_MEMBER_LIST.getName(), "false");
         config.getNetworkConfig()
                 .addAddress(illegalAddress)
@@ -117,7 +138,7 @@ public class TcpClientConnectionTest extends ClientTestSupport {
         HazelcastInstance server1 = hazelcastFactory.newHazelcastInstance();
         HazelcastInstance server2 = hazelcastFactory.newHazelcastInstance();
 
-        ClientConfig config = new ClientConfig();
+        ClientConfig config = newClientConfig();
         config.setProperty(ClientProperty.SHUFFLE_MEMBER_LIST.getName(), "false");
         config.getNetworkConfig().setSmartRouting(false);
 
@@ -140,7 +161,8 @@ public class TcpClientConnectionTest extends ClientTestSupport {
     @Test
     public void destroyConnection_whenDestroyedMultipleTimes_thenListenerRemoveCalledOnce() {
         HazelcastInstance server = hazelcastFactory.newHazelcastInstance();
-        HazelcastInstance client = hazelcastFactory.newHazelcastClient();
+        ClientConfig clientConfig = newClientConfig();
+        HazelcastInstance client = hazelcastFactory.newHazelcastClient(clientConfig);
         HazelcastClientInstanceImpl clientImpl = ClientTestUtil.getHazelcastClientInstanceImpl(client);
         ClientConnectionManager connectionManager = clientImpl.getConnectionManager();
 
@@ -149,7 +171,7 @@ public class TcpClientConnectionTest extends ClientTestSupport {
         connectionManager.addConnectionListener(listener);
 
         UUID serverUuid = server.getCluster().getLocalMember().getUuid();
-        final Connection connectionToServer = connectionManager.getConnection(serverUuid);
+        final Connection connectionToServer = connectionManager.getActiveConnection(serverUuid);
 
         ReconnectListener reconnectListener = new ReconnectListener();
         clientImpl.getLifecycleService().addLifecycleListener(reconnectListener);
@@ -180,38 +202,25 @@ public class TcpClientConnectionTest extends ClientTestSupport {
     }
 
     @Test
-    public void testAsyncConnectionCreationInAsyncMethods() throws ExecutionException, InterruptedException {
+    public void testAsyncConnectionCreationInAsyncMethods() throws InterruptedException {
         hazelcastFactory.newHazelcastInstance();
-        ClientConfig config = new ClientConfig();
+        ClientConfig config = newClientConfig();
         final HazelcastInstance client = hazelcastFactory.newHazelcastClient(config);
         final IExecutorService executorService = client.getExecutorService(randomString());
 
         final HazelcastInstance secondInstance = hazelcastFactory.newHazelcastInstance();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(2, client.getCluster().getMembers().size());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(2, client.getCluster().getMembers().size()));
 
-        final AtomicReference<Future> atomicReference = new AtomicReference<Future>();
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Member secondMember = secondInstance.getCluster().getLocalMember();
-                Future future = executorService.submitToMember(new DummySerializableCallable(), secondMember);
-                atomicReference.set(future);
-            }
+        final AtomicReference<Future> atomicReference = new AtomicReference<>();
+        Thread thread = new Thread(() -> {
+            Member secondMember = secondInstance.getCluster().getLocalMember();
+            Future future = executorService.submitToMember(new DummySerializableCallable(), secondMember);
+            atomicReference.set(future);
         });
         thread.start();
         try {
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() throws Exception {
-                    assertNotNull(atomicReference.get());
-                }
-            }, 30);
+            assertTrueEventually(() -> assertNotNull(atomicReference.get()), 30);
         } finally {
             thread.interrupt();
             thread.join();
@@ -221,7 +230,8 @@ public class TcpClientConnectionTest extends ClientTestSupport {
     @Test
     public void testAddingConnectionListenerTwice_shouldCauseEventDeliveredTwice() {
         hazelcastFactory.newHazelcastInstance();
-        HazelcastInstance client = hazelcastFactory.newHazelcastClient();
+        ClientConfig clientConfig = newClientConfig();
+        HazelcastInstance client = hazelcastFactory.newHazelcastClient(clientConfig);
 
         HazelcastClientInstanceImpl clientImpl = ClientTestUtil.getHazelcastClientInstanceImpl(client);
         ClientConnectionManager connectionManager = clientImpl.getConnectionManager();
@@ -233,11 +243,10 @@ public class TcpClientConnectionTest extends ClientTestSupport {
 
         hazelcastFactory.newHazelcastInstance();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(2, listener.connectionAddedCount.get());
-            }
+        assertTrueEventually(() -> {
+            // non=smart ones will not connect to newly added server
+            int expectedConnectionCount = routingMode == SMART ? 2 : 0;
+            assertEquals(expectedConnectionCount, listener.connectionAddedCount.get());
         });
     }
 
@@ -248,9 +257,11 @@ public class TcpClientConnectionTest extends ClientTestSupport {
             hazelcastFactory.newHazelcastInstance();
         }
 
-        HazelcastInstance client = hazelcastFactory.newHazelcastClient();
-        makeSureConnectedToServers(client, memberCount);
+        ClientConfig clientConfig = newClientConfig();
+        HazelcastInstance client = hazelcastFactory.newHazelcastClient(clientConfig);
 
+        int expectedConnectionCount = routingMode == SMART ? memberCount : 1;
+        makeSureConnectedToServers(client, expectedConnectionCount);
     }
 
     @Test
@@ -260,10 +271,12 @@ public class TcpClientConnectionTest extends ClientTestSupport {
             hazelcastFactory.newHazelcastInstance();
         }
 
-        ClientConfig clientConfig = new ClientConfig();
+        ClientConfig clientConfig = newClientConfig();
         clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
         HazelcastInstance client = hazelcastFactory.newHazelcastClient(clientConfig);
-        makeSureConnectedToServers(client, memberCount);
+
+        int expectedConnectionCount = routingMode == SMART ? memberCount : 1;
+        makeSureConnectedToServers(client, expectedConnectionCount);
     }
 
     public static class DummySerializableCallable implements Callable, Serializable {
@@ -272,5 +285,11 @@ public class TcpClientConnectionTest extends ClientTestSupport {
         public Object call() throws Exception {
             return null;
         }
+    }
+
+    private ClientConfig newClientConfig() {
+        ClientConfig clientConfig = ConfigRoutingUtil.newClientConfig(routingMode);
+        clientConfig.getConnectionStrategyConfig().getConnectionRetryConfig().setClusterConnectTimeoutMillis(Long.MAX_VALUE);
+        return clientConfig;
     }
 }

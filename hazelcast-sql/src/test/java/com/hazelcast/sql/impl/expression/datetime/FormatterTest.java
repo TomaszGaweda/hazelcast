@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.hazelcast.sql.impl.expression.datetime;
 
-import com.hazelcast.internal.util.JavaVersion;
 import com.hazelcast.sql.impl.QueryException;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -49,7 +48,6 @@ import static org.junit.Assert.assertThrows;
 @SuppressWarnings("checkstyle:ParenPad")
 public class FormatterTest {
     private static final Locale TR = new Locale("tr", "TR");
-    private static final int JDK = JavaVersion.CURRENT_VERSION.getMajorVersion();
 
     @Test
     public void testDates() {
@@ -66,10 +64,8 @@ public class FormatterTest {
         f = forDates("HH12:MI A.M. TZTZH:TZM");
         check(LocalTime.of(14, 53).atOffset(ZoneOffset.ofHours(3)), f, "02:53 P.M. GMT+03:00");
 
-        if (JDK >= 11) {
-            f = forDates("HH12:MI A.M.");
-            check(LocalTime.of(14, 53), f, "02:53 Ö.S.", TR);
-        }
+        f = forDates("HH12:MI A.M.");
+        check(LocalTime.of(14, 53), f, "02:53 Ö.S.", TR);
 
         f = forDates("At HH24:MI:SS, FMSSSS(=FMSSSSS) \"seconds are passed from the midnight.\"");
         check(LocalTime.of(12, 34, 56), f,
@@ -340,15 +336,13 @@ public class FormatterTest {
     public void testLocales() {
         Formatter f = forNumbers("FM9G999D99 CR");
         check(1234.56, f, "1,234.56 $", US);
-        check(1234.56, f, "1.234,56 " + (JDK >= 11 ? "₺" : "TL"), TR);
+        check(1234.56, f, "1.234,56 ₺", TR);
 
-        if (JDK >= 17) {
-            Locale fr_CH = new Locale("fr", "CH");
-            f = forNumbers("FM9G999D99");
-            check(1234.56, f, "1 234,56", fr_CH);
-            f = forNumbers("FM9G999D99 CR");
-            check(1234.56, f, "1 234.56 CHF", fr_CH);
-        }
+        Locale fr_CH = new Locale("fr", "CH");
+        f = forNumbers("FM9G999D99");
+        check(1234.56, f, "1 234,56", fr_CH);
+        f = forNumbers("FM9G999D99 CR");
+        check(1234.56, f, "1 234.56 CHF", fr_CH);
     }
 
     @Test

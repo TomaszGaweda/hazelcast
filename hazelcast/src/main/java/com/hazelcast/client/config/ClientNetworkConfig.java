@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.hazelcast.config.GcpConfig;
 import com.hazelcast.config.KubernetesConfig;
 import com.hazelcast.config.SSLConfig;
 import com.hazelcast.config.SocketInterceptorConfig;
+import com.hazelcast.internal.util.Preconditions;
 import com.hazelcast.partition.PartitionService;
 
 import java.util.ArrayList;
@@ -39,11 +40,13 @@ import static com.hazelcast.internal.util.Preconditions.isNotNull;
 /**
  * Contains configuration parameters for client network related behaviour
  */
+@SuppressWarnings("MethodCount")
 public class ClientNetworkConfig {
 
     private static final int CONNECTION_TIMEOUT = 5000;
     private final List<String> addressList;
     private boolean smartRouting = true;
+    private SubsetRoutingConfig subsetRoutingConfig = new SubsetRoutingConfig();
     private boolean redoOperation;
     private int connectionTimeout = CONNECTION_TIMEOUT;
     private SocketInterceptorConfig socketInterceptorConfig = new SocketInterceptorConfig();
@@ -62,11 +65,12 @@ public class ClientNetworkConfig {
     private ClientIcmpPingConfig clientIcmpPingConfig = new ClientIcmpPingConfig();
 
     public ClientNetworkConfig() {
-        addressList = new ArrayList<String>();
+        addressList = new ArrayList<>();
     }
 
     public ClientNetworkConfig(ClientNetworkConfig networkConfig) {
-        addressList = new ArrayList<String>(networkConfig.addressList);
+        addressList = new ArrayList<>(networkConfig.addressList);
+        subsetRoutingConfig = new SubsetRoutingConfig(networkConfig.getSubsetRoutingConfig());
         smartRouting = networkConfig.smartRouting;
         redoOperation = networkConfig.redoOperation;
         connectionTimeout = networkConfig.connectionTimeout;
@@ -81,8 +85,8 @@ public class ClientNetworkConfig {
         cloudConfig = new ClientCloudConfig(networkConfig.cloudConfig);
         discoveryConfig = new DiscoveryConfig(networkConfig.discoveryConfig);
         outboundPortDefinitions = networkConfig.outboundPortDefinitions == null
-                ? null : new HashSet<String>(networkConfig.outboundPortDefinitions);
-        outboundPorts = networkConfig.outboundPorts == null ? null : new HashSet<Integer>(networkConfig.outboundPorts);
+                ? null : new HashSet<>(networkConfig.outboundPortDefinitions);
+        outboundPorts = networkConfig.outboundPorts == null ? null : new HashSet<>(networkConfig.outboundPorts);
         clientIcmpPingConfig = new ClientIcmpPingConfig(networkConfig.clientIcmpPingConfig);
     }
 
@@ -205,7 +209,7 @@ public class ClientNetworkConfig {
 
     /**
      * @param connectionTimeoutInMillis Timeout value in millis for nodes to accept client connection requests.
-     *                          A zero value means wait until connection established or an error occurs.
+     *                                  A zero value means wait until connection established or an error occurs.
      * @return configured {@link com.hazelcast.client.config.ClientNetworkConfig} for chaining
      */
     public ClientNetworkConfig setConnectionTimeout(int connectionTimeoutInMillis) {
@@ -488,7 +492,7 @@ public class ClientNetworkConfig {
      */
     public ClientNetworkConfig addOutboundPort(int port) {
         if (outboundPorts == null) {
-            outboundPorts = new HashSet<Integer>();
+            outboundPorts = new HashSet<>();
         }
         outboundPorts.add(port);
         return this;
@@ -502,7 +506,7 @@ public class ClientNetworkConfig {
      */
     public ClientNetworkConfig addOutboundPortDefinition(String portDef) {
         if (outboundPortDefinitions == null) {
-            outboundPortDefinitions = new HashSet<String>();
+            outboundPortDefinitions = new HashSet<>();
         }
         outboundPortDefinitions.add(portDef);
         return this;
@@ -525,6 +529,25 @@ public class ClientNetworkConfig {
      */
     public ClientNetworkConfig setClientIcmpPingConfig(ClientIcmpPingConfig clientIcmpPingConfig) {
         this.clientIcmpPingConfig = clientIcmpPingConfig;
+        return this;
+    }
+
+    /**
+     * @return config for routing client connections to subset of cluster members.
+     */
+    public SubsetRoutingConfig getSubsetRoutingConfig() {
+        return subsetRoutingConfig;
+    }
+
+    /**
+     * Sets config for routing client connections to subset of cluster members.
+     *
+     * @param subsetRoutingConfig subsetRoutingConfig object
+     * @return this {@link ClientNetworkConfig} object
+     */
+    public ClientNetworkConfig setSubsetRoutingConfig(SubsetRoutingConfig subsetRoutingConfig) {
+        this.subsetRoutingConfig = Preconditions.checkNotNull(subsetRoutingConfig,
+                "subsetRoutingConfig cannot be null");
         return this;
     }
 

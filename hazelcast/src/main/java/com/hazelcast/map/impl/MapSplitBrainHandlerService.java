@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import static com.hazelcast.internal.util.ThreadUtil.assertRunningOnPartitionThread;
-import static com.hazelcast.map.impl.MapContainer.GLOBAL_INDEX_NOOP_PARTITION_ID;
+import static com.hazelcast.query.impl.InternalIndex.GLOBAL_INDEX_NOOP_PARTITION_ID;
 
 class MapSplitBrainHandlerService extends AbstractSplitBrainHandlerService<RecordStore> {
 
@@ -85,9 +85,7 @@ class MapSplitBrainHandlerService extends AbstractSplitBrainHandlerService<Recor
         // This one-time logic also helps us to add shared
         // global indexes to new-map-container only once.
         MapContainer mapContainer = recordStore.getMapContainer();
-        PartitionContainer partitionContainer
-                = mapServiceContext.getPartitionContainer(recordStore.getPartitionId());
-        if (partitionContainer.destroyMapContainer(mapContainer)) {
+        if (mapServiceContext.removeMapContainer(mapContainer)) {
             if (mapContainer.shouldUseGlobalIndex()) {
                 // remove global indexes from old-map-container and add them to new one
                 addIndexConfigToNewMapContainer(mapContainer.getName(), GLOBAL_INDEX_NOOP_PARTITION_ID,

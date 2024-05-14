@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentMap;
 public class ClientCacheProxyFactory implements ClientProxyFactory {
 
     private final HazelcastClientInstanceImpl client;
-    private final ConcurrentMap<String, CacheConfig> configs = new ConcurrentHashMap<String, CacheConfig>();
+    private final ConcurrentMap<String, CacheConfig> configs = new ConcurrentHashMap<>();
 
     public ClientCacheProxyFactory(HazelcastClientInstanceImpl client) {
         this.client = client;

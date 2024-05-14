@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ public class JoinStressTest extends HazelcastTestSupport {
     }
 
     @Test(timeout = TEN_MINUTES_IN_MILLIS)
-    public void testJoinCompletesCorrectlyWhenMultipleNodesStartedParallel() throws Exception {
+    public void testJoinCompletesCorrectlyWhenMultipleNodesStartedParallel() {
         int count = 10;
         final TestHazelcastInstanceFactory factory = new TestHazelcastInstanceFactory(count);
         final HazelcastInstance[] instances = new HazelcastInstance[count];
@@ -111,7 +111,7 @@ public class JoinStressTest extends HazelcastTestSupport {
         final int nodeCount = 20;
         final int basePort = 12301;
         final CountDownLatch latch = new CountDownLatch(nodeCount);
-        final AtomicReferenceArray<HazelcastInstance> instances = new AtomicReferenceArray<HazelcastInstance>(nodeCount);
+        final AtomicReferenceArray<HazelcastInstance> instances = new AtomicReferenceArray<>(nodeCount);
 
         ExecutorService ex = Executors.newFixedThreadPool(RuntimeAvailableProcessors.get() * 2);
         for (int i = 0; i < nodeCount; i++) {
@@ -314,12 +314,7 @@ public class JoinStressTest extends HazelcastTestSupport {
             instances[i] = Hazelcast.newHazelcastInstance(config);
         }
 
-        Callable<HazelcastInstance> newInstanceTask = new Callable<HazelcastInstance>() {
-            @Override
-            public HazelcastInstance call() {
-                return Hazelcast.newHazelcastInstance(config);
-            }
-        };
+        Callable<HazelcastInstance> newInstanceTask = () -> Hazelcast.newHazelcastInstance(config);
 
         Future<HazelcastInstance> future1 = spawn(newInstanceTask);
         Future<HazelcastInstance> future2 = spawn(newInstanceTask);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.cache;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.CacheConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -81,8 +80,7 @@ public class CacheFromDifferentNodesTest
     }
 
     @Test
-    public void testJSRExample1()
-            throws InterruptedException {
+    public void testJSRExample1() {
         final String cacheName = randomString();
 
         CacheManager cacheManager = cachingProvider1.getCacheManager();
@@ -90,16 +88,13 @@ public class CacheFromDifferentNodesTest
 
         assertNull(cacheManager.getCache(cacheName));
 
-        CacheConfig<Integer, String> config = new CacheConfig<Integer, String>();
+        CacheConfig<Integer, String> config = new CacheConfig<>();
         Cache<Integer, String> cache = cacheManager.createCache(cacheName, config);
         assertNotNull(cache);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                CacheManager cm2 = cachingProvider2.getCacheManager();
-                assertNotNull(cm2.getCache(cacheName));
-            }
+        assertTrueEventually(() -> {
+            CacheManager cm2 = cachingProvider2.getCacheManager();
+            assertNotNull(cm2.getCache(cacheName));
         });
 
         Integer key = 1;
@@ -130,17 +125,16 @@ public class CacheFromDifferentNodesTest
 
     // Issue https://github.com/hazelcast/hazelcast/issues/5865
     @Test
-    public void testCompletionTestByPuttingAndRemovingFromDifferentNodes()
-            throws InterruptedException {
+    public void testCompletionTestByPuttingAndRemovingFromDifferentNodes() {
         String cacheName = "simpleCache";
 
         CacheManager cacheManager1 = cachingProvider1.getCacheManager();
         CacheManager cacheManager2 = cachingProvider2.getCacheManager();
 
-        CacheConfig<Integer, String> config = new CacheConfig<Integer, String>();
-        final SimpleEntryListener<Integer, String> listener = new SimpleEntryListener<Integer, String>();
+        CacheConfig<Integer, String> config = new CacheConfig<>();
+        final SimpleEntryListener<Integer, String> listener = new SimpleEntryListener<>();
         MutableCacheEntryListenerConfiguration<Integer, String> listenerConfiguration =
-                new MutableCacheEntryListenerConfiguration<Integer, String>(
+                new MutableCacheEntryListenerConfiguration<>(
                         FactoryBuilder.factoryOf(listener), null, true, true);
 
         config.addCacheEntryListenerConfiguration(listenerConfiguration);
@@ -154,33 +148,18 @@ public class CacheFromDifferentNodesTest
         Integer key1 = 1;
         String value1 = "value1";
         cache1.put(key1, value1);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(1, listener.created.get());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(1, listener.created.get()));
 
         Integer key2 = 2;
         String value2 = "value2";
         cache1.put(key2, value2);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(2, listener.created.get());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(2, listener.created.get()));
 
-        Set<Integer> keys = new HashSet<Integer>();
+        Set<Integer> keys = new HashSet<>();
         keys.add(key1);
         keys.add(key2);
         cache2.removeAll(keys);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(2, listener.removed.get());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(2, listener.removed.get()));
     }
 
     @Test
@@ -192,15 +171,12 @@ public class CacheFromDifferentNodesTest
         final Cache c2 = cacheManager2.getCache("c1");
         c1.put("key", "value");
         cacheManager.destroyCache("c1");
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                try {
-                    c2.get("key");
-                    throw new AssertionError("get should throw IllegalStateException");
-                } catch (IllegalStateException e) {
-                    //ignored as expected
-                }
+        assertTrueEventually(() -> {
+            try {
+                c2.get("key");
+                throw new AssertionError("get should throw IllegalStateException");
+            } catch (IllegalStateException e) {
+                //ignored as expected
             }
         });
     }
@@ -215,12 +191,7 @@ public class CacheFromDifferentNodesTest
         c1.put("key", "value");
         c2.put("key", "value");
         cacheManager.close();
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                c2.get("key");
-            }
-        }, 10);
+        assertTrueAllTheTime(() -> c2.get("key"), 10);
     }
 
     public static class SimpleEntryListener<K, V>

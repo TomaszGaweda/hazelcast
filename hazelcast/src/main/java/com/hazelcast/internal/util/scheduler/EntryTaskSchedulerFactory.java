@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public final class EntryTaskSchedulerFactory {
     public static <K, V> EntryTaskScheduler<K, V> newScheduler(TaskScheduler taskScheduler,
                                                                ScheduledEntryProcessor<K, V> entryProcessor,
                                                                ScheduleType scheduleType) {
-        return new SecondsBasedEntryTaskScheduler<K, V>(taskScheduler, entryProcessor, scheduleType);
+        return new SecondsBasedEntryTaskScheduler<>(taskScheduler, entryProcessor, scheduleType);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@
 
 package com.hazelcast.jet.impl.util;
 
+import com.hazelcast.jet.config.JobConfig;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.util.HashMap;
@@ -33,6 +32,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.hazelcast.jet.config.JobConfigArguments.KEY_JOB_IS_SUSPENDABLE;
 import static com.hazelcast.jet.config.ProcessingGuarantee.AT_LEAST_ONCE;
 import static com.hazelcast.jet.config.ProcessingGuarantee.EXACTLY_ONCE;
 import static com.hazelcast.jet.config.ProcessingGuarantee.NONE;
@@ -52,14 +52,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(HazelcastParallelClassRunner.class)
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class UtilTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void when_addClamped_then_doesNotOverflow() {
@@ -100,7 +98,7 @@ public class UtilTest {
     @Test
     public void when_memoizeConcurrent_then_threadSafe() {
         final Object obj = new Object();
-        Supplier<Object> supplier = new Supplier<Object>() {
+        Supplier<Object> supplier = new Supplier<>() {
             boolean supplied;
 
             @Override
@@ -307,5 +305,18 @@ public class UtilTest {
                 .filter(distinctBy(s -> s.charAt(0)))
                 .collect(Collectors.toList());
         assertEquals(asList("alice", "ben"), actual);
+    }
+
+    @Test
+    public void test_isJobSuspendable() {
+        JobConfig nonSuspendableJobConfig = new JobConfig().setArgument(KEY_JOB_IS_SUSPENDABLE, false);
+        assertFalse(Util.isJobSuspendable(nonSuspendableJobConfig));
+
+        JobConfig suspendableJobConfig = new JobConfig();
+        assertTrue(Util.isJobSuspendable(suspendableJobConfig));
+
+        // With 'true', job is suspendable
+        suspendableJobConfig = new JobConfig().setArgument(KEY_JOB_IS_SUSPENDABLE, true);
+        assertTrue(Util.isJobSuspendable(suspendableJobConfig));
     }
 }

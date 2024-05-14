@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -665,9 +665,7 @@ public abstract class CompletableFutureAbstractTest {
     @Test
     public void handleAsync_withExecutor_whenCompletedFuture() {
         CompletionStage<Object> future = newCompletableFuture(false, 0L);
-        CompletableFuture<Object> chained = future.handleAsync((v, t) -> {
-            return chainedReturnValue;
-        }, countingExecutor).toCompletableFuture();
+        CompletableFuture<Object> chained = future.handleAsync((v, t) -> chainedReturnValue, countingExecutor).toCompletableFuture();
 
         assertTrueEventually(() -> assertTrue(chained.isDone()));
         assertEquals(1, countingExecutor.counter.get());
@@ -677,9 +675,7 @@ public abstract class CompletableFutureAbstractTest {
     @Test
     public void handleAsync_withExecutor_whenIncompleteFuture() {
         CompletionStage<Object> future = newCompletableFuture(false, 1000L);
-        CompletableFuture<Object> chained = future.handleAsync((v, t) -> {
-            return chainedReturnValue;
-        }, countingExecutor).toCompletableFuture();
+        CompletableFuture<Object> chained = future.handleAsync((v, t) -> chainedReturnValue, countingExecutor).toCompletableFuture();
 
         assertTrueEventually(() -> assertTrue(chained.isDone()));
         assertEquals(1, countingExecutor.counter.get());
@@ -689,9 +685,7 @@ public abstract class CompletableFutureAbstractTest {
     @Test
     public void handleAsync_whenChained() {
         CompletionStage<Object> future = newCompletableFuture(false, 1000L);
-        CompletableFuture<Object> chained = future.handleAsync((v, t) -> {
-            return chainedReturnValue;
-        }, countingExecutor).toCompletableFuture();
+        CompletableFuture<Object> chained = future.handleAsync((v, t) -> chainedReturnValue, countingExecutor).toCompletableFuture();
 
         assertTrueEventually(() -> assertTrue(chained.isDone()));
         assertEquals(1, countingExecutor.counter.get());
@@ -985,9 +979,7 @@ public abstract class CompletableFutureAbstractTest {
         CompletableFuture<Object> future = newCompletableFuture(false, 10000L);
         assertTrue(future.cancel(true));
 
-        CompletableFuture<Object> nextStage = future.whenComplete((v, t) -> {
-            assertInstanceOf(CancellationException.class, t);
-        });
+        CompletableFuture<Object> nextStage = future.whenComplete((v, t) -> assertInstanceOf(CancellationException.class, t));
 
         assertThatThrownBy(nextStage::join)
                 .isInstanceOf(CompletionException.class)

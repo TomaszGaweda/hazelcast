@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.util.ArrayList;
 
-import static com.hazelcast.jet.mongodb.AbstractMongoTest.TEST_MONGO_VERSION;
+import static com.hazelcast.jet.TestedVersions.MONGO_VERSION;
 import static com.hazelcast.jet.mongodb.impl.Mappers.defaultCodecRegistry;
 import static com.hazelcast.test.DockerTestUtil.assumeDockerEnabled;
 import static java.util.Collections.singletonList;
@@ -53,7 +53,8 @@ public class MongoDataConnectionAuthTest extends SimpleTestInClusterSupport {
     private static final String DATABASE = "MongoDataConnectionAuthTest";
     private static final String TEST_COLLECTION = "testCollection";
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDataConnectionAuthTest.class);
-    private static final GenericContainer<?> mongoContainer = new GenericContainer<>("mongo:" + TEST_MONGO_VERSION)
+    @SuppressWarnings("resource")
+    private static final GenericContainer<?> mongoContainer = new GenericContainer<>("mongo:" + MONGO_VERSION)
             .withEnv("MONGO_INITDB_ROOT_USERNAME", USERNAME)
             .withEnv("MONGO_INITDB_ROOT_PASSWORD", PASSWORD)
             .withEnv("MONGO_INITDB_DATABASE", DATABASE)

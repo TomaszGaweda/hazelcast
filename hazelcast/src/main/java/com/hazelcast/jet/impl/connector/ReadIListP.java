@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,11 +77,9 @@ public final class ReadIListP extends AbstractProcessor {
         IList<Data> list = instance.getList(name);
         int size = list.size();
 
-        if (list instanceof ClientListProxy) {
-            ClientListProxy proxy = (ClientListProxy) list;
+        if (list instanceof ClientListProxy proxy) {
             return createTraverser(size, proxy::dataSubList);
-        } else if (list instanceof ListProxyImpl) {
-            ListProxyImpl proxy = (ListProxyImpl) list;
+        } else if (list instanceof ListProxyImpl proxy) {
             return createTraverser(size, proxy::dataSubList);
         } else {
             throw new RuntimeException("Unexpected list class: " + list.getClass().getName());

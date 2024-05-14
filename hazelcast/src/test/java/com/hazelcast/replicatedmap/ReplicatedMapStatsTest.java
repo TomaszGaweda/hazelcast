@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.hazelcast.replicatedmap;
 
 import com.hazelcast.config.ReplicatedMapConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -42,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 public class ReplicatedMapStatsTest extends HazelcastTestSupport {
 
     private static final int OPERATION_COUNT = 10;
-    private static final int DEFAULT_PARTITION_COUNT = Integer.valueOf(PARTITION_COUNT.getDefaultValue());
+    private static final int DEFAULT_PARTITION_COUNT = Integer.parseInt(PARTITION_COUNT.getDefaultValue());
     private HazelcastInstance instance;
     private String replicatedMapName = "replicatedMap";
 
@@ -143,23 +142,15 @@ public class ReplicatedMapStatsTest extends HazelcastTestSupport {
         final LocalReplicatedMapStats stats = getReplicatedMapStats();
         final long initialHits = stats.getHits();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < actionCount; i++) {
-                    replicatedMap.get(i);
-                }
-                getReplicatedMapStats(); // causes the local stats object to update
+        new Thread(() -> {
+            for (int i = 0; i < actionCount; i++) {
+                replicatedMap.get(i);
             }
+            getReplicatedMapStats(); // causes the local stats object to update
         }).start();
 
         assertEquals(actionCount, initialHits);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(actionCount * 2, stats.getHits());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(actionCount * 2, stats.getHits()));
     }
 
     @Test
@@ -184,22 +175,14 @@ public class ReplicatedMapStatsTest extends HazelcastTestSupport {
         final LocalReplicatedMapStats stats = getReplicatedMapStats();
         final long lastAccessTime = stats.getLastAccessTime();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                sleepAtLeastMillis(1);
-                map.get(key);
-                map.getReplicatedMapStats(); // causes the local stats object to update
-            }
+        new Thread(() -> {
+            sleepAtLeastMillis(1);
+            map.get(key);
+            map.getReplicatedMapStats(); // causes the local stats object to update
         }).start();
 
         assertTrue(lastAccessTime >= startTime);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertTrue(stats.getLastAccessTime() >= lastAccessTime);
-            }
-        });
+        assertTrueEventually(() -> assertTrue(stats.getLastAccessTime() >= lastAccessTime));
     }
 
     @Test
@@ -230,27 +213,19 @@ public class ReplicatedMapStatsTest extends HazelcastTestSupport {
         final LocalReplicatedMapStats stats = getReplicatedMapStats();
         final long lastUpdateTime = stats.getLastUpdateTime();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                sleepAtLeastMillis(1);
-                map.put(key, "value2");
-                getReplicatedMapStats(); // causes the local stats object to update
-            }
+        new Thread(() -> {
+            sleepAtLeastMillis(1);
+            map.put(key, "value2");
+            getReplicatedMapStats(); // causes the local stats object to update
         }).start();
 
         assertTrue(lastUpdateTime >= startTime);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertTrue(stats.getLastUpdateTime() >= lastUpdateTime);
-            }
-        });
+        assertTrueEventually(() -> assertTrue(stats.getLastUpdateTime() >= lastUpdateTime));
     }
 
     @Test
     public void testPutOperationCount_afterPutAll() {
-        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> map = new HashMap<>();
         for (int i = 1; i <= OPERATION_COUNT; i++) {
             map.put(i, i);
         }
@@ -258,12 +233,7 @@ public class ReplicatedMapStatsTest extends HazelcastTestSupport {
         replicatedMap.putAll(map);
         final LocalReplicatedMapStats stats = getReplicatedMapStats();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(OPERATION_COUNT, stats.getPutOperationCount());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(OPERATION_COUNT, stats.getPutOperationCount()));
     }
 
     @Test

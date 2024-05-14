@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -236,6 +236,6 @@ public class RingbufferContainerTest extends HazelcastTestSupport {
 
     private <K, V> RingbufferContainer<K, V> getRingbufferContainer(RingbufferConfig config) {
         // partitionId is irrelevant for this test
-        return new RingbufferContainer<K, V>(RingbufferService.getRingbufferNamespace(config.getName()), config, nodeEngine, 0);
+        return new RingbufferContainer<>(RingbufferService.getRingbufferNamespace(config.getName()), config, nodeEngine, 0);
     }
 }

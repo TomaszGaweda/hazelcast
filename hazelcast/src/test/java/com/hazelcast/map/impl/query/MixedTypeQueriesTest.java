@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -405,7 +405,7 @@ public class MixedTypeQueriesTest extends HazelcastTestSupport {
 
         // The underlying result sets have contains performing in O(n), converting
         // to HashSet for performance.
-        assertEquals(new HashSet<Integer>(expectedSet), new HashSet<Integer>(actualSet));
+        assertEquals(new HashSet<>(expectedSet), new HashSet<>(actualSet));
     }
 
     public static class Record implements Serializable {

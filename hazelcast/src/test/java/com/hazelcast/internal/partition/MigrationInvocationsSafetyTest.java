@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.partition.impl.InternalPartitionServiceImpl;
 import com.hazelcast.internal.partition.impl.MigrationInterceptor;
 import com.hazelcast.internal.partition.impl.MigrationManager;
+import com.hazelcast.internal.partition.impl.MigrationManagerImpl;
 import com.hazelcast.internal.partition.service.TestMigrationAwareService;
 import com.hazelcast.spi.impl.SpiDataSerializerHook;
 import com.hazelcast.spi.properties.ClusterProperty;
@@ -416,7 +417,7 @@ public class MigrationInvocationsSafetyTest extends PartitionCorrectnessTestSupp
 
     private void setMigrationCommitTimeoutMillis(HazelcastInstance master, long timeout) throws Exception {
         MigrationManager migrationManager = getPartitionServiceImpl(master).getMigrationManager();
-        Field field = MigrationManager.class.getDeclaredField("memberHeartbeatTimeoutMillis");
+        Field field = MigrationManagerImpl.class.getDeclaredField("memberHeartbeatTimeoutMillis");
         field.setAccessible(true);
         field.setLong(migrationManager, timeout);
     }

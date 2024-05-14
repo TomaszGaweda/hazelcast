@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.hazelcast.topic.Message;
 import com.hazelcast.topic.MessageListener;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestThread;
@@ -79,7 +78,7 @@ public class ClientReliableTopicStressTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void test() throws InterruptedException {
+    public void test() {
         final StressMessageListener listener1 = new StressMessageListener(1);
         topic.addMessageListener(listener1);
         final StressMessageListener listener2 = new StressMessageListener(2);
@@ -98,15 +97,12 @@ public class ClientReliableTopicStressTest extends HazelcastTestSupport {
 
         logger.info("Number of items produced: " + produceThread.send);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(produceThread.send, listener1.received);
-                assertEquals(produceThread.send, listener2.received);
+        assertTrueEventually(() -> {
+            assertEquals(produceThread.send, listener1.received);
+            assertEquals(produceThread.send, listener2.received);
 
-                assertEquals(0, listener1.failures);
-                assertEquals(0, listener2.failures);
-            }
+            assertEquals(0, listener1.failures);
+            assertEquals(0, listener2.failures);
         });
 
         logger.info("Done");

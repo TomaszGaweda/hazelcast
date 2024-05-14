@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import com.hazelcast.map.impl.MapServiceContext;
 import com.hazelcast.map.impl.mapstore.MapStoreTest;
 import com.hazelcast.map.impl.proxy.MapProxyImpl;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.SlowTest;
@@ -57,7 +56,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -167,7 +165,7 @@ public class ClientMapStoreTest extends HazelcastTestSupport {
         IMap<Integer, Integer> map = client.getMap(MAP_NAME);
 
         int overflow = 100;
-        List<Future> futures = new ArrayList<Future>(maxCapacity + overflow);
+        List<Future> futures = new ArrayList<>(maxCapacity + overflow);
         for (int i = 0; i < maxCapacity + overflow; i++) {
             Future future = map.putAsync(i, i).toCompletableFuture();
             futures.add(future);
@@ -254,7 +252,7 @@ public class ClientMapStoreTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testNullValuesFromMapLoaderAreNotInsertedIntoMap() {
+    public void testNonExistentEntriesValueAreNotInsertedIntoMap() {
         MapStoreConfig mapStoreConfig = new MapStoreConfig();
         mapStoreConfig.setImplementation(new MapStoreTest.NullLoader());
 
@@ -270,11 +268,12 @@ public class ClientMapStoreTest extends HazelcastTestSupport {
         HazelcastInstance node = createHazelcastInstance(config);
         IMap<String, String> map = node.getMap(MAP_NAME);
 
-        // load entries.
-        assertThatThrownBy(() -> map.getAll(new HashSet<>(asList("key1", "key2", "key3"))))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("Neither key nor value can be loaded as null");
+        //load not existent entries
+        Map<String, String> responseMap = map.getAll(new HashSet<>(asList("key1", "key2", "key3")));
+        assertEquals(0, responseMap.size());
+        assertEquals(0, map.size());
     }
+
 
     @Test
     public void test_executeOnEntries_with_read_only_entry_processor() {
@@ -322,7 +321,7 @@ public class ClientMapStoreTest extends HazelcastTestSupport {
 
         @Override
         public Map<String, String> loadAll(Collection<String> keys) {
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             for (String key : keys) {
                 map.put(key, load(key));
             }
@@ -331,7 +330,7 @@ public class ClientMapStoreTest extends HazelcastTestSupport {
 
         @Override
         public Set<String> loadAllKeys() {
-            Set<String> keys = new HashSet<String>();
+            Set<String> keys = new HashSet<>();
 
             for (int i = 0; i < MAX_KEYS; i++) {
                 keys.add("key" + i);
@@ -379,7 +378,7 @@ public class ClientMapStoreTest extends HazelcastTestSupport {
 
     public class MapStoreBackup implements MapStore<Object, Object> {
 
-        public final Map<Object, Object> store = new ConcurrentHashMap<Object, Object>();
+        public final Map<Object, Object> store = new ConcurrentHashMap<>();
 
         @Override
         public void store(Object key, Object value) {
@@ -412,7 +411,7 @@ public class ClientMapStoreTest extends HazelcastTestSupport {
 
         @Override
         public Map<Object, Object> loadAll(Collection<Object> keys) {
-            Map<Object, Object> result = new HashMap<Object, Object>();
+            Map<Object, Object> result = new HashMap<>();
             for (Object key : keys) {
                 Object v = store.get(key);
                 if (v != null) {
@@ -434,7 +433,7 @@ public class ClientMapStoreTest extends HazelcastTestSupport {
         String mapNameWithStoreAndSize = "MapStoreMaxSize*";
 
         String xml = "<hazelcast xsi:schemaLocation=\"http://www.hazelcast.com/schema/config\n"
-                + "                             http://www.hazelcast.com/schema/config/hazelcast-config-5.3.xsd\"\n"
+                + "                             http://www.hazelcast.com/schema/config/hazelcast-config-5.5.xsd\"\n"
                 + "                             xmlns=\"http://www.hazelcast.com/schema/config\"\n"
                 + "                             xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"
                 + "\n"
@@ -469,12 +468,7 @@ public class ClientMapStoreTest extends HazelcastTestSupport {
 
         final AMapStore store = getMapStoreInstance(hz, mapNameWithStoreAndSize + "1");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(1, store.store.get(1));
-            }
-        });
+        assertTrueEventually(() -> assertEquals(1, store.store.get(1)));
     }
 
     private Config buildConfig(String xml) {

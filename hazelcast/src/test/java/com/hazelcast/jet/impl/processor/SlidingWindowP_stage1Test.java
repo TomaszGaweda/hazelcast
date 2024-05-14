@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,8 @@ import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
@@ -53,9 +51,6 @@ import static org.junit.Assert.assertTrue;
 public class SlidingWindowP_stage1Test {
 
     private static final long KEY = 77L;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private List<SlidingWindowP> suppliedProcessors = new ArrayList<>();
     private SupplierEx<Processor> supplier;

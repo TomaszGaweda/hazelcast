@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.hazelcast.aws;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.google.common.collect.ImmutableMap;
 import com.hazelcast.aws.AwsEcsApi.Task;
 import com.hazelcast.internal.json.JsonArray;
 import com.hazelcast.internal.json.JsonObject;
@@ -35,7 +34,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -86,7 +84,7 @@ public class AwsEcsApiTest {
         // given
         String cluster = "arn:aws:ecs:eu-central-1:665466731577:cluster/rafal-test-cluster";
         stubListTasks(cluster, null);
-        Map<String, String> tasksArnToIp = ImmutableMap.of(
+        Map<String, String> tasksArnToIp = Map.of(
                 "arn:aws:ecs:us-east-1:012345678910:task/0b69d5c0-d655-4695-98cd-5d2d526d9d5a", "10.0.1.16",
                 "arn:aws:ecs:us-east-1:012345678910:task/51a01bdf-d00e-487e-ab14-7645330b6207", "10.0.1.219");
         stubDescribeTasks(tasksArnToIp, cluster);
@@ -108,7 +106,7 @@ public class AwsEcsApiTest {
         AwsEcsApi awsEcsApi = new AwsEcsApi(endpoint, awsConfig, requestSigner, CLOCK);
 
         stubListTasks("arn:aws:ecs:eu-central-1:665466731577:cluster/rafal-test-cluster", "family-name");
-        stubDescribeTasks(ImmutableMap.of(
+        stubDescribeTasks(Map.of(
                         "arn:aws:ecs:us-east-1:012345678910:task/0b69d5c0-d655-4695-98cd-5d2d526d9d5a", "10.0.1.16",
                         "arn:aws:ecs:us-east-1:012345678910:task/51a01bdf-d00e-487e-ab14-7645330b6207", "10.0.1.219"),
                 cluster);
@@ -131,7 +129,7 @@ public class AwsEcsApiTest {
         AwsEcsApi awsEcsApi = new AwsEcsApi(endpoint, awsConfig, requestSigner, CLOCK);
 
         stubListTasks("arn:aws:ecs:eu-central-1:665466731577:cluster/rafal-test-cluster", null);
-        stubDescribeTasks(ImmutableMap.of(
+        stubDescribeTasks(Map.of(
                         "arn:aws:ecs:us-east-1:012345678910:task/0b69d5c0-d655-4695-98cd-5d2d526d9d5a", "10.0.1.16",
                         "arn:aws:ecs:us-east-1:012345678910:task/51a01bdf-d00e-487e-ab14-7645330b6207", "10.0.1.219"),
                 cluster);
@@ -148,7 +146,7 @@ public class AwsEcsApiTest {
     public void describeTasks() {
         // given
         String cluster = "arn:aws:ecs:eu-central-1:665466731577:cluster/rafal-test-cluster";
-        Map<String, String> tasks = ImmutableMap.of(
+        Map<String, String> tasks = Map.of(
                 "arn:aws:ecs:eu-central-1-east-1:012345678910:task/0b69d5c0-d655-4695-98cd-5d2d526d9d5a", "10.0.1.16",
                 "arn:aws:ecs:eu-central-1:012345678910:task/51a01bdf-d00e-487e-ab14-7645330b6207", "10.0.1.219");
         stubDescribeTasks(tasks, cluster);
@@ -158,8 +156,8 @@ public class AwsEcsApiTest {
 
         // then
         assertEquals(2, result.size());
-        assertThat(result.stream().map(Task::getPrivateAddress).collect(Collectors.toList())).containsExactlyInAnyOrder("10.0.1.16", "10.0.1.219");
-        assertThat(result.stream().map(Task::getAvailabilityZone).collect(Collectors.toList())).containsExactlyInAnyOrder("eu-central-1a", "eu-central-1a");
+        assertThat(result.stream().map(Task::getPrivateAddress)).containsExactlyInAnyOrder("10.0.1.16", "10.0.1.219");
+        assertThat(result.stream().map(Task::getAvailabilityZone)).containsExactlyInAnyOrder("eu-central-1a", "eu-central-1a");
     }
 
     @Test
@@ -179,7 +177,7 @@ public class AwsEcsApiTest {
         assertTrue(exception.getMessage().contains(errorMessage));
     }
 
-    private void stubDescribeTasks(Map<String, String> taskArnToIp, String cluster) {
+    private static void stubDescribeTasks(Map<String, String> taskArnToIp, String cluster) {
         JsonArray tasksJson = new JsonArray();
         taskArnToIp.keySet().forEach(tasksJson::add);
         String requestBody = new JsonObject()
@@ -213,11 +211,11 @@ public class AwsEcsApiTest {
                 .withHeader("Content-Type", equalTo("application/x-amz-json-1.1"))
                 .withHeader("Accept-Encoding", equalTo("identity"))
                 .withHeader("X-Amz-Security-Token", equalTo(TOKEN))
-                .withRequestBody(equalToJson(requestBody))
+                .withRequestBody(equalToJson(requestBody, true, false))
                 .willReturn(aResponse().withStatus(200).withBody(responseBody)));
     }
 
-    private void stubListTasks(String cluster, String familyName) {
+    private static void stubListTasks(String cluster, String familyName) {
         JsonObject requestBody = new JsonObject();
         requestBody.add("cluster", cluster);
         if (!StringUtil.isNullOrEmptyAfterTrim(familyName)) {

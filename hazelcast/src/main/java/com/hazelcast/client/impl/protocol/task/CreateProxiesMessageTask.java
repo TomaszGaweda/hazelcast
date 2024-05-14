@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class CreateProxiesMessageTask extends AbstractMultiTargetMessageTask<Lis
 
     @Override
     public Operation get() {
-        List<ProxyInfo> proxyInfos = new ArrayList<ProxyInfo>(filteredProxies.size());
+        List<ProxyInfo> proxyInfos = new ArrayList<>(filteredProxies.size());
         for (Map.Entry<String, String> proxy : filteredProxies) {
             proxyInfos.add(new ProxyInfo(proxy.getValue(), proxy.getKey(), endpoint.getUuid()));
         }
@@ -64,8 +64,8 @@ public class CreateProxiesMessageTask extends AbstractMultiTargetMessageTask<Lis
     @Override
     protected Object reduce(Map<Member, Object> map) throws Throwable {
         for (Object result : map.values()) {
-            if (result instanceof Throwable && !(result instanceof MemberLeftException)) {
-                throw (Throwable) result;
+            if (result instanceof Throwable throwable && !(result instanceof MemberLeftException)) {
+                throw throwable;
             }
         }
         return null;

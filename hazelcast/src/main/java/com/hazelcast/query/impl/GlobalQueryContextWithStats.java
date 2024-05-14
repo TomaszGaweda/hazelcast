@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,11 +60,7 @@ public class GlobalQueryContextWithStats extends QueryContext {
             return null;
         }
 
-        QueryTrackingIndex trackingIndex = knownIndexes.get(pattern);
-        if (trackingIndex == null) {
-            trackingIndex = new QueryTrackingIndex();
-            knownIndexes.put(pattern, trackingIndex);
-        }
+        QueryTrackingIndex trackingIndex = knownIndexes.computeIfAbsent(pattern, x -> new QueryTrackingIndex());
 
         trackingIndex.attachTo(delegate);
         trackedIndexes.add(trackingIndex);

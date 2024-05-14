@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MapStoreWithCounter<K, V> implements MapStore<K, V> {
 
-    protected final Map<K, V> store = new ConcurrentHashMap<K, V>();
+    protected final Map<K, V> store = new ConcurrentHashMap<>();
 
     protected AtomicInteger countStore = new AtomicInteger(0);
     protected AtomicInteger countDelete = new AtomicInteger(0);
     protected AtomicInteger countLoad = new AtomicInteger(0);
     protected AtomicInteger batchCounter = new AtomicInteger(0);
-    protected Map<Integer, Integer> batchOpCountMap = new ConcurrentHashMap<Integer, Integer>();
+    protected Map<Integer, Integer> batchOpCountMap = new ConcurrentHashMap<>();
 
     public MapStoreWithCounter() {
     }
@@ -76,7 +76,7 @@ public class MapStoreWithCounter<K, V> implements MapStore<K, V> {
 
     @Override
     public Map<K, V> loadAll(Collection<K> keys) {
-        Map<K, V> result = new HashMap<K, V>();
+        Map<K, V> result = new HashMap<>();
         for (K key : keys) {
             final V v = store.get(key);
             if (v != null) {

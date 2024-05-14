@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class ProgressMonitor {
     private static final ILogger LOGGER = Logger.getLogger(ProgressMonitor.class);
 
     private final long maximumStaleNanos;
-    private final List<BounceMemberRule.TestTaskRunnable> tasks = new ArrayList<BounceMemberRule.TestTaskRunnable>();
+    private final List<BounceMemberRule.TestTaskRunnable> tasks = new ArrayList<>();
 
     private long lastProgressLoggedNanos;
     private long progressDelta;
@@ -45,8 +45,8 @@ public class ProgressMonitor {
     }
 
     public void registerTask(Runnable task) {
-        if (task instanceof BounceMemberRule.TestTaskRunnable) {
-            tasks.add((BounceMemberRule.TestTaskRunnable) task);
+        if (task instanceof BounceMemberRule.TestTaskRunnable runnable) {
+            tasks.add(runnable);
         } else if (maximumStaleNanos != STALENESS_DETECTOR_DISABLED) {
             throw new UnsupportedOperationException("Progress checking is enabled only for automatically repeated tasks");
         }

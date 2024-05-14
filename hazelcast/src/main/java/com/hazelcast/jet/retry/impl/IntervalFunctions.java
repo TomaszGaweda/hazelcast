@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.hazelcast.jet.retry.impl;
 
 import com.hazelcast.function.FunctionEx;
 import com.hazelcast.jet.retry.IntervalFunction;
+
+import java.io.Serial;
 
 public final class IntervalFunctions {
 
@@ -67,6 +69,7 @@ public final class IntervalFunctions {
 
     private static class IntervalFunctionImpl implements IntervalFunction {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private final FunctionEx<Integer, Long> fn;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import static org.junit.Assert.assertEquals;
 public class EventPublishOrderWithEvictionTest extends HazelcastTestSupport {
 
     @Test
-    public void testEntryEvictEventsEmitted_afterAddEvents() throws Exception {
+    public void testEntryEvictEventsEmitted_afterAddEvents() {
         final int maxSize = 10;
         IMap<Integer, Integer> map = createMap(maxSize);
         EventOrderAwareEntryListener entryListener = new EventOrderAwareEntryListener();
@@ -61,13 +61,13 @@ public class EventPublishOrderWithEvictionTest extends HazelcastTestSupport {
     }
 
     private void assertEmittedEventsOrder(EventOrderAwareEntryListener entryListener) {
-        Map<Integer, List<EntryEventType>> eventsPerKey = new HashMap<Integer, List<EntryEventType>>();
+        Map<Integer, List<EntryEventType>> eventsPerKey = new HashMap<>();
         List<EntryEvent> events = entryListener.getOrderedEvents();
         for (EntryEvent event : events) {
             Integer key = (Integer) event.getKey();
             List<EntryEventType> eventTypes = eventsPerKey.get(key);
             if (eventTypes == null) {
-                eventTypes = new ArrayList<EntryEventType>();
+                eventTypes = new ArrayList<>();
                 eventsPerKey.put(key, eventTypes);
             }
 
@@ -110,7 +110,7 @@ public class EventPublishOrderWithEvictionTest extends HazelcastTestSupport {
 
     private static final class EventOrderAwareEntryListener extends EntryAdapter {
 
-        private final List<EntryEvent> orderedEvents = new CopyOnWriteArrayList<EntryEvent>();
+        private final List<EntryEvent> orderedEvents = new CopyOnWriteArrayList<>();
 
         @Override
         public void entryEvicted(EntryEvent event) {

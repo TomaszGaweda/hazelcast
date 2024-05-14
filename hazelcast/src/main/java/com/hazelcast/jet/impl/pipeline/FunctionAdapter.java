@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,7 +242,7 @@ public class FunctionAdapter {
         @Nonnull @Override
         public Iterator<Object> iterator() {
             Iterator<Object> iterator = wrapped.iterator();
-            return new Iterator<Object>() {
+            return new Iterator<>() {
                 @Override
                 public boolean hasNext() {
                     return iterator.hasNext();
@@ -434,12 +434,12 @@ class JetEventFunctionAdapter extends FunctionAdapter {
     <A, R> AggregateOperation<A, ? extends R> adaptAggregateOperation(
             @Nonnull AggregateOperation<A, ? extends R> aggrOp
     ) {
-        if (aggrOp instanceof AggregateOperation1) {
-            return adaptAggregateOperation1((AggregateOperation1) aggrOp);
-        } else if (aggrOp instanceof AggregateOperation2) {
-            return adaptAggregateOperation2((AggregateOperation2) aggrOp);
-        } else if (aggrOp instanceof AggregateOperation3) {
-            return adaptAggregateOperation3((AggregateOperation3) aggrOp);
+        if (aggrOp instanceof AggregateOperation1 operation) {
+            return adaptAggregateOperation1(operation);
+        } else if (aggrOp instanceof AggregateOperation2 operation) {
+            return adaptAggregateOperation2(operation);
+        } else if (aggrOp instanceof AggregateOperation3 operation) {
+            return adaptAggregateOperation3(operation);
         } else {
             BiConsumerEx[] adaptedAccFns = new BiConsumerEx[aggrOp.arity()];
             Arrays.setAll(adaptedAccFns, i -> adaptAccumulateFn((BiConsumerEx) aggrOp.accumulateFn(i)));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,35 +26,34 @@ import com.hazelcast.client.impl.client.SecureRequest;
 import com.hazelcast.client.impl.protocol.ClientExceptionFactory;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.cluster.Address;
+import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import com.hazelcast.core.MemberLeftException;
 import com.hazelcast.instance.BuildInfo;
 import com.hazelcast.instance.impl.Node;
+import com.hazelcast.instance.impl.NodeExtension;
+import com.hazelcast.internal.cluster.impl.ClusterServiceImpl;
 import com.hazelcast.internal.nio.Connection;
 import com.hazelcast.internal.nio.ConnectionType;
 import com.hazelcast.internal.serialization.InternalSerializationService;
 import com.hazelcast.internal.server.ServerConnection;
-import com.hazelcast.internal.tpcengine.net.AsyncSocket;
-import com.hazelcast.internal.tpcengine.iobuffer.IOBuffer;
 import com.hazelcast.internal.tpcengine.iobuffer.IOBufferAllocator;
+import com.hazelcast.internal.tpcengine.net.AsyncSocket;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.security.Credentials;
 import com.hazelcast.security.SecurityContext;
 import com.hazelcast.spi.exception.RetryableHazelcastException;
-import com.hazelcast.spi.impl.NodeEngineImpl;
+import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.impl.operationservice.impl.responses.NormalResponse;
 
 import java.lang.reflect.Field;
 import java.security.AccessControlException;
 import java.security.Permission;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.hazelcast.client.impl.protocol.ClientMessage.IS_FINAL_FLAG;
-import static com.hazelcast.client.impl.protocol.ClientMessage.SIZE_OF_FRAME_LENGTH_AND_FLAGS;
 import static com.hazelcast.internal.util.ExceptionUtil.peel;
 
 /**
@@ -64,7 +63,7 @@ import static com.hazelcast.internal.util.ExceptionUtil.peel;
 public abstract class AbstractMessageTask<P> implements MessageTask, SecureRequest {
 
     private static final List<Class<? extends Throwable>> NON_PEELABLE_EXCEPTIONS =
-            Arrays.asList(Error.class, MemberLeftException.class);
+            List.of(Error.class, MemberLeftException.class);
 
     protected AsyncSocket asyncSocket;
     protected IOBufferAllocator responseBufAllocator;
@@ -72,24 +71,50 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
     protected final ClientMessage clientMessage;
     protected final ServerConnection connection;
     protected final ClientEndpoint endpoint;
-    protected final NodeEngineImpl nodeEngine;
+    protected final NodeEngine nodeEngine;
     protected final InternalSerializationService serializationService;
     protected final ILogger logger;
     protected final ClientEngine clientEngine;
     protected P parameters;
+
     private final ClientEndpointManager endpointManager;
-    private final Node node;
+    private final NodeExtension nodeExtension;
+    private final BuildInfo buildInfo;
+    private final Config config;
+    private final ClusterServiceImpl clusterService;
 
     protected AbstractMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         this.clientMessage = clientMessage;
+        // Can't centralise the constructors because getClass() is dynamic
         this.logger = node.getLogger(getClass());
-        this.node = node;
         this.nodeEngine = node.getNodeEngine();
         this.serializationService = node.getSerializationService();
         this.connection = (ServerConnection) connection;
         this.clientEngine = node.getClientEngine();
         this.endpointManager = clientEngine.getEndpointManager();
         this.endpoint = initEndpoint();
+        this.nodeExtension = node.getNodeExtension();
+        this.buildInfo = node.getBuildInfo();
+        this.config = node.getConfig();
+        this.clusterService = node.getClusterService();
+    }
+
+    // Primarily for testing, where `Node` cannot be mocked
+    protected AbstractMessageTask(ClientMessage clientMessage, ILogger logger, NodeEngine nodeEngine,
+            InternalSerializationService serializationService, ClientEngine clientEngine, Connection connection,
+            NodeExtension nodeExtension, BuildInfo buildInfo, Config config, ClusterServiceImpl clusterService) {
+        this.clientMessage = clientMessage;
+        this.logger = logger;
+        this.nodeEngine = nodeEngine;
+        this.serializationService = serializationService;
+        this.clientEngine = clientEngine;
+        this.connection = (ServerConnection) connection;
+        this.endpointManager = clientEngine.getEndpointManager();
+        this.endpoint = initEndpoint();
+        this.nodeExtension = nodeExtension;
+        this.buildInfo = buildInfo;
+        this.config = config;
+        this.clusterService = clusterService;
     }
 
     public void setAsyncSocket(AsyncSocket asyncSocket) {
@@ -102,7 +127,7 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
 
     @SuppressWarnings("unchecked")
     public <S> S getService(String serviceName) {
-        return (S) node.getNodeEngine().getService(serviceName);
+        return (S) nodeEngine.getService(serviceName);
     }
 
     private ClientEndpoint initEndpoint() {
@@ -177,7 +202,7 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
     protected final void validateNodeStart() {
         boolean acceptOnIncompleteStart = acceptOnIncompleteStart()
                 && ConnectionType.MC_JAVA_CLIENT.equals(endpoint.getClientType());
-        if (!acceptOnIncompleteStart && !node.getNodeExtension().isStartCompleted()) {
+        if (!acceptOnIncompleteStart && !nodeExtension.isStartCompleted()) {
             throw new HazelcastInstanceNotActiveException("Hazelcast instance is not ready yet!");
         }
     }
@@ -239,10 +264,14 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
     private void checkPermissions(ClientEndpoint endpoint) {
         SecurityContext securityContext = clientEngine.getSecurityContext();
         if (securityContext != null) {
-            Permission permission = getRequiredPermission();
-            if (permission != null) {
-                securityContext.checkPermission(endpoint.getSubject(), permission);
-            }
+            checkPermissions(endpoint, securityContext, getRequiredPermission());
+            checkPermissions(endpoint, securityContext, getUserCodeNamespacePermission());
+        }
+    }
+
+    private static void checkPermissions(ClientEndpoint endpoint, SecurityContext securityContext, Permission permission) {
+        if (permission != null) {
+            securityContext.checkPermission(endpoint.getSubject(), permission);
         }
     }
 
@@ -251,16 +280,15 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
     protected void sendResponse(Object response) {
         try {
             int numberOfBackups = 0;
-            if (response instanceof ClientBackupAwareResponse) {
-                ClientBackupAwareResponse backupAwareResponse = (ClientBackupAwareResponse) response;
+            if (response instanceof ClientBackupAwareResponse backupAwareResponse) {
                 response = backupAwareResponse.getResponse();
                 numberOfBackups = backupAwareResponse.getNumberOfBackups();
-            } else if (response instanceof NormalResponse) {
-                response = ((NormalResponse) response).getValue();
+            } else if (response instanceof NormalResponse normalResponse) {
+                response = normalResponse.getValue();
             }
             ClientMessage clientMessage;
-            if (response instanceof Throwable) {
-                clientMessage = encodeException((Throwable) response);
+            if (response instanceof Throwable throwable) {
+                clientMessage = encodeException(throwable);
             } else {
                 clientMessage = encodeResponse(response);
             }
@@ -280,23 +308,7 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
         if (asyncSocket == null) {
             connection.write(resultClientMessage);
         } else {
-            ClientMessage.Frame frame = resultClientMessage.getStartFrame();
-            IOBuffer buf = responseBufAllocator.allocate(resultClientMessage.getBufferLength());
-            while (frame != null) {
-                buf.writeIntL(frame.content.length + SIZE_OF_FRAME_LENGTH_AND_FLAGS);
-
-                int flags = frame.flags;
-                if (frame == resultClientMessage.getEndFrame()) {
-                    flags = frame.flags | IS_FINAL_FLAG;
-                }
-
-                buf.writeShortL((short) flags);
-                buf.writeBytes(frame.content);
-                frame = frame.next;
-            }
-
-            buf.flip();
-            if (!asyncSocket.writeAndFlush(buf)) {
+            if (!asyncSocket.writeAndFlush(resultClientMessage)) {
                 // Unlike the 'classic' networking, the asyncSocket has a bound on the
                 // number of packets on the write-queue to prevent running into OOME.
                 // So if the response can't be send, we close the connection to indicate
@@ -305,10 +317,6 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
                         + asyncSocket, null);
             }
         }
-        //TODO framing not implemented yet, should be split into frames before writing to connection
-        // PETER: There is no point in chopping it up in frames and in 1 go write all these frames because it still will
-        // not allow any interleaving with operations. It will only slow down the system. Framing should be done inside
-        // the io system; not outside.
     }
 
     protected void sendClientMessage(Object key, ClientMessage resultClientMessage) {
@@ -334,21 +342,12 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
         return getServiceName();
     }
 
-    @Override
-    public abstract String getDistributedObjectName();
-
-    @Override
-    public abstract String getMethodName();
-
-    @Override
-    public abstract Object[] getParameters();
-
     protected final BuildInfo getMemberBuildInfo() {
-        return node.getBuildInfo();
+        return buildInfo;
     }
 
     protected boolean isAdvancedNetworkEnabled() {
-        return node.getConfig().getAdvancedNetworkConfig().isEnabled();
+        return config.getAdvancedNetworkConfig().isEnabled();
     }
 
     final boolean addressesDecodedWithTranslation() {
@@ -360,7 +359,7 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
         }
         Class<Address> addressClass = Address.class;
         Field[] fields = parameters.getClass().getDeclaredFields();
-        Set<Address> addresses = new HashSet<Address>();
+        Set<Address> addresses = new HashSet<>();
         try {
             for (Field field : fields) {
                 if (addressClass.isAssignableFrom(field.getType())) {
@@ -371,7 +370,7 @@ public abstract class AbstractMessageTask<P> implements MessageTask, SecureReque
             logger.info("Could not reflectively access parameter fields", e);
         }
         if (!addresses.isEmpty()) {
-            Collection<Address> allMemberAddresses = node.clusterService.getMemberAddresses();
+            Collection<Address> allMemberAddresses = clusterService.getMemberAddresses();
             for (Address address : addresses) {
                 if (!allMemberAddresses.contains(address)) {
                     return false;

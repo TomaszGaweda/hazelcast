@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,12 +44,12 @@ public class ReplicatedRecordTest {
 
     @Before
     public void setUp() {
-        replicatedRecord = new ReplicatedRecord<String, String>("key", "value", 0);
-        replicatedRecordSameAttributes = new ReplicatedRecord<String, String>("key", "value", 0);
+        replicatedRecord = new ReplicatedRecord<>("key", "value", 0);
+        replicatedRecordSameAttributes = new ReplicatedRecord<>("key", "value", 0);
 
-        replicatedRecordOtherKey = new ReplicatedRecord<String, String>("otherKey", "value", 0);
-        replicatedRecordOtherValue = new ReplicatedRecord<String, String>("key", "otherValue", 0);
-        replicatedRecordOtherTtl = new ReplicatedRecord<String, String>("key", "value", 1);
+        replicatedRecordOtherKey = new ReplicatedRecord<>("otherKey", "value", 0);
+        replicatedRecordOtherValue = new ReplicatedRecord<>("key", "otherValue", 0);
+        replicatedRecordOtherTtl = new ReplicatedRecord<>("key", "value", 1);
     }
 
     @Test

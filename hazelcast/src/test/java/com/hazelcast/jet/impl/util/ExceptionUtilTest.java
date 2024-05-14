@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,8 @@ import com.hazelcast.spi.exception.TargetNotMemberException;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.util.concurrent.ExecutionException;
@@ -44,9 +42,6 @@ import static org.junit.Assert.assertTrue;
 @RunWith(HazelcastSerialClassRunner.class)
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class ExceptionUtilTest extends JetTestSupport {
-
-    @Rule
-    public final ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void when_throwableIsRuntimeException_then_peelReturnsOriginal() {
@@ -67,8 +62,9 @@ public class ExceptionUtilTest extends JetTestSupport {
     @Test
     public void when_throwableIsExecutionExceptionWithNullCause_then_returnHazelcastException() {
         ExecutionException exception = new ExecutionException(null);
-        exceptionRule.expect(JetException.class);
-        throw rethrow(exception);
+        assertThrows(JetException.class, () -> {
+            throw rethrow(exception);
+        });
     }
 
     @Test
@@ -141,15 +137,5 @@ public class ExceptionUtilTest extends JetTestSupport {
     public void test_isOrHasCause_when_exceptionHasExpectedType() {
         RuntimeException e = new RuntimeException("foo");
         assertTrue(isOrHasCause(e, RuntimeException.class));
-    }
-
-    @Test
-    public void test_stackTraceToString() {
-        Exception exception1 = new Exception("exception1");
-        Exception exception2 = new Exception("exception2", exception1);
-        Exception exception3 = new Exception("exception3", exception2);
-
-        String stackTrace = ExceptionUtil.stackTraceToString(exception3);
-        assertThat(stackTrace).contains("exception3", "exception2", "exception1");
     }
 }

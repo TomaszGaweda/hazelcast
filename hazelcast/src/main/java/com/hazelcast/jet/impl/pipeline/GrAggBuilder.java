@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,9 +106,7 @@ public class GrAggBuilder<K> {
     public <A, R> StreamStage<KeyedWindowResult<K, R>> buildStream(@Nonnull AggregateOperation<A, ? extends R> aggrOp) {
         List<Transform> upstreamTransforms = toList(upstreamStages, s -> s.transform);
         FunctionAdapter fnAdapter = ADAPT_TO_JET_EVENT;
-        // Casts in this expression are a workaround for JDK 8 compiler bug:
-        @SuppressWarnings("unchecked")
-        List<FunctionEx<?, ? extends K>> adaptedKeyFns = toList(keyFns, fn -> fnAdapter.adaptKeyFn((FunctionEx) fn));
+        List<FunctionEx<?, ? extends K>> adaptedKeyFns = toList(keyFns, fnAdapter::adaptKeyFn);
         AbstractTransform transform = new WindowGroupTransform<K, R>(
                 upstreamTransforms, wDef, adaptedKeyFns, fnAdapter.adaptAggregateOperation(aggrOp));
         pipelineImpl.connect(upstreamStages, transform);

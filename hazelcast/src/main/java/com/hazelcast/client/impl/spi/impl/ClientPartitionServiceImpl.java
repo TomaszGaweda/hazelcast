@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,9 +65,7 @@ public final class ClientPartitionServiceImpl implements ClientPartitionService 
         }
     }
 
-    /**
-     * The partitions can be empty on the response, client will not apply the empty partition table,
-     */
+    @Override
     public void handlePartitionsViewEvent(Connection connection, Collection<Map.Entry<UUID, List<Integer>>> partitions,
                                           int partitionStateVersion) {
         if (logger.isFinestEnabled()) {

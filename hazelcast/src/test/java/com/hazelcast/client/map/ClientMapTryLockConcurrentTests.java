@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,16 +55,16 @@ public class ClientMapTryLockConcurrentTests {
     }
 
     @Test
-    public void concurrent_MapTryLockTest() throws InterruptedException {
+    public void concurrent_MapTryLockTest() {
         concurrent_MapTryLock(false);
     }
 
     @Test
-    public void concurrent_MapTryLockTimeOutTest() throws InterruptedException {
+    public void concurrent_MapTryLockTimeOutTest() {
         concurrent_MapTryLock(true);
     }
 
-    private void concurrent_MapTryLock(boolean withTimeOut) throws InterruptedException {
+    private void concurrent_MapTryLock(boolean withTimeOut) {
         final int maxThreads = 8;
         final IMap<String, Integer> map = client.getMap(randomString());
         final String upKey = "upKey";

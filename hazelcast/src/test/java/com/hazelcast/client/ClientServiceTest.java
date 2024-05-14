@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,8 @@ import com.hazelcast.config.ListenerConfig;
 import com.hazelcast.core.EntryAdapter;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.LifecycleEvent;
-import com.hazelcast.core.LifecycleListener;
 import com.hazelcast.map.IMap;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.NightlyTest;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -180,7 +178,7 @@ public class ClientServiceTest extends ClientTestSupport {
     }
 
     @Test(timeout = 120000)
-    public void testClientListener() throws InterruptedException {
+    public void testClientListener() {
         final HazelcastInstance instance = hazelcastFactory.newHazelcastInstance();
         final ClientService clientService = instance.getClientService();
         final CountDownLatch latchAdd = new CountDownLatch(2);
@@ -218,18 +216,13 @@ public class ClientServiceTest extends ClientTestSupport {
 
         hazelcastFactory.newHazelcastClient();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(1, clientService.getConnectedClients().size());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(1, clientService.getConnectedClients().size()));
 
         assertEquals(2, totalAdd.get());
     }
 
     @Test(timeout = 120000)
-    public void testConnectedClientsWithReAuth() throws InterruptedException {
+    public void testConnectedClientsWithReAuth() {
         final ClientConfig clientConfig = new ClientConfig();
         clientConfig.getConnectionStrategyConfig().getConnectionRetryConfig().setClusterConnectTimeoutMillis(Long.MAX_VALUE)
                 .setMultiplier(1).setInitialBackoffMillis(5000);
@@ -274,7 +267,7 @@ public class ClientServiceTest extends ClientTestSupport {
     }
 
     @Test
-    public void testClientListenerDisconnected() throws InterruptedException {
+    public void testClientListenerDisconnected() {
         Config config = new Config();
         config.setProperty(ClusterProperty.IO_THREAD_COUNT.getName(), "1");
 
@@ -286,12 +279,12 @@ public class ClientServiceTest extends ClientTestSupport {
         hz.getClientService().addClientListener(listenerLatch);
         hz2.getClientService().addClientListener(listenerLatch);
 
-        Collection<HazelcastInstance> clients = new LinkedList<HazelcastInstance>();
+        Collection<HazelcastInstance> clients = new LinkedList<>();
         for (int i = 0; i < clientCount; i++) {
             HazelcastInstance client = hazelcastFactory.newHazelcastClient();
             IMap<Object, Object> map = client.getMap(randomMapName());
 
-            map.addEntryListener(new EntryAdapter<Object, Object>(), true);
+            map.addEntryListener(new EntryAdapter<>(), true);
             map.put(generateKeyOwnedBy(hz), "value");
             map.put(generateKeyOwnedBy(hz2), "value");
 
@@ -301,28 +294,13 @@ public class ClientServiceTest extends ClientTestSupport {
         ExecutorService ex = Executors.newFixedThreadPool(4);
         try {
             for (final HazelcastInstance client : clients) {
-                ex.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        client.shutdown();
-                    }
-                });
+                ex.execute(client::shutdown);
             }
 
             assertOpenEventually("Not all disconnected events arrived", listenerLatch);
 
-            assertTrueEventually("First server still have connected clients", new AssertTask() {
-                @Override
-                public void run() throws Exception {
-                    assertEquals(0, hz.getClientService().getConnectedClients().size());
-                }
-            });
-            assertTrueEventually("Second server still have connected clients", new AssertTask() {
-                @Override
-                public void run() throws Exception {
-                    assertEquals(0, hz2.getClientService().getConnectedClients().size());
-                }
-            });
+            assertTrueEventually("First server still have connected clients", () -> assertEquals(0, hz.getClientService().getConnectedClients().size()));
+            assertTrueEventually("Second server still have connected clients", () -> assertEquals(0, hz2.getClientService().getConnectedClients().size()));
         } finally {
             ex.shutdown();
         }
@@ -330,12 +308,7 @@ public class ClientServiceTest extends ClientTestSupport {
 
     private void assertClientConnected(ClientService... services) {
         for (final ClientService service : services) {
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() throws Exception {
-                    assertEquals(1, service.getConnectedClients().size());
-                }
-            });
+            assertTrueEventually(() -> assertEquals(1, service.getConnectedClients().size()));
         }
     }
 
@@ -379,12 +352,9 @@ public class ClientServiceTest extends ClientTestSupport {
         ClientConfig config = new ClientConfig();
         config.getConnectionStrategyConfig().getConnectionRetryConfig().setClusterConnectTimeoutMillis(2000);
         HazelcastInstance client = hazelcastFactory.newHazelcastClient(config);
-        client.getLifecycleService().addLifecycleListener(new LifecycleListener() {
-            @Override
-            public void stateChanged(LifecycleEvent event) {
-                if (event.getState() == LifecycleEvent.LifecycleState.SHUTDOWN) {
-                    countDownLatch.countDown();
-                }
+        client.getLifecycleService().addLifecycleListener(event -> {
+            if (event.getState() == LifecycleEvent.LifecycleState.SHUTDOWN) {
+                countDownLatch.countDown();
             }
         });
 
@@ -449,16 +419,11 @@ public class ClientServiceTest extends ClientTestSupport {
         client.shutdown();
         assertOpenEventually(latch);
         //client events will only be fired from one of the nodes.
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(2, eventCount.get());
-            }
-        }, 4);
+        assertTrueAllTheTime(() -> assertEquals(2, eventCount.get()), 4);
     }
 
     @Test
-    public void testClientListener_withShuttingDownOwnerMember() throws InterruptedException {
+    public void testClientListener_withShuttingDownOwnerMember() {
         Config config = new Config();
         final AtomicInteger atomicInteger = new AtomicInteger();
         ListenerConfig listenerConfig = new ListenerConfig(new ClientListener() {
@@ -486,12 +451,7 @@ public class ClientServiceTest extends ClientTestSupport {
         //when first node is dead, client selects second one as owner
         instance.shutdown();
         //Testing that shutting down first member does not cause any client connected/disconnected event
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(1, atomicInteger.get());
-            }
-        }, 4);
+        assertTrueAllTheTime(() -> assertEquals(1, atomicInteger.get()), 4);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.hazelcast.spi.impl;
 
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.ExpectedRuntimeException;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -25,7 +24,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -50,12 +48,7 @@ public class AbstractInvocationFuture_JoinTest extends AbstractInvocationFuture_
     public void whenNormalResponse() throws ExecutionException, InterruptedException {
         future.complete(value);
 
-        Future joinFuture = spawn(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                return future.join();
-            }
-        });
+        Future joinFuture = spawn(() -> future.join());
 
         assertCompletesEventually(joinFuture);
         assertSame(value, joinFuture.get());
@@ -66,12 +59,7 @@ public class AbstractInvocationFuture_JoinTest extends AbstractInvocationFuture_
         ExpectedRuntimeException ex = new ExpectedRuntimeException();
         future.completeExceptionally(ex);
 
-        Future joinFuture = spawn(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                return future.join();
-            }
-        });
+        Future joinFuture = spawn(() -> future.join());
 
         assertCompletesEventually(joinFuture);
         try {
@@ -88,12 +76,7 @@ public class AbstractInvocationFuture_JoinTest extends AbstractInvocationFuture_
         Exception ex = new Exception();
         future.completeExceptionally(ex);
 
-        Future joinFuture = spawn(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                return future.join();
-            }
-        });
+        Future joinFuture = spawn(() -> future.join());
 
         assertCompletesEventually(joinFuture);
         try {
@@ -106,27 +89,19 @@ public class AbstractInvocationFuture_JoinTest extends AbstractInvocationFuture_
     }
 
     @Test
-    public void whenInterrupted() throws Exception {
-        final AtomicReference<Thread> thread = new AtomicReference<Thread>();
+    public void whenInterrupted() {
+        final AtomicReference<Thread> thread = new AtomicReference<>();
         final AtomicBoolean interrupted = new AtomicBoolean();
-        Future getFuture = spawn(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                thread.set(Thread.currentThread());
-                try {
-                    return future.join();
-                } finally {
-                    interrupted.set(Thread.currentThread().isInterrupted());
-                }
+        Future getFuture = spawn(() -> {
+            thread.set(Thread.currentThread());
+            try {
+                return future.join();
+            } finally {
+                interrupted.set(Thread.currentThread().isInterrupted());
             }
         });
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertNotSame(UNRESOLVED, future.getState());
-            }
-        });
+        assertTrueEventually(() -> assertNotSame(UNRESOLVED, future.getState()));
 
         sleepSeconds(5);
         thread.get().interrupt();

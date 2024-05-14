@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public abstract class NearCacheManagerTestSupport extends CommonNearCacheTestSup
     void doListNearCaches() {
         NearCacheManager nearCacheManager = createNearCacheManager();
 
-        Set<String> nearCacheNames = new HashSet<String>();
+        Set<String> nearCacheNames = new HashSet<>();
 
         Collection<NearCache> nearCaches1 = nearCacheManager.listAllNearCaches();
         assertEquals(0, nearCaches1.size());

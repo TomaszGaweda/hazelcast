@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,13 +45,15 @@ import static org.junit.Assert.assertEquals;
 @Category(NightlyTest.class)
 public class IOBalancerMemoryLeakTest extends HazelcastTestSupport {
 
+    private static final long INCREASED_TIMEOUT_SECONDS = 10 * 60L;
+
     @Before
     @After
     public void killAllHazelcastInstances() throws IOException {
         HazelcastInstanceFactory.terminateAll();
     }
 
-    @Test
+    @Test(timeout = 12 * 60 * 1000)
     public void testMemoryLeak_with_RestConnections() throws IOException {
         Config config = new Config();
         config.setClusterName(randomName());
@@ -69,7 +71,7 @@ public class IOBalancerMemoryLeakTest extends HazelcastTestSupport {
             int outPipelineSize = ioBalancer.getOutLoadTracker().getPipelines().size();
             assertEquals(0, inPipelineSize);
             assertEquals(0, outPipelineSize);
-        });
+        }, INCREASED_TIMEOUT_SECONDS);
     }
 
     @Test

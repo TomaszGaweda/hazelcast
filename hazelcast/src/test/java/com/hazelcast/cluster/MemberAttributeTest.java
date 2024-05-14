@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import static org.junit.Assert.assertNotNull;
 public class MemberAttributeTest extends HazelcastTestSupport {
 
     @Test(timeout = 120000)
-    public void testConfigAttributes() throws Exception {
+    public void testConfigAttributes() {
         Config config = new Config();
         TestHazelcastInstanceFactory factory = createHazelcastInstanceFactory(2);
 
@@ -85,7 +85,7 @@ public class MemberAttributeTest extends HazelcastTestSupport {
 
 
     @Test(timeout = 120000)
-    public void testCommandLineAttributes() throws Exception {
+    public void testCommandLineAttributes() {
         System.setProperty("hazelcast.member.attribute.Test-2", "1234");
         System.setProperty("hazelcast.member.attribute.Test-3", "12345");
         System.setProperty("hazelcast.member.attribute.Test-4", "123456");

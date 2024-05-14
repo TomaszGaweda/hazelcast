@@ -1,6 +1,6 @@
 /*
  * Original work Copyright 2015 Real Logic Ltd.
- * Modified work Copyright (c) 2015-2023, Hazelcast, Inc. All Rights Reserved.
+ * Modified work Copyright (c) 2015-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class BiInt2ObjectMap<V> {
      * Construct an empty map
      */
     public BiInt2ObjectMap() {
-        map = new Long2ObjectHashMap<V>();
+        map = new Long2ObjectHashMap<>();
     }
 
     /**
@@ -64,7 +64,7 @@ public class BiInt2ObjectMap<V> {
      * @param loadFactor      for the underlying hash map
      */
     public BiInt2ObjectMap(final int initialCapacity, final double loadFactor) {
-        map = new Long2ObjectHashMap<V>(initialCapacity, loadFactor);
+        map = new Long2ObjectHashMap<>(initialCapacity, loadFactor);
     }
 
     /**

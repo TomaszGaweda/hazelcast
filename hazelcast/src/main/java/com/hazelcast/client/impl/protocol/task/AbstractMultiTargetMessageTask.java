@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.nio.Connection;
 import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
 import com.hazelcast.spi.impl.operationservice.Operation;
+import com.hazelcast.spi.impl.operationservice.OperationService;
 import com.hazelcast.spi.impl.operationservice.impl.InvocationFuture;
-import com.hazelcast.spi.impl.operationservice.impl.OperationServiceImpl;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -58,7 +58,7 @@ public abstract class AbstractMultiTargetMessageTask<P> extends AbstractAsyncMes
             return finalResult;
         }
 
-        final OperationServiceImpl operationService = nodeEngine.getOperationService();
+        final OperationService operationService = nodeEngine.getOperationService();
 
         MultiTargetCallback callback = new MultiTargetCallback(targets, finalResult);
         for (Member target : targets) {

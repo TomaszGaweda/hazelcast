@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+  ~ Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -25,11 +25,11 @@
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="com.hazelcast.scheduledexecutor" level="trace"/>
-        <Logger name="com.hazelcast.instance" level="debug"/>
-        <Logger name="com.hazelcast.cluster" level="debug"/>
-        <Logger name="com.hazelcast.internal.cluster" level="debug"/>
-        <Logger name="com.hazelcast.internal.partition" level="debug"/>
-        <Logger name="com.hazelcast.test.mocknetwork" level="debug"/>
+        <Logger name="com.hazelcast.scheduledexecutor" level="TRACE"/>
+        <Logger name="com.hazelcast.instance" level="DEBUG"/>
+        <Logger name="com.hazelcast.cluster" level="DEBUG"/>
+        <Logger name="com.hazelcast.internal.cluster" level="DEBUG"/>
+        <Logger name="com.hazelcast.internal.partition" level="DEBUG"/>
+        <Logger name="com.hazelcast.test.mocknetwork" level="DEBUG"/>
     </Loggers>
 </Configuration>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import com.hazelcast.internal.util.ConstructorFunction;
 import com.hazelcast.internal.util.Memoizer;
 import com.hazelcast.internal.util.UuidUtil;
 import com.hazelcast.spi.impl.NodeEngine;
-import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.properties.ClusterProperty;
 
 import java.util.Collections;
@@ -66,7 +65,7 @@ public class PNCounterService implements ManagedService, RemoteService, CRDTRepl
 
     /** Constructor function for counter implementations */
     private final ConstructorFunction<String, PNCounterImpl> counterConstructorFn =
-            new ConstructorFunction<String, PNCounterImpl>() {
+            new ConstructorFunction<>() {
                 @Override
                 public PNCounterImpl createNew(String name) {
                     if (isShuttingDown) {
@@ -141,7 +140,7 @@ public class PNCounterService implements ManagedService, RemoteService, CRDTRepl
 
         boolean dsMetricsEnabled = nodeEngine.getProperties().getBoolean(ClusterProperty.METRICS_DATASTRUCTURES);
         if (dsMetricsEnabled) {
-            ((NodeEngineImpl) nodeEngine).getMetricsRegistry().registerDynamicMetricsProvider(this);
+            nodeEngine.getMetricsRegistry().registerDynamicMetricsProvider(this);
         }
     }
 
@@ -170,8 +169,8 @@ public class PNCounterService implements ManagedService, RemoteService, CRDTRepl
     @Override
     public CRDTReplicationContainer prepareReplicationOperation(
             Map<String, VectorClock> previouslyReplicatedVectorClocks, int targetIndex) {
-        final HashMap<String, VectorClock> currentVectorClocks = new HashMap<String, VectorClock>();
-        final HashMap<String, PNCounterImpl> counters = new HashMap<String, PNCounterImpl>();
+        final HashMap<String, VectorClock> currentVectorClocks = new HashMap<>();
+        final HashMap<String, PNCounterImpl> counters = new HashMap<>();
         final Config config = nodeEngine.getConfig();
 
         for (Entry<String, PNCounterImpl> counterEntry : this.counters.entrySet()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import static com.hazelcast.spi.impl.InternalCompletableFuture.newCompletedFutur
 /**
  * @author ali 5/24/13
  */
+@SuppressWarnings("MethodCount")
 public class ClientExecutorServiceProxy extends ClientProxy implements IExecutorService {
 
     private final Random random = new Random(-System.currentTimeMillis());
@@ -122,9 +123,7 @@ public class ClientExecutorServiceProxy extends ClientProxy implements IExecutor
         }
     }
 
-
     // submit to members
-
     @Override
     public <T> Future<T> submitToMember(@Nonnull Callable<T> task,
                                         @Nonnull Member member) {
@@ -419,8 +418,8 @@ public class ClientExecutorServiceProxy extends ClientProxy implements IExecutor
     }
 
     private Object getTaskPartitionKey(Object task) {
-        if (task instanceof PartitionAware) {
-            return ((PartitionAware) task).getPartitionKey();
+        if (task instanceof PartitionAware aware) {
+            return aware.getPartitionKey();
         }
         return null;
     }

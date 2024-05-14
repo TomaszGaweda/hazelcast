@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,8 @@ public class ScalarTextNodeAdapter implements Node {
 
     @Override
     public void setNodeValue(String nodeValue) throws DOMException {
-        if (scalar instanceof MutableYamlScalar) {
-            ((MutableYamlScalar) scalar).setValue(nodeValue);
+        if (scalar instanceof MutableYamlScalar yamlScalar) {
+            yamlScalar.setValue(nodeValue);
         } else {
             throw new UnsupportedOperationException();
         }

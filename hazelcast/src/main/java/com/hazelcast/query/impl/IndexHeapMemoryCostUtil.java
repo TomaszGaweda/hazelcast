@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public final class IndexHeapMemoryCostUtil {
     private static final Map<Class, Integer> KNOWN_FINAL_CLASSES_COSTS;
 
     static {
-        KNOWN_FINAL_CLASSES_COSTS = new HashMap<Class, Integer>();
+        KNOWN_FINAL_CLASSES_COSTS = new HashMap<>();
         KNOWN_FINAL_CLASSES_COSTS.put(Boolean.class, 16);
         KNOWN_FINAL_CLASSES_COSTS.put(Character.class, 16);
         KNOWN_FINAL_CLASSES_COSTS.put(Byte.class, 16);
@@ -91,8 +91,8 @@ public final class IndexHeapMemoryCostUtil {
             return cost;
         }
 
-        if (value instanceof String) {
-            return BASE_STRING_COST + ((String) value).length() * 2L;
+        if (value instanceof String string) {
+            return BASE_STRING_COST + string.length() * 2L;
         }
 
         if (value instanceof Timestamp) {

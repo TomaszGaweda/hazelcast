@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ClassSource extends ClassLoader {
 
-    private final Map<String, Class> classes = new ConcurrentHashMap<String, Class>();
-    private final Map<String, byte[]> classDefinitions = new ConcurrentHashMap<String, byte[]>();
+    private final Map<String, Class> classes = new ConcurrentHashMap<>();
+    private final Map<String, byte[]> classDefinitions = new ConcurrentHashMap<>();
     private final Map<String, byte[]> bundledClassDefinitions;
     private final ClassLocator classLocator;
 
@@ -93,7 +93,7 @@ public final class ClassSource extends ClassLoader {
 
     ClassData getClassData(String className) {
         ClassData classData = new ClassData();
-        HashMap<String, byte[]> innerClassDefinitions = new HashMap<String, byte[]>(this.classDefinitions);
+        HashMap<String, byte[]> innerClassDefinitions = new HashMap<>(this.classDefinitions);
         byte[] mainClassDefinition = innerClassDefinitions.remove(className);
         if (mainClassDefinition == null) {
             // sometimes an inner class may be cached within its main class.

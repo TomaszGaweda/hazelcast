@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
     protected final ClearExpiredRecordsTask clearExpiredRecordsTask;
     protected final SamplingEvictionStrategy<Data, R, CRM> evictionStrategy;
     protected final EvictionPolicyEvaluator<Data, R> evictionPolicyEvaluator;
-    protected final Map<CacheEventType, Set<CacheEventData>> batchEvent = new HashMap<CacheEventType, Set<CacheEventData>>();
+    protected final Map<CacheEventType, Set<CacheEventData>> batchEvent = new HashMap<>();
     protected final CompositeCacheRSMutationObserver compositeCacheRSMutationObserver;
 
     protected boolean primary;
@@ -147,7 +147,7 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
     protected CacheStatisticsImpl statistics;
     protected TenantContextual<ExpiryPolicy> defaultExpiryPolicy;
     protected Iterator<Map.Entry<Data, R>> expirationIterator;
-    protected InvalidationQueue<ExpiredKey> expiredKeys = new InvalidationQueue<ExpiredKey>();
+    protected InvalidationQueue<ExpiredKey> expiredKeys = new InvalidationQueue<>();
     protected boolean hasEntryWithExpiration;
     protected boolean wanReplicateEvictions;
 
@@ -300,8 +300,8 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
     }
 
     private void registerResourceIfItIsClosable(Object resource) {
-        if (resource instanceof Closeable) {
-            cacheService.addCacheResource(name, (Closeable) resource);
+        if (resource instanceof Closeable closeable) {
+            cacheService.addCacheResource(name, closeable);
         }
     }
 
@@ -410,7 +410,7 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
     public void sampleAndForceRemoveEntries(int entryCountToRemove) {
         assertRunningOnPartitionThread();
 
-        Queue<Data> keysToRemove = new LinkedList<Data>();
+        Queue<Data> keysToRemove = new LinkedList<>();
         Iterable<EvictionCandidate<Data, R>> entries = records.sample(entryCountToRemove);
         for (EvictionCandidate<Data, R> entry : entries) {
             keysToRemove.add(entry.getAccessor());
@@ -428,8 +428,8 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
     }
 
     protected Data toData(Object obj) {
-        if (obj instanceof Data) {
-            return (Data) obj;
+        if (obj instanceof Data data) {
+            return data;
         } else if (obj instanceof CacheRecord) {
             return recordToData((R) obj);
         } else {
@@ -438,8 +438,8 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
     }
 
     protected Object toValue(Object obj) {
-        if (obj instanceof Data) {
-            return dataToValue((Data) obj);
+        if (obj instanceof Data data) {
+            return dataToValue(data);
         } else if (obj instanceof CacheRecord) {
             return recordToValue((R) obj);
         } else {
@@ -448,9 +448,9 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
     }
 
     protected Object toStorageValue(Object obj) {
-        if (obj instanceof Data) {
+        if (obj instanceof Data data) {
             if (cacheConfig.getInMemoryFormat() == InMemoryFormat.OBJECT) {
-                return dataToValue((Data) obj);
+                return dataToValue(data);
             } else {
                 return obj;
             }
@@ -659,7 +659,7 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
                                 cacheEventContext.isOldValueAvailable());
                 Set<CacheEventData> cacheEventDataSet = batchEvent.remove(cacheEventContext.getEventType());
                 if (cacheEventDataSet == null) {
-                    cacheEventDataSet = new HashSet<CacheEventData>();
+                    cacheEventDataSet = new HashSet<>();
                     batchEvent.put(cacheEventContext.getEventType(), cacheEventDataSet);
                 }
                 cacheEventDataSet.add(cacheEventData);
@@ -820,9 +820,9 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
                         dataOldValue = toData(record);
                         break;
                     case OBJECT:
-                        if (value instanceof Data) {
-                            recordValue = dataToValue((Data) value);
-                            dataValue = (Data) value;
+                        if (value instanceof Data data) {
+                            recordValue = dataToValue(data);
+                            dataValue = data;
                         } else {
                             dataValue = valueToData(value);
                         }
@@ -1259,7 +1259,7 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
     private int evictExpiredInternal(int maxIterationCount, long now) {
         initExpirationIterator();
         int processedCount = 0;
-        LinkedList<Map.Entry<Data, R>> records = new LinkedList<Map.Entry<Data, R>>();
+        LinkedList<Map.Entry<Data, R>> records = new LinkedList<>();
         while (expirationIterator.hasNext() && processedCount < maxIterationCount) {
             Map.Entry<Data, R> record = expirationIterator.next();
             records.add(record);
@@ -1731,11 +1731,11 @@ public abstract class AbstractCacheRecordStore<R extends CacheRecord, CRM extend
     @Override
     public void removeAll(Set<Data> keys, int completionId) {
         long now = Clock.currentTimeMillis();
-        Set<Data> localKeys = new HashSet<Data>(keys.isEmpty() ? records.keySet() : keys);
+        Set<Data> localKeys = new HashSet<>(keys.isEmpty() ? records.keySet() : keys);
         try {
             deleteAllCacheEntry(localKeys);
         } finally {
-            Set<Data> keysToClean = new HashSet<Data>(keys.isEmpty() ? records.keySet() : keys);
+            Set<Data> keysToClean = new HashSet<>(keys.isEmpty() ? records.keySet() : keys);
             for (Data key : keysToClean) {
                 eventsBatchingEnabled = true;
                 R record = records.get(key);

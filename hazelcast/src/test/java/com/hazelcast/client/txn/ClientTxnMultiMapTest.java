@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,30 +113,28 @@ public class ClientTxnMultiMapTest {
         final int threads = 10;
         final ExecutorService ex = Executors.newFixedThreadPool(threads);
         final CountDownLatch latch = new CountDownLatch(threads);
-        final AtomicReference<Throwable> error = new AtomicReference<Throwable>(null);
+        final AtomicReference<Throwable> error = new AtomicReference<>(null);
 
         for (int i = 0; i < threads; i++) {
             final int key = i;
-            ex.execute(new Runnable() {
-                public void run() {
-                    multiMap.put(key, "value");
+            ex.execute(() -> {
+                multiMap.put(key, "value");
 
-                    final TransactionContext context = client.newTransactionContext();
-                    try {
-                        context.beginTransaction();
-                        final TransactionalMultiMap txnMultiMap = context.getMultiMap(mapName);
-                        txnMultiMap.put(key, "value");
-                        txnMultiMap.put(key, "value1");
-                        txnMultiMap.put(key, "value2");
-                        assertEquals(3, txnMultiMap.get(key).size());
-                        context.commitTransaction();
+                final TransactionContext context = client.newTransactionContext();
+                try {
+                    context.beginTransaction();
+                    final TransactionalMultiMap txnMultiMap = context.getMultiMap(mapName);
+                    txnMultiMap.put(key, "value");
+                    txnMultiMap.put(key, "value1");
+                    txnMultiMap.put(key, "value2");
+                    assertEquals(3, txnMultiMap.get(key).size());
+                    context.commitTransaction();
 
-                        assertEquals(3, multiMap.get(key).size());
-                    } catch (TransactionException e) {
-                        error.compareAndSet(null, e);
-                    } finally {
-                        latch.countDown();
-                    }
+                    assertEquals(3, multiMap.get(key).size());
+                } catch (TransactionException e) {
+                    error.compareAndSet(null, e);
+                } finally {
+                    latch.countDown();
                 }
             });
         }
@@ -149,7 +147,7 @@ public class ClientTxnMultiMapTest {
     }
 
     @Test
-    public void testPutAndRoleBack() throws Exception {
+    public void testPutAndRoleBack() {
         final String mapName = randomString();
         final String key = "key";
         final String value = "value";
@@ -185,7 +183,7 @@ public class ClientTxnMultiMapTest {
     }
 
     @Test
-    public void testCount() throws Exception {
+    public void testCount() {
         final String mapName = randomString();
         final String key = "key";
         final String value = "value";
@@ -204,7 +202,7 @@ public class ClientTxnMultiMapTest {
     }
 
     @Test
-    public void testGet_whenBackedWithList() throws Exception {
+    public void testGet_whenBackedWithList() {
         final String mapName = multiMapBackedByList + randomString();
 
         final String key = "key";
@@ -223,7 +221,7 @@ public class ClientTxnMultiMapTest {
     }
 
     @Test
-    public void testRemove_whenBackedWithList() throws Exception {
+    public void testRemove_whenBackedWithList() {
         final String mapName = multiMapBackedByList + randomString();
 
         final String key = "key";

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import static com.hazelcast.internal.ascii.TextCommandConstants.TextCommandType.
 import static com.hazelcast.internal.ascii.TextCommandConstants.TextCommandType.UNKNOWN;
 import static com.hazelcast.internal.networking.HandlerStatus.CLEAN;
 import static com.hazelcast.internal.nio.IOUtil.compactOrClear;
-import static com.hazelcast.internal.util.JVMUtil.upcast;
 
 public abstract class TextDecoder extends InboundHandler<ByteBuffer, Void> {
 
@@ -84,7 +83,7 @@ public abstract class TextDecoder extends InboundHandler<ByteBuffer, Void> {
 
     @Override
     public HandlerStatus onRead() throws Exception {
-        upcast(src).flip();
+        src.flip();
         try {
             while (src.hasRemaining()) {
                 doRead(src);
@@ -147,14 +146,14 @@ public abstract class TextDecoder extends InboundHandler<ByteBuffer, Void> {
         }
 
         ByteBuffer newBuffer = ByteBuffer.allocate(capacity);
-        upcast(commandLineBuffer).flip();
+        commandLineBuffer.flip();
         newBuffer.put(commandLineBuffer);
         commandLineBuffer = newBuffer;
     }
 
     private void reset() {
         command = null;
-        upcast(commandLineBuffer).clear();
+        commandLineBuffer.clear();
         commandLineRead = false;
     }
 
@@ -168,7 +167,7 @@ public abstract class TextDecoder extends InboundHandler<ByteBuffer, Void> {
         } else {
             result = new String(bb.array(), 0, bb.position(), StandardCharsets.UTF_8);
         }
-        upcast(bb).clear();
+        bb.clear();
         return result;
     }
 

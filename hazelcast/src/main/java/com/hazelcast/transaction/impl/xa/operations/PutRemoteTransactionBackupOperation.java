@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import java.util.UUID;
 
 public class PutRemoteTransactionBackupOperation extends AbstractXAOperation implements BackupOperation {
 
-    private final List<TransactionLogRecord> records = new LinkedList<TransactionLogRecord>();
+    private final List<TransactionLogRecord> records = new LinkedList<>();
 
     private SerializableXID xid;
     private UUID txnId;

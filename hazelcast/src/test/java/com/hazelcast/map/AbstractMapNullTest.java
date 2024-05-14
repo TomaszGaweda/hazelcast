@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,9 +147,9 @@ public abstract class AbstractMapNullTest extends HazelcastTestSupport {
 
         assertThrowsNPE(m -> m.addInterceptor(null));
         assertThrowsNPE(m -> m.removeInterceptor(null));
-        assertThrowsNPE(m -> m.addEntryListener((MapListener) null, "", true));
-        assertThrowsNPE(m -> m.addEntryListener((MapListener) null, (Object) null, true));
-        assertThrowsNPE(m -> m.addEntryListener((MapListener) null, samplePredicate, true));
+        assertThrowsNPE(m -> m.addEntryListener(null, "", true));
+        assertThrowsNPE(m -> m.addEntryListener(null, (Object) null, true));
+        assertThrowsNPE(m -> m.addEntryListener(null, samplePredicate, true));
         assertThrowsNPE(m -> m.addEntryListener(sampleMapListener, null, true));
         assertThrowsNPE(m -> m.addEntryListener((MapListener) null, samplePredicate, "", true));
         assertThrowsNPE(m -> m.addEntryListener(sampleMapListener, null, "", true));

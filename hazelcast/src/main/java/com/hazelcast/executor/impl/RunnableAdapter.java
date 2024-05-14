@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,16 +59,15 @@ public final class RunnableAdapter<V> implements IdentifiedDataSerializable, Cal
 
     @Override
     public Object getPartitionKey() {
-        if (task instanceof PartitionAware) {
-            return ((PartitionAware) task).getPartitionKey();
+        if (task instanceof PartitionAware aware) {
+            return aware.getPartitionKey();
         }
         return null;
     }
 
     @Override
     public void setHazelcastInstance(HazelcastInstance hazelcastInstance) {
-        if (task instanceof HazelcastInstanceAware) {
-            HazelcastInstanceAware instanceAwareTask = (HazelcastInstanceAware) task;
+        if (task instanceof HazelcastInstanceAware instanceAwareTask) {
             instanceAwareTask.setHazelcastInstance(hazelcastInstance);
         }
     }

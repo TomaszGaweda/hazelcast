@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,9 @@ abstract class AbstractGauge implements Metric {
     final void onCollectionCompleted(long collectionId) {
         if (lastCollectionId != collectionId) {
             MetricValueCatcher catcher = getCatcherOrNull();
-            if (catcher != null && catcher instanceof AbstractMetricValueCatcher) {
-                ((AbstractMetricValueCatcher) catcher).clearCachedValue();
-                ((AbstractMetricValueCatcher) catcher).clearCachedMetricSourceRef();
+            if (catcher != null && catcher instanceof AbstractMetricValueCatcher valueCatcher) {
+                valueCatcher.clearCachedValue();
+                valueCatcher.clearCachedMetricSourceRef();
             }
         }
     }

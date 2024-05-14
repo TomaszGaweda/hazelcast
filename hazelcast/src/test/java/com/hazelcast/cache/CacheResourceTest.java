@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import javax.cache.integration.CacheWriter;
 import javax.cache.integration.CacheWriterException;
 import javax.cache.spi.CachingProvider;
 import java.io.Closeable;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
@@ -70,7 +69,7 @@ public class CacheResourceTest
     }
 
     @Test
-    public void testCloseableCacheLoader() throws InterruptedException {
+    public void testCloseableCacheLoader() {
         CachingProvider provider =
                 createServerCachingProvider(factory.newHazelcastInstance());
 
@@ -120,14 +119,14 @@ public class CacheResourceTest
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             closed = true;
         }
 
     }
 
     @Test
-    public void testCloseableCacheWriter() throws InterruptedException {
+    public void testCloseableCacheWriter() {
         CachingProvider provider =
                 createServerCachingProvider(factory.newHazelcastInstance());
 
@@ -189,7 +188,7 @@ public class CacheResourceTest
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             closed = true;
         }
 
@@ -227,7 +226,7 @@ public class CacheResourceTest
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             closed = true;
         }
 

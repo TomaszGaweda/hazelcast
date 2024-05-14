@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package com.hazelcast.internal.util;
 
+import com.hazelcast.internal.tpcengine.util.JVM;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
 import java.lang.management.ManagementFactory;
-import java.nio.Buffer;
 
 import static com.hazelcast.internal.memory.impl.UnsafeUtil.UNSAFE;
 import static com.hazelcast.internal.memory.impl.UnsafeUtil.UNSAFE_AVAILABLE;
@@ -38,16 +38,20 @@ public final class JVMUtil {
     /**
      * Defines the costs for a reference in Bytes.
      */
-    public static final int REFERENCE_COST_IN_BYTES = is32bitJVM() || isCompressedOops() ? 4 : 8;
-    public static final int OBJECT_HEADER_SIZE = is32bitJVM() ? 8 : (isCompressedOops() ? 12 : 16);
+    public static final int REFERENCE_COST_IN_BYTES = JVM.is32bit() || isCompressedOops() ? 4 : 8;
+    public static final int OBJECT_HEADER_SIZE;
 
-    private JVMUtil() {
+    static {
+        if (JVM.is32bit()) {
+            OBJECT_HEADER_SIZE = 8;
+        } else if (isCompressedOops()) {
+            OBJECT_HEADER_SIZE = 12;
+        } else {
+            OBJECT_HEADER_SIZE = 16;
+        }
     }
 
-    public static boolean is32bitJVM() {
-        // sun.arch.data.model is available on Oracle, Zing and (most probably) IBM JVMs
-        String architecture = System.getProperty("sun.arch.data.model");
-        return architecture != null && architecture.equals("32");
+    private JVMUtil() {
     }
 
     // not private for testing
@@ -70,25 +74,11 @@ public final class JVMUtil {
     }
 
     /**
-     * Returns the process ID. The algorithm does not guarantee it will be able
-     * to get the correct process ID, in which case it returns {@code -1}.
+     * @return the process ID
+     * @see ProcessHandle#pid()
      */
     public static long getPid() {
-        String name = ManagementFactory.getRuntimeMXBean().getName();
-
-        if (name == null) {
-            return -1;
-        }
-        int separatorIndex = name.indexOf("@");
-        if (separatorIndex < 0) {
-            return -1;
-        }
-        String potentialPid = name.substring(0, separatorIndex);
-        try {
-            return Long.parseLong(potentialPid);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        return ProcessHandle.current().pid();
     }
 
     /**
@@ -111,36 +101,6 @@ public final class JVMUtil {
         } while (totalBegin != totalEnd);
 
         return used;
-    }
-
-    /**
-     * Explicit cast to {@link Buffer} parent buffer type. It resolves issues with covariant return types in Java 9+ for
-     * {@link java.nio.ByteBuffer} and {@link java.nio.CharBuffer}. Explicit casting resolves the NoSuchMethodErrors (e.g
-     * java.lang.NoSuchMethodError: java.nio.ByteBuffer.limit(I)Ljava/nio/ByteBuffer) when the project is compiled with newer
-     * Java version and run on Java 8.
-     * <p/>
-     * <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/ByteBuffer.html">Java 8</a> doesn't provide override the
-     * following Buffer methods in subclasses:
-     *
-     * <pre>
-     * Buffer clear​()
-     * Buffer flip​()
-     * Buffer limit​(int newLimit)
-     * Buffer mark​()
-     * Buffer position​(int newPosition)
-     * Buffer reset​()
-     * Buffer rewind​()
-     * </pre>
-     *
-     * <a href="https://docs.oracle.com/javase/9/docs/api/java/nio/ByteBuffer.html">Java 9</a> introduces the overrides in child
-     * classes (e.g the ByteBuffer), but the return type is the specialized one and not the abstract {@link Buffer}. So the code
-     * compiled with newer Java is not working on Java 8 unless a workaround with explicit casting is used.
-     *
-     * @param buf buffer to cast to the abstract {@link Buffer} parent type
-     * @return the provided buffer
-     */
-    public static Buffer upcast(Buffer buf) {
-        return buf;
     }
 
     // not private for testing

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.crdt.pncounter.PNCounter;
 import com.hazelcast.internal.monitor.LocalPNCounterStats;
 import com.hazelcast.internal.util.FutureUtil;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastTestSupport;
 import org.junit.Test;
 
@@ -57,17 +56,14 @@ public abstract class AbstractPNCounterBasicIntegrationTest extends HazelcastTes
         final int loopsPerThread = 100;
         final AtomicLong finalValue = new AtomicLong();
 
-        final ArrayList<Future> futures = new ArrayList<Future>(parallelism);
+        final ArrayList<Future> futures = new ArrayList<>(parallelism);
         for (int i = 0; i < parallelism; i++) {
-            futures.add(spawn(new Runnable() {
-                @Override
-                public void run() {
-                    for (int j = 0; j < loopsPerThread; j++) {
-                        counter1.addAndGet(5);
-                        finalValue.addAndGet(5);
-                        counter2.addAndGet(-2);
-                        finalValue.addAndGet(-2);
-                    }
+            futures.add(spawn((Runnable) () -> {
+                for (int j = 0; j < loopsPerThread; j++) {
+                    counter1.addAndGet(5);
+                    finalValue.addAndGet(5);
+                    counter2.addAndGet(-2);
+                    finalValue.addAndGet(-2);
                 }
             }));
         }
@@ -96,11 +92,6 @@ public abstract class AbstractPNCounterBasicIntegrationTest extends HazelcastTes
     protected abstract HazelcastInstance[] getMembers();
 
     private void assertCounterValueEventually(final long expectedValue, final PNCounter counter) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(expectedValue, counter.get());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(expectedValue, counter.get()));
     }
 }

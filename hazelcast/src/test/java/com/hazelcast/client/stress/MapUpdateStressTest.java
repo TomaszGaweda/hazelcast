@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public class MapUpdateStressTest extends StressTestSupport {
             t.addIncrements(increments);
         }
 
-        Set<Integer> failedKeys = new HashSet<Integer>();
+        Set<Integer> failedKeys = new HashSet<>();
         for (int k = 0; k < MAP_SIZE; k++) {
             int expectedValue = increments[k];
             Integer foundValue = map.get(k);

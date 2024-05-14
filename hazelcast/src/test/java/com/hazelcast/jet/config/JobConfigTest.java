@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,8 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import javax.annotation.Nonnull;
@@ -49,13 +47,11 @@ import static org.assertj.core.util.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Assert;
+
 @RunWith(HazelcastParallelClassRunner.class)
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class JobConfigTest extends JetTestSupport {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Test
     public void when_setName_thenReturnsName() {
         // When
@@ -114,9 +110,8 @@ public class JobConfigTest extends JetTestSupport {
         config.getJetConfig().setEnabled(true).setLosslessRestartEnabled(true);
 
         // Then
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Lossless Restart requires Hazelcast Enterprise Edition");
-        createHazelcastInstance(config);
+        Assert.assertThrows("Lossless Restart requires Hazelcast Enterprise Edition", IllegalStateException.class,
+                () -> createHazelcastInstance(config));
     }
 
     @Test
@@ -127,9 +122,8 @@ public class JobConfigTest extends JetTestSupport {
 
         // When
         // Then
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Serializer for class java.lang.Object already registered");
-        config.registerSerializer(Object.class, ObjectSerializer.class);
+        Assert.assertThrows("Serializer for class java.lang.Object already registered", IllegalArgumentException.class,
+                () -> config.registerSerializer(Object.class, ObjectSerializer.class));
     }
 
     @Test
@@ -275,6 +269,17 @@ public class JobConfigTest extends JetTestSupport {
         for (Supplier mutatingMethod : mutatingMethods) {
             assertThrows(IllegalStateException.class, mutatingMethod::get);
         }
+    }
+
+    /**
+     * @see <a href="https://hazelcast.atlassian.net/browse/HZ-4712">HZ-4712 - Not being able to add more than one ZIP file with
+     *      JARs to Jet instance's classpath [GH#26320]</a>
+     */
+    @Test
+    public void testMultipleClassesFromZIP() {
+        JobConfig jobConfig = new JobConfig();
+        jobConfig.addJarsInZip(getClass().getResource("/zip-resources/person-jar.zip"));
+        jobConfig.addJarsInZip(getClass().getResource("/zip-resources/person-car-jar.zip"));
     }
 
     private static class ObjectSerializer implements StreamSerializer<Object> {

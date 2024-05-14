@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,9 @@ public class InsertProcessorSupplier
                     query,
                     dataSource,
                     (PreparedStatement ps, JetSqlRow row) -> {
+                        TypeResolver typeResolver = JdbcSqlConnector.typeResolver(ps.getConnection());
                         for (int j = 0; j < row.getFieldCount(); j++) {
-                            // JDBC parameterIndex is 1-based, so j + 1
-                            ps.setObject(j + 1, row.get(j));
+                            typeResolver.setObject(ps, row.get(j), j);
                         }
                     },
                     SQLExceptionUtils::isNonTransientException,

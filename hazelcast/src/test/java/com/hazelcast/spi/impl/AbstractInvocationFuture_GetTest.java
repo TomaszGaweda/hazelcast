@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.hazelcast.spi.impl;
 
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -26,7 +25,6 @@ import org.junit.runner.RunWith;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,12 +44,7 @@ public class AbstractInvocationFuture_GetTest extends AbstractInvocationFuture_A
     public void whenResultAlreadyAvailable() throws Exception {
         future.complete(value);
 
-        Future getFuture = spawn(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                return future.get();
-            }
-        });
+        Future getFuture = spawn(() -> future.get());
 
         assertCompletesEventually(getFuture);
         assertSame(value, future.get());
@@ -62,16 +55,13 @@ public class AbstractInvocationFuture_GetTest extends AbstractInvocationFuture_A
         future.complete(value);
 
         final AtomicBoolean interrupted = new AtomicBoolean();
-        Future getFuture = spawn(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                // we set the interrupt flag.
-                Thread.currentThread().interrupt();
-                Object value = future.get();
-                // and then we check if the interrupt flag is still set
-                interrupted.set(Thread.currentThread().isInterrupted());
-                return value;
-            }
+        Future getFuture = spawn(() -> {
+            // we set the interrupt flag.
+            Thread.currentThread().interrupt();
+            Object value = future.get();
+            // and then we check if the interrupt flag is still set
+            interrupted.set(Thread.currentThread().isInterrupted());
+            return value;
         });
 
         assertCompletesEventually(getFuture);
@@ -83,19 +73,9 @@ public class AbstractInvocationFuture_GetTest extends AbstractInvocationFuture_A
     public void whenSomeWaitingNeeded() throws ExecutionException, InterruptedException {
         future.complete(value);
 
-        Future getFuture = spawn(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                return future.get();
-            }
-        });
+        Future getFuture = spawn(() -> future.get());
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertNotSame(UNRESOLVED, future.getState());
-            }
-        });
+        assertTrueEventually(() -> assertNotSame(UNRESOLVED, future.getState()));
 
         sleepSeconds(5);
 
@@ -106,17 +86,14 @@ public class AbstractInvocationFuture_GetTest extends AbstractInvocationFuture_A
 
     @Test
     public void whenInterruptedWhileWaiting() throws Exception {
-        final AtomicReference<Thread> thread = new AtomicReference<Thread>();
+        final AtomicReference<Thread> thread = new AtomicReference<>();
         final AtomicBoolean interrupted = new AtomicBoolean();
-        Future getFuture = spawn(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                thread.set(Thread.currentThread());
-                try {
-                    return future.get();
-                } finally {
-                    interrupted.set(Thread.currentThread().isInterrupted());
-                }
+        Future getFuture = spawn(() -> {
+            thread.set(Thread.currentThread());
+            try {
+                return future.get();
+            } finally {
+                interrupted.set(Thread.currentThread().isInterrupted());
             }
         });
 
@@ -137,22 +114,12 @@ public class AbstractInvocationFuture_GetTest extends AbstractInvocationFuture_A
 
     @Test
     public void whenMultipleGetters() throws ExecutionException, InterruptedException {
-        List<Future> getFutures = new LinkedList<Future>();
+        List<Future> getFutures = new LinkedList<>();
         for (int k = 0; k < 10; k++) {
-            getFutures.add(spawn(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    return future.get();
-                }
-            }));
+            getFutures.add(spawn(() -> future.get()));
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertNotSame(UNRESOLVED, future.getState());
-            }
-        });
+        assertTrueEventually(() -> assertNotSame(UNRESOLVED, future.getState()));
 
         sleepSeconds(5);
         future.complete(value);

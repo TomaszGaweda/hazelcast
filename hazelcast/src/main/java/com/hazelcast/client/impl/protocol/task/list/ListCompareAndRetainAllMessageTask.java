@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.hazelcast.client.impl.protocol.task.list;
 
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.ListCompareAndRetainAllCodec;
-import com.hazelcast.client.impl.protocol.task.AbstractPartitionMessageTask;
 import com.hazelcast.collection.impl.collection.operations.CollectionCompareAndRemoveOperation;
 import com.hazelcast.collection.impl.list.ListService;
 import com.hazelcast.instance.impl.Node;
@@ -37,7 +36,7 @@ import java.util.HashSet;
  * {@link com.hazelcast.client.impl.protocol.codec.ListMessageType#LIST_COMPAREANDRETAINALL}
  */
 public class ListCompareAndRetainAllMessageTask
-        extends AbstractPartitionMessageTask<ListCompareAndRetainAllCodec.RequestParameters> {
+        extends AbstractListMessageTask<ListCompareAndRetainAllCodec.RequestParameters> {
 
     public ListCompareAndRetainAllMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
@@ -45,7 +44,7 @@ public class ListCompareAndRetainAllMessageTask
 
     @Override
     protected Operation prepareOperation() {
-        HashSet<Data> values = new HashSet<Data>(parameters.values);
+        HashSet<Data> values = new HashSet<>(parameters.values);
         return new CollectionCompareAndRemoveOperation(parameters.name, true, values);
     }
 

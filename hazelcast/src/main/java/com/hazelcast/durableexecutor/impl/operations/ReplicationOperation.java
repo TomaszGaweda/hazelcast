@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class ReplicationOperation extends Operation implements IdentifiedDataSer
     }
 
     public ReplicationOperation(Map<String, DurableExecutorContainer> map) {
-        list = new ArrayList<DurableHolder>(map.size());
+        list = new ArrayList<>(map.size());
         for (Map.Entry<String, DurableExecutorContainer> containerEntry : map.entrySet()) {
             String name = containerEntry.getKey();
             DurableExecutorContainer value = containerEntry.getValue();
@@ -67,7 +67,7 @@ public class ReplicationOperation extends Operation implements IdentifiedDataSer
     @Override
     protected void readInternal(ObjectDataInput in) throws IOException {
         int size = in.readInt();
-        list = new ArrayList<DurableHolder>(size);
+        list = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             DurableHolder durableHolder = new DurableHolder();
             durableHolder.read(in);

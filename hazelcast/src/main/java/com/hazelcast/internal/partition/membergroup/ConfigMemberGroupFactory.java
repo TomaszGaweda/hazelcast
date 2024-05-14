@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class ConfigMemberGroupFactory extends BackupSafeMemberGroupFactory imple
 
     @Override
     protected Set<MemberGroup> createInternalMemberGroups(Collection<? extends Member> members) {
-        Map<Integer, MemberGroup> memberGroups = new HashMap<Integer, MemberGroup>();
+        Map<Integer, MemberGroup> memberGroups = new HashMap<>();
         for (Member member : members) {
             String host = ((MemberImpl) member).getAddress().getHost();
             for (Entry<Integer, MemberGroupConfig> entry : memberGroupConfigMap.entrySet()) {
@@ -67,6 +67,6 @@ public class ConfigMemberGroupFactory extends BackupSafeMemberGroupFactory imple
                 }
             }
         }
-        return new HashSet<MemberGroup>(memberGroups.values());
+        return new HashSet<>(memberGroups.values());
     }
 }

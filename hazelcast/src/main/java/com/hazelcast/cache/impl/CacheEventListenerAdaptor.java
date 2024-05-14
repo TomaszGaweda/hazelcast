@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,23 +88,23 @@ public class CacheEventListenerAdaptor<K, V>
         this.serializationService = serializationService;
 
         this.cacheEntryListener = createCacheEntryListener(cacheEntryListenerConfiguration);
-        if (cacheEntryListener instanceof CacheEntryCreatedListener) {
-            this.cacheEntryCreatedListener = (CacheEntryCreatedListener) cacheEntryListener;
+        if (cacheEntryListener instanceof CacheEntryCreatedListener listener) {
+            this.cacheEntryCreatedListener = listener;
         } else {
             this.cacheEntryCreatedListener = null;
         }
-        if (cacheEntryListener instanceof CacheEntryRemovedListener) {
-            this.cacheEntryRemovedListener = (CacheEntryRemovedListener) cacheEntryListener;
+        if (cacheEntryListener instanceof CacheEntryRemovedListener listener) {
+            this.cacheEntryRemovedListener = listener;
         } else {
             this.cacheEntryRemovedListener = null;
         }
-        if (cacheEntryListener instanceof CacheEntryUpdatedListener) {
-            this.cacheEntryUpdatedListener = (CacheEntryUpdatedListener) cacheEntryListener;
+        if (cacheEntryListener instanceof CacheEntryUpdatedListener listener) {
+            this.cacheEntryUpdatedListener = listener;
         } else {
             this.cacheEntryUpdatedListener = null;
         }
-        if (cacheEntryListener instanceof CacheEntryExpiredListener) {
-            this.cacheEntryExpiredListener = (CacheEntryExpiredListener) cacheEntryListener;
+        if (cacheEntryListener instanceof CacheEntryExpiredListener listener) {
+            this.cacheEntryExpiredListener = listener;
         } else {
             this.cacheEntryExpiredListener = null;
         }
@@ -144,8 +144,7 @@ public class CacheEventListenerAdaptor<K, V>
 
     @Override
     public void handleEvent(Object eventObject) {
-        if (eventObject instanceof CacheEventSet) {
-            CacheEventSet cacheEventSet = (CacheEventSet) eventObject;
+        if (eventObject instanceof CacheEventSet cacheEventSet) {
             try {
                 if (cacheEventSet.getEventType() != CacheEventType.COMPLETED) {
                     handleEvent(cacheEventSet.getEventType().getType(), cacheEventSet.getEvents());
@@ -186,7 +185,7 @@ public class CacheEventListenerAdaptor<K, V>
     }
 
     private Iterable<CacheEntryEvent<? extends K, ? extends V>> createCacheEntryEvent(Collection<CacheEventData> keys) {
-        HashSet<CacheEntryEvent<? extends K, ? extends V>> evt = new HashSet<CacheEntryEvent<? extends K, ? extends V>>();
+        HashSet<CacheEntryEvent<? extends K, ? extends V>> evt = new HashSet<>();
         for (CacheEventData cacheEventData : keys) {
             EventType eventType = CacheEventType.convertToEventType(cacheEventData.getCacheEventType());
             K key = toObject(cacheEventData.getDataKey());
@@ -212,7 +211,7 @@ public class CacheEventListenerAdaptor<K, V>
                 }
             }
             final CacheEntryEventImpl<K, V> event =
-                    new CacheEntryEventImpl<K, V>(source, eventType, key, newValue, oldValue);
+                    new CacheEntryEventImpl<>(source, eventType, key, newValue, oldValue);
             if (filter == null || filter.evaluate(event)) {
                 evt.add(event);
             }

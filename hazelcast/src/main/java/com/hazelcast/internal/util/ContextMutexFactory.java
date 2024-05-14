@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ import java.util.Map;
  */
 public final class ContextMutexFactory {
 
-    final Map<Object, Mutex> mutexMap = new HashMap<Object, Mutex>();
+    final Map<Object, Mutex> mutexMap = new HashMap<>();
 
     // synchronizes access to mutexMap and Mutex.referenceCount
     private final Object mainMutex = new Object();
@@ -68,11 +68,7 @@ public final class ContextMutexFactory {
     public Mutex mutexFor(Object mutexKey) {
         Mutex mutex;
         synchronized (mainMutex) {
-            mutex = mutexMap.get(mutexKey);
-            if (mutex == null) {
-                mutex = new Mutex(mutexKey);
-                mutexMap.put(mutexKey, mutex);
-            }
+            mutex = mutexMap.computeIfAbsent(mutexKey, Mutex::new);
             mutex.referenceCount++;
         }
         return mutex;

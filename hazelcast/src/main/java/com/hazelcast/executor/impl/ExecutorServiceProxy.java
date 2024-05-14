@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -261,8 +261,8 @@ public class ExecutorServiceProxy
     }
 
     private <T> int getTaskPartitionId(Callable<T> task) {
-        if (task instanceof PartitionAware) {
-            Object partitionKey = ((PartitionAware) task).getPartitionKey();
+        if (task instanceof PartitionAware aware) {
+            Object partitionKey = aware.getPartitionKey();
             if (partitionKey != null) {
                 return getNodeEngine().getPartitionService().getPartitionId(partitionKey);
             }

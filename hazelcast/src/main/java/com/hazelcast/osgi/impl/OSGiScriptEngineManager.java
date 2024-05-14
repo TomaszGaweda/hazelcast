@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,7 +201,7 @@ public class OSGiScriptEngineManager extends ScriptEngineManager {
 
     @Override
     public List<ScriptEngineFactory> getEngineFactories() {
-        List<ScriptEngineFactory> osgiFactories = new ArrayList<ScriptEngineFactory>();
+        List<ScriptEngineFactory> osgiFactories = new ArrayList<>();
         for (ScriptEngineManagerInfo info : scriptEngineManagerInfoList) {
             for (ScriptEngineFactory factory : info.scriptEngineManager.getEngineFactories()) {
                 OSGiScriptEngineFactory scriptEngineFactory = new OSGiScriptEngineFactory(factory, info.classloader);
@@ -238,7 +238,7 @@ public class OSGiScriptEngineManager extends ScriptEngineManager {
     }
 
     private List<ScriptEngineManagerInfo> findManagers(BundleContext context) {
-        List<ScriptEngineManagerInfo> scriptEngineManagerInfos = new ArrayList<ScriptEngineManagerInfo>();
+        List<ScriptEngineManagerInfo> scriptEngineManagerInfos = new ArrayList<>();
         try {
             for (String factoryName : findFactoryCandidates(context)) {
                 ClassLoader factoryClassLoader = loadScriptEngineFactoryClassLoader(factoryName);
@@ -296,7 +296,7 @@ public class OSGiScriptEngineManager extends ScriptEngineManager {
      */
     private List<String> findFactoryCandidates(BundleContext context) throws IOException {
         Bundle[] bundles = context.getBundles();
-        List<String> factoryCandidates = new ArrayList<String>();
+        List<String> factoryCandidates = new ArrayList<>();
         for (Bundle bundle : bundles) {
             if (bundle == null) {
                 continue;

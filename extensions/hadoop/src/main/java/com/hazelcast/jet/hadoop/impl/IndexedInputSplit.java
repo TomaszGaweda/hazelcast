@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -104,6 +105,7 @@ class IndexedInputSplit implements Comparable<IndexedInputSplit>, Serializable {
         return 31 * index + Objects.hashCode(oldSplit) + Objects.hashCode(newSplit);
     }
 
+    @Serial
     private void writeObject(ObjectOutputStream out) throws Exception {
         out.writeInt(index);
         out.writeBoolean(isOld);
@@ -120,6 +122,7 @@ class IndexedInputSplit implements Comparable<IndexedInputSplit>, Serializable {
         }
     }
 
+    @Serial
     private void readObject(ObjectInputStream in) throws Exception {
         index = in.readInt();
         isOld = in.readBoolean();

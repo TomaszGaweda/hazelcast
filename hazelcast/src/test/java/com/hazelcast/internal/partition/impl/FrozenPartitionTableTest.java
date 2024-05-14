@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import com.hazelcast.spi.impl.operationservice.ExceptionAction;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.impl.operationservice.impl.OperationServiceImpl;
 import com.hazelcast.test.Accessors;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.OverridePropertyRule;
@@ -89,7 +88,7 @@ public class FrozenPartitionTableTest extends HazelcastTestSupport {
         warmUpPartitions(instances);
 
         changeClusterStateEventually(instances[0], clusterState);
-        List<HazelcastInstance> instancesList = new ArrayList<HazelcastInstance>(asList(instances));
+        List<HazelcastInstance> instancesList = new ArrayList<>(asList(instances));
         Collections.shuffle(instancesList);
 
         final PartitionTableView partitionTable = getPartitionTable(instances[0]);
@@ -142,23 +141,20 @@ public class FrozenPartitionTableTest extends HazelcastTestSupport {
         assertTrueEventually(() -> assertTrue(Accessors.isPartitionStateInitialized(newInstance)));
 
         final List<HazelcastInstance> instanceList = asList(hz1, hz3);
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() {
-                for (HazelcastInstance instance : instanceList) {
-                    PartitionTableView newPartitionTable = getPartitionTable(instance);
-                    for (int i = 0; i < newPartitionTable.length(); i++) {
-                        for (int j = 0; j < InternalPartition.MAX_REPLICA_COUNT; j++) {
-                            PartitionReplica replica = partitionTable.getReplica(i, j);
-                            PartitionReplica newReplica = newPartitionTable.getReplica(i, j);
+        assertTrueAllTheTime(() -> {
+            for (HazelcastInstance instance : instanceList) {
+                PartitionTableView newPartitionTable = getPartitionTable(instance);
+                for (int i = 0; i < newPartitionTable.length(); i++) {
+                    for (int j = 0; j < InternalPartition.MAX_REPLICA_COUNT; j++) {
+                        PartitionReplica replica = partitionTable.getReplica(i, j);
+                        PartitionReplica newReplica = newPartitionTable.getReplica(i, j);
 
-                            if (replica == null) {
-                                assertNull(newReplica);
-                            } else if (replica.equals(PartitionReplica.from(member3))) {
-                                assertEquals(PartitionReplica.from(newMember3), newReplica);
-                            } else {
-                                assertEquals(replica, newReplica);
-                            }
+                        if (replica == null) {
+                            assertNull(newReplica);
+                        } else if (replica.equals(PartitionReplica.from(member3))) {
+                            assertEquals(PartitionReplica.from(newMember3), newReplica);
+                        } else {
+                            assertEquals(replica, newReplica);
                         }
                     }
                 }
@@ -183,7 +179,7 @@ public class FrozenPartitionTableTest extends HazelcastTestSupport {
 
         changeClusterStateEventually(instances[0], clusterState);
 
-        List<HazelcastInstance> instancesList = new ArrayList<HazelcastInstance>(asList(instances));
+        List<HazelcastInstance> instancesList = new ArrayList<>(asList(instances));
         Collections.shuffle(instancesList);
         final HazelcastInstance instanceToShutdown = instancesList.remove(0);
         final Address addressToShutdown = getNode(instanceToShutdown).getThisAddress();

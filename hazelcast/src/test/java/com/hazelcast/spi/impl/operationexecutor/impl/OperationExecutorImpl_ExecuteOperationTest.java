@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.hazelcast.spi.impl.operationexecutor.impl;
 
 import com.hazelcast.spi.impl.operationservice.Operation;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.annotation.QuickTest;
 import org.junit.Test;
@@ -41,43 +40,33 @@ public class OperationExecutorImpl_ExecuteOperationTest extends OperationExecuto
     public void whenPartitionSpecific() {
         initExecutor();
 
-        final AtomicReference<Thread> executingThread = new AtomicReference<Thread>();
+        final AtomicReference<Thread> executingThread = new AtomicReference<>();
 
         Operation op = new Operation() {
             @Override
-            public void run() throws Exception {
+            public void run() {
                 executingThread.set(Thread.currentThread());
             }
         };
         executor.execute(op.setPartitionId(0));
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertInstanceOf(PartitionOperationThread.class, executingThread.get());
-            }
-        });
+        assertTrueEventually(() -> assertInstanceOf(PartitionOperationThread.class, executingThread.get()));
     }
 
     @Test
     public void whenGeneric() {
         initExecutor();
 
-        final AtomicReference<Thread> executingThread = new AtomicReference<Thread>();
+        final AtomicReference<Thread> executingThread = new AtomicReference<>();
 
         Operation op = new Operation() {
             @Override
-            public void run() throws Exception {
+            public void run() {
                 executingThread.set(Thread.currentThread());
             }
         };
         executor.execute(op.setPartitionId(-1));
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertInstanceOf(GenericOperationThread.class, executingThread.get());
-            }
-        });
+        assertTrueEventually(() -> assertInstanceOf(GenericOperationThread.class, executingThread.get()));
     }
 }

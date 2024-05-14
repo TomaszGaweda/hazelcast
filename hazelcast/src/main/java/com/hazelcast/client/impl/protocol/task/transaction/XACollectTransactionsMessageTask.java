@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,11 +65,11 @@ public class XACollectTransactionsMessageTask
     protected Object reduce(Map<Member, Object> map) throws Throwable {
         List<Data> list = new ArrayList<>();
         for (Object o : map.values()) {
-            if (o instanceof Throwable) {
+            if (o instanceof Throwable throwable) {
                 if (o instanceof MemberLeftException) {
                     continue;
                 }
-                throw (Throwable) o;
+                throw throwable;
             }
             SerializableList xidSet = (SerializableList) o;
             list.addAll(xidSet.getCollection());

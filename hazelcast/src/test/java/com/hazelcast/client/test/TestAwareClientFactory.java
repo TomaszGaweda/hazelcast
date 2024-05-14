@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import static com.hazelcast.test.AbstractHazelcastClassRunner.getTestMethodName;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class TestAwareClientFactory extends TestAwareInstanceFactory {
 
-    protected final Map<String, List<HazelcastInstance>> perMethodClients = new ConcurrentHashMap<String, List<HazelcastInstance>>();
+    protected final Map<String, List<HazelcastInstance>> perMethodClients = new ConcurrentHashMap<>();
 
     /**
      * Creates new client instance which uses in its network configuration the first member created by this factory. The value

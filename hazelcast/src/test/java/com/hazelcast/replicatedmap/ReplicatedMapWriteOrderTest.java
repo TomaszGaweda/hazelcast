@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,18 +142,15 @@ public class ReplicatedMapWriteOrderTest extends ReplicatedMapAbstractTest {
 
     private Thread createPutOperationThread(final ReplicatedMap<String, Object> map, final ArrayList<Integer> keys,
                                             final int operations) {
-        return new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Random random = new Random();
-                int size = keys.size();
-                for (int i = 0; i < operations; i++) {
-                    int index = i % size;
-                    String key = "foo-" + keys.get(index);
-                    map.put(key, random.nextLong());
-                    boolean containsKey = map.containsKey(key);
-                    assert containsKey;
-                }
+        return new Thread(() -> {
+            Random random = new Random();
+            int size = keys.size();
+            for (int i = 0; i < operations; i++) {
+                int index = i % size;
+                String key = "foo-" + keys.get(index);
+                map.put(key, random.nextLong());
+                boolean containsKey = map.containsKey(key);
+                assert containsKey;
             }
         });
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class CacheEventJournalBasicTest<K, V> extends AbstractEventJournalBasicT
     protected EventJournalTestContext<K, V, EventJournalCacheEvent<K, V>> createContext() {
         final CacheManager cacheManager = createCacheManager();
 
-        return new EventJournalTestContext<K, V, EventJournalCacheEvent<K, V>>(
+        return new EventJournalTestContext<>(
                 new EventJournalCacheDataStructureAdapter<K, V>((ICache<K, V>) cacheManager.getCache(NON_EVICTING_CACHE)),
                 new EventJournalCacheDataStructureAdapter<K, V>((ICache<K, V>) cacheManager.getCache(EVICTING_CACHE)),
                 new EventJournalCacheEventAdapter<K, V>()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.hazelcast.internal.nearcache.impl.invalidation.Invalidation;
 import com.hazelcast.internal.util.RuntimeAvailableProcessors;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.impl.operationservice.impl.OperationServiceImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -132,12 +131,9 @@ public class CacheDestroyTest extends CacheTestSupport {
                 new CacheDestroyOperation(FULL_CACHE_NAME),
                 nodeEngine1.getThisAddress());
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertNull(cacheService1.getCacheConfig(FULL_CACHE_NAME));
-                assertNull(cacheService2.getCacheConfig(FULL_CACHE_NAME));
-            }
+        assertTrueEventually(() -> {
+            assertNull(cacheService1.getCacheConfig(FULL_CACHE_NAME));
+            assertNull(cacheService2.getCacheConfig(FULL_CACHE_NAME));
         });
     }
 
@@ -152,8 +148,7 @@ public class CacheDestroyTest extends CacheTestSupport {
         registerInvalidationListener(new CacheEventListener() {
             @Override
             public void handleEvent(Object eventObject) {
-                if (eventObject instanceof Invalidation) {
-                    Invalidation event = (Invalidation) eventObject;
+                if (eventObject instanceof Invalidation event) {
                     if (null == event.getKey() && config.getNameWithPrefix().equals(event.getName())) {
                         counter.incrementAndGet();
                     }
@@ -164,21 +159,10 @@ public class CacheDestroyTest extends CacheTestSupport {
         cache.destroy();
 
         // Make sure that at least 1 invalidation event has been received
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run()
-                    throws Exception {
-                assertTrue(counter.get() >= 1);
-            }
-        }, 2);
+        assertTrueEventually(() -> assertTrue(counter.get() >= 1), 2);
+
         // Make sure that no more than INSTNACE_COUNT events are received ever
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run()
-                    throws Exception {
-                assertTrue(counter.get() <= INSTANCE_COUNT);
-            }
-        }, 3);
+        assertTrueAllTheTime(() -> assertTrue(counter.get() <= INSTANCE_COUNT), 3);
 
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,8 @@ import com.hazelcast.client.impl.protocol.codec.MCWanSyncMapCodec;
 import com.hazelcast.client.impl.spi.impl.ClientInvocation;
 import com.hazelcast.client.impl.spi.impl.ClientInvocationFuture;
 import com.hazelcast.client.test.TestHazelcastFactory;
-import com.hazelcast.core.HazelcastException;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.WanReplicationRef;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.BuildInfoProvider;
 import com.hazelcast.instance.impl.HazelcastInstanceProxy;
@@ -75,6 +76,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import static com.hazelcast.cp.CPSubsystemStubImpl.CP_SUBSYSTEM_IS_NOT_AVAILABLE_IN_OS;
 import static com.hazelcast.internal.util.StringUtil.isNullOrEmptyAfterTrim;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
@@ -118,7 +120,8 @@ public class MCMessageTasksTest extends HazelcastTestSupport {
                 random.nextInt(),
                 random.nextInt(),
                 random.nextInt(),
-                random.nextInt()
+                random.nextInt(),
+                (byte) random.nextInt(2)
         );
 
         assertFailure(clientMessage, UnsupportedOperationException.class, "Adding new WAN config is not supported.");
@@ -194,14 +197,21 @@ public class MCMessageTasksTest extends HazelcastTestSupport {
 
     @Test
     public void testGetCPMembersMessageTask() throws Exception {
-        assertFailure(MCGetCPMembersCodec.encodeRequest(), HazelcastException.class, "CP Subsystem is not enabled!");
+        assertFailure(MCGetCPMembersCodec.encodeRequest(), UnsupportedOperationException.class, CP_SUBSYSTEM_IS_NOT_AVAILABLE_IN_OS);
     }
 
     @Test
     public void testGetMapConfigMessageTask() throws Exception {
+        WanReplicationRef wanRef = new WanReplicationRef();
+        wanRef.setName(randomString());
+
+        Config config = member.getConfig();
+        String mapName = randomString();
+        config.getMapConfig(mapName).setWanReplicationRef(wanRef);
+
         ClientInvocation invocation = new ClientInvocation(
                 getClientImpl(),
-                MCGetMapConfigCodec.encodeRequest(randomString()),
+                MCGetMapConfigCodec.encodeRequest(mapName),
                 null
         );
 
@@ -213,6 +223,7 @@ public class MCMessageTasksTest extends HazelcastTestSupport {
 
         MCGetMapConfigCodec.ResponseParameters response = future.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, SECONDS);
         assertFalse(response.readBackupData);
+        assertEquals(wanRef, response.wanReplicationRef);
     }
 
     @Test
@@ -392,17 +403,17 @@ public class MCMessageTasksTest extends HazelcastTestSupport {
 
     @Test
     public void testPromoteToCPMemberMessageTask() throws Exception {
-        assertFailure(MCPromoteToCPMemberCodec.encodeRequest(), HazelcastException.class, "CP Subsystem is not enabled!");
+        assertFailure(MCPromoteToCPMemberCodec.encodeRequest(), UnsupportedOperationException.class, CP_SUBSYSTEM_IS_NOT_AVAILABLE_IN_OS);
     }
 
     @Test
     public void testRemoveCPMemberMessageTask() throws Exception {
-        assertFailure(MCRemoveCPMemberCodec.encodeRequest(UUID.randomUUID()), HazelcastException.class, "CP Subsystem is not enabled!");
+        assertFailure(MCRemoveCPMemberCodec.encodeRequest(UUID.randomUUID()), UnsupportedOperationException.class, CP_SUBSYSTEM_IS_NOT_AVAILABLE_IN_OS);
     }
 
     @Test
     public void testResetCPSubsystemMessageTask() throws Exception {
-        assertFailure(MCResetCPSubsystemCodec.encodeRequest(), HazelcastException.class, "CP Subsystem is not enabled!");
+        assertFailure(MCResetCPSubsystemCodec.encodeRequest(), UnsupportedOperationException.class, CP_SUBSYSTEM_IS_NOT_AVAILABLE_IN_OS);
     }
 
     @Test
@@ -459,7 +470,8 @@ public class MCMessageTasksTest extends HazelcastTestSupport {
                         0,
                         false,
                         100,
-                        0
+                        0,
+                        null
                 ),
                 null
         );

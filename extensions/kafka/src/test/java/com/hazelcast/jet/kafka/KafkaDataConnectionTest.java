@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -207,7 +207,7 @@ public class KafkaDataConnectionTest {
     public void shared_producer_should_not_be_created_with_additional_props() {
         kafkaDataConnection = createKafkaDataConnection(kafkaTestSupport);
         Properties properties = new Properties();
-        properties.put("A", "B");
+        properties.setProperty("A", "B");
 
         assertThatThrownBy(() -> kafkaDataConnection.getProducer(null, properties))
                 .isInstanceOf(HazelcastException.class)

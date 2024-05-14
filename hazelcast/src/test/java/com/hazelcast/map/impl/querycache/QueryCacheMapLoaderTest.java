@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,6 @@ public class QueryCacheMapLoaderTest extends HazelcastTestSupport {
         });
     }
 
-    @SuppressWarnings("unchecked")
     private static final Predicate<Integer, Integer> TRUE_PREDICATE = Predicates.alwaysTrue();
 
     @Test
@@ -126,7 +125,7 @@ public class QueryCacheMapLoaderTest extends HazelcastTestSupport {
 
     static class DefaultMapLoader extends MapStoreAdapter<Integer, Integer> {
 
-        private final ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<Integer, Integer>();
+        private final ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<>();
 
         DefaultMapLoader() {
             map.put(1, 1);
@@ -141,7 +140,7 @@ public class QueryCacheMapLoaderTest extends HazelcastTestSupport {
 
         @Override
         public Map<Integer, Integer> loadAll(Collection<Integer> keys) {
-            Map<Integer, Integer> results = new HashMap<Integer, Integer>();
+            Map<Integer, Integer> results = new HashMap<>();
             for (Integer key : keys) {
                 results.put(key, map.get(key));
             }

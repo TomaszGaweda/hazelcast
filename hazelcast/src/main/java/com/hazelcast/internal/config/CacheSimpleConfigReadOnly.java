@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.hazelcast.config.InMemoryFormat;
 import com.hazelcast.config.MergePolicyConfig;
 import com.hazelcast.config.WanReplicationRef;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +51,7 @@ public class CacheSimpleConfigReadOnly extends CacheSimpleConfig {
     @Override
     public List<CacheSimpleEntryListenerConfig> getCacheEntryListeners() {
         final List<CacheSimpleEntryListenerConfig> listenerConfigs = super.getCacheEntryListeners();
-        final List<CacheSimpleEntryListenerConfig> readOnlyListenerConfigs = new ArrayList<CacheSimpleEntryListenerConfig>(
+        final List<CacheSimpleEntryListenerConfig> readOnlyListenerConfigs = new ArrayList<>(
                 listenerConfigs.size());
         for (CacheSimpleEntryListenerConfig listenerConfig : listenerConfigs) {
             readOnlyListenerConfigs.add(new CacheSimpleEntryListenerConfigReadOnly(listenerConfig));
@@ -176,6 +177,11 @@ public class CacheSimpleConfigReadOnly extends CacheSimpleConfig {
 
     @Override
     public CacheSimpleConfig setHotRestartConfig(HotRestartConfig hotRestartConfig) {
+        throw new UnsupportedOperationException("This config is read-only cache: " + getName());
+    }
+
+    @Override
+    public CacheSimpleConfig setUserCodeNamespace(@Nullable String userCodeNamespace) {
         throw new UnsupportedOperationException("This config is read-only cache: " + getName());
     }
 }

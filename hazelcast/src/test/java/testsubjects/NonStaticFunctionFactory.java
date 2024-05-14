@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ public class NonStaticFunctionFactory {
     }
 
     public static BiFunction<String, String, String> getAnonymousNonSerializableBiFunction(final String returnValue) {
-        return new BiFunction<String, String, String>() {
+        return new BiFunction<>() {
             @Override
             public String apply(String s, String s2) {
                 return returnValue;
@@ -34,7 +34,7 @@ public class NonStaticFunctionFactory {
     }
 
     public static Function<String, String> getAnonymousNonSerializableFunction(final String returnValue) {
-        return new Function<String, String>() {
+        return new Function<>() {
             @Override
             public String apply(String s) {
                 return returnValue;

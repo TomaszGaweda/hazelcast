@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.hazelcast.jet.impl.execution;
 
+import java.io.Serial;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map.Entry;
 
@@ -27,6 +28,7 @@ import java.util.Map.Entry;
  */
 public final class BroadcastEntry<K, V> extends SimpleImmutableEntry<K, V> implements BroadcastItem {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public BroadcastEntry(K key, V value) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 
 package com.hazelcast.internal.cluster.impl.operations;
 
-import com.hazelcast.internal.cluster.Joiner;
-import com.hazelcast.internal.cluster.impl.TcpIpJoiner;
+import com.hazelcast.cluster.Address;
 import com.hazelcast.instance.impl.Node;
+import com.hazelcast.internal.cluster.Joiner;
 import com.hazelcast.internal.cluster.impl.ClusterDataSerializerHook;
 import com.hazelcast.internal.cluster.impl.ClusterServiceImpl;
+import com.hazelcast.internal.cluster.impl.TcpIpJoiner;
 import com.hazelcast.logging.ILogger;
-import com.hazelcast.cluster.Address;
-import com.hazelcast.spi.impl.NodeEngineImpl;
+import com.hazelcast.spi.impl.NodeEngine;
 
 public class JoinMastershipClaimOp extends AbstractJoinOperation {
 
@@ -31,13 +31,12 @@ public class JoinMastershipClaimOp extends AbstractJoinOperation {
 
     @Override
     public void run() {
-        final NodeEngineImpl nodeEngine = (NodeEngineImpl) getNodeEngine();
+        final NodeEngine nodeEngine = getNodeEngine();
         Node node = nodeEngine.getNode();
         Joiner joiner = node.getJoiner();
         ClusterServiceImpl clusterService = node.getClusterService();
         final ILogger logger = node.getLogger(getClass().getName());
-        if (joiner instanceof TcpIpJoiner) {
-            TcpIpJoiner tcpIpJoiner = (TcpIpJoiner) joiner;
+        if (joiner instanceof TcpIpJoiner tcpIpJoiner) {
             final Address endpoint = getCallerAddress();
             final Address masterAddress = clusterService.getMasterAddress();
             approvedAsMaster = !tcpIpJoiner.isClaimingMastership() && !clusterService.isMaster()

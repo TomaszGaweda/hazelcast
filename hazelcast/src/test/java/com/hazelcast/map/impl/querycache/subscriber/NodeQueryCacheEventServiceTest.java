@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,23 +56,20 @@ public class NodeQueryCacheEventServiceTest extends HazelcastTestSupport {
                 = (NodeQueryCacheEventService) subscriberContext.getEventService();
 
         final AtomicBoolean stop = new AtomicBoolean(false);
-        ArrayList<Thread> threads = new ArrayList<Thread>();
+        ArrayList<Thread> threads = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    while (!stop.get()) {
-                        nodeQueryCacheEventService.addListener(mapName, "a", new EntryAddedListener() {
-                            @Override
-                            public void entryAdded(EntryEvent event) {
+            Thread thread = new Thread(() -> {
+                while (!stop.get()) {
+                    nodeQueryCacheEventService.addListener(mapName, "a", new EntryAddedListener() {
+                        @Override
+                        public void entryAdded(EntryEvent event) {
 
-                            }
-                        });
+                        }
+                    });
 
-                        nodeQueryCacheEventService.removeAllListeners(mapName, "a");
-                    }
+                    nodeQueryCacheEventService.removeAllListeners(mapName, "a");
                 }
-            };
+            });
             threads.add(thread);
         }
 

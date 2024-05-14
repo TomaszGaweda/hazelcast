@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,10 @@ public final class ClientTestUtil {
 
     public static HazelcastClientInstanceImpl getHazelcastClientInstanceImpl(HazelcastInstance hz) {
         HazelcastClientInstanceImpl impl = null;
-        if (hz instanceof HazelcastClientProxy) {
-            impl = ((HazelcastClientProxy) hz).client;
-        } else if (hz instanceof HazelcastClientInstanceImpl) {
-            impl = (HazelcastClientInstanceImpl) hz;
+        if (hz instanceof HazelcastClientProxy proxy) {
+            impl = proxy.client;
+        } else if (hz instanceof HazelcastClientInstanceImpl instanceImpl) {
+            impl = instanceImpl;
         }
         return impl;
     }

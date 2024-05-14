@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.hazelcast.jet.sql.impl.connector.map.index;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import com.hazelcast.config.Config;
 import com.hazelcast.config.IndexConfig;
 import com.hazelcast.config.IndexType;
 import com.hazelcast.config.MapConfig;
@@ -115,7 +116,15 @@ public abstract class SqlIndexAbstractTest extends SqlIndexTestSupport {
 
     @BeforeClass
     public static void beforeClass() {
-        initialize(DEFAULT_MEMBERS_COUNT, null);
+        Config config = smallInstanceConfig();
+
+        MapConfig mapConfig = new MapConfig();
+        mapConfig.setName("map*")
+                .setBackupCount(0);
+
+        config.addMapConfig(mapConfig);
+
+        initialize(DEFAULT_MEMBERS_COUNT, config);
     }
 
     @Before
@@ -124,9 +133,9 @@ public abstract class SqlIndexAbstractTest extends SqlIndexTestSupport {
         valueClass = ExpressionBiValue.createBiClass(f1, f2);
 
         createMapping(mapName, int.class, valueClass);
-        MapConfig mapConfig = getMapConfig();
-        instance().getConfig().addMapConfig(mapConfig);
         map = instance().getMap(mapName);
+        map.addIndex(getIndexConfig());
+
         fill();
     }
 
@@ -868,8 +877,8 @@ public abstract class SqlIndexAbstractTest extends SqlIndexTestSupport {
 
         for (IndexType indexType : Arrays.asList(IndexType.SORTED, IndexType.HASH)) {
             for (boolean composite : Arrays.asList(true, false)) {
-                for (ExpressionType<?> firstType : baseTypes()) {
-                    for (ExpressionType<?> secondType : baseTypes()) {
+                for (ExpressionType<?> firstType : quickTestTypes()) {
+                    for (ExpressionType<?> secondType : quickTestTypes()) {
                         res.add(new Object[]{indexType, composite, firstType, secondType});
                     }
                 }
@@ -887,8 +896,8 @@ public abstract class SqlIndexAbstractTest extends SqlIndexTestSupport {
 
         for (IndexType indexType : Arrays.asList(IndexType.SORTED, IndexType.HASH)) {
             for (boolean composite : Arrays.asList(true, false)) {
-                for (ExpressionType<?> firstType : nonBaseTypes()) {
-                    for (ExpressionType<?> secondType : nonBaseTypes()) {
+                for (ExpressionType<?> firstType : slowTestTypes()) {
+                    for (ExpressionType<?> secondType : slowTestTypes()) {
                         res.add(new Object[]{indexType, composite, firstType, secondType});
                     }
                 }
@@ -933,8 +942,8 @@ public abstract class SqlIndexAbstractTest extends SqlIndexTestSupport {
 
     private Multiset<Integer> sqlKeys(boolean withIndex, String sql, List<Object> params) {
         SqlStatement query = new SqlStatement(sql);
-        // with some bugs the queries could hang, prevent long waiting in such cases
-        query.setTimeoutMillis(10_000);
+        // with some bugs the queries could hang, however the CI tests sometimes are very slow
+        query.setTimeoutMillis(60_000);
         query.setParameters(params);
 
         Multiset<Integer> keys = HashMultiset.create();

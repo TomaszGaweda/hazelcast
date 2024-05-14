@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,13 +65,13 @@ public class CacheGetAllMessageTask
         CacheOperationProvider operationProvider = getOperationProvider(parameters.name);
         CacheService service = getService(getServiceName());
         ExpiryPolicy expiryPolicy = (ExpiryPolicy) service.toObject(parameters.expiryPolicy);
-        Set<Data> keys = new HashSet<Data>(parameters.keys);
+        Set<Data> keys = new HashSet<>(parameters.keys);
         return operationProvider.createGetAllOperationFactory(keys, expiryPolicy);
     }
 
     @Override
     protected Object reduce(Map<Integer, Object> map) {
-        List<Map.Entry<Data, Data>> reducedMap = new ArrayList<Map.Entry<Data, Data>>(map.size());
+        List<Map.Entry<Data, Data>> reducedMap = new ArrayList<>(map.size());
         for (Map.Entry<Integer, Object> entry : map.entrySet()) {
             MapEntries mapEntries = (MapEntries) nodeEngine.toObject(entry.getValue());
             mapEntries.putAllToList(reducedMap);

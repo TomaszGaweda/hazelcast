@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ class TestBundleContext implements BundleContext {
     private final AtomicInteger counter = new AtomicInteger();
     private final Object mutex = new Object();
 
-    private final Map<String, List<ServiceReference>> serviceReferenceMap = new HashMap<String, List<ServiceReference>>();
+    private final Map<String, List<ServiceReference>> serviceReferenceMap = new HashMap<>();
 
     private final TestBundle testBundle;
     private final TestBundle.RegisterDeregisterListener registerDeregisterListener;
@@ -96,7 +96,7 @@ class TestBundleContext implements BundleContext {
         synchronized (mutex) {
             List<ServiceReference> serviceReferences = serviceReferenceMap.get(clazz);
             if (serviceReferences == null) {
-                serviceReferences = new ArrayList<ServiceReference>();
+                serviceReferences = new ArrayList<>();
                 serviceReferenceMap.put(clazz, serviceReferences);
             }
             serviceReferences.add(serviceReference);
@@ -131,7 +131,7 @@ class TestBundleContext implements BundleContext {
     }
 
     ServiceReference[] getAllServiceReferences() {
-        List<ServiceReference> allServiceReferences = new ArrayList<ServiceReference>();
+        List<ServiceReference> allServiceReferences = new ArrayList<>();
         // we simply ignore filter since we don't use filer in our tests
         synchronized (mutex) {
             for (Map.Entry<String, List<ServiceReference>> entry : serviceReferenceMap.entrySet()) {
@@ -167,8 +167,8 @@ class TestBundleContext implements BundleContext {
 
     @Override
     public Object getService(ServiceReference reference) {
-        if (reference instanceof TestServiceReference) {
-            return ((TestServiceReference) reference).getService();
+        if (reference instanceof TestServiceReference serviceReference) {
+            return serviceReference.getService();
         } else {
             throw new IllegalArgumentException("Only `TestServiceReference` instances are supported!");
         }
@@ -176,7 +176,7 @@ class TestBundleContext implements BundleContext {
 
     @Override
     public boolean ungetService(ServiceReference reference) {
-        if (reference instanceof TestServiceReference) {
+        if (reference instanceof TestServiceReference serviceReference) {
             synchronized (mutex) {
                 boolean removed = false;
                 for (Map.Entry<String, List<ServiceReference>> entry : serviceReferenceMap.entrySet()) {
@@ -184,7 +184,7 @@ class TestBundleContext implements BundleContext {
                     if (serviceReferences.remove(reference)) {
                         removed = true;
                         if (registerDeregisterListener != null) {
-                            registerDeregisterListener.onDeregister(entry.getKey(), (TestServiceReference) reference);
+                            registerDeregisterListener.onDeregister(entry.getKey(), serviceReference);
                         }
                     }
                 }

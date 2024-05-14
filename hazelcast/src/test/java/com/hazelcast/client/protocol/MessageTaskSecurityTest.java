@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,11 +42,6 @@ import com.hazelcast.client.impl.protocol.task.map.MapMadePublishableMessageTask
 import com.hazelcast.client.impl.protocol.task.schema.FetchSchemaMessageTask;
 import com.hazelcast.client.impl.protocol.task.schema.SendAllSchemasMessageTask;
 import com.hazelcast.client.impl.protocol.task.schema.SendSchemaMessageTask;
-import com.hazelcast.cp.internal.client.AddCPGroupAvailabilityListenerMessageTask;
-import com.hazelcast.cp.internal.client.AddCPMembershipListenerMessageTask;
-import com.hazelcast.cp.internal.client.RemoveCPGroupAvailabilityListenerMessageTask;
-import com.hazelcast.cp.internal.client.RemoveCPMembershipListenerMessageTask;
-import com.hazelcast.cp.internal.datastructures.spi.client.CreateRaftGroupMessageTask;
 import com.hazelcast.sql.impl.client.SqlCloseMessageTask;
 import com.hazelcast.sql.impl.client.SqlExecuteMessageTask;
 import com.hazelcast.sql.impl.client.SqlFetchMessageTask;
@@ -78,7 +73,7 @@ import static org.junit.Assert.fail;
  * Verifies the {@code getRequiredPermission()} method doesn't simply return null in client {@link MessageTask} instances.
  */
 @RunWith(HazelcastParallelClassRunner.class)
-@Category({ QuickTest.class })
+@Category({QuickTest.class})
 public class MessageTaskSecurityTest {
 
     private static final String[] RETURN_NULL_OPS = { "aconst_null", "areturn" };
@@ -106,11 +101,6 @@ public class MessageTaskSecurityTest {
         skip(SendAllSchemasMessageTask.class, "Send compact-serialization schemas");
         skip(SendSchemaMessageTask.class, "Send a compact-serialization schema");
         skip(TriggerPartitionAssignmentMessageTask.class, "Triggers first partition arrangement");
-        skip(AddCPGroupAvailabilityListenerMessageTask.class, "Listener for the cluster-topology change");
-        skip(AddCPMembershipListenerMessageTask.class, "Listener for the cluster-topology change");
-        skip(RemoveCPGroupAvailabilityListenerMessageTask.class, "Listener for the cluster-topology change");
-        skip(RemoveCPMembershipListenerMessageTask.class, "Listener for the cluster-topology change");
-        skip(CreateRaftGroupMessageTask.class, "Initial message while creating a Client proxy for any CP object");
         skip(SqlExecuteMessageTask.class, "Permissions for specific objects are checked based on parsed query text");
         skip(SqlCloseMessageTask.class, "Follow up SQL message where queryId is present");
         skip(SqlFetchMessageTask.class, "Follow up SQL message where queryId is present");

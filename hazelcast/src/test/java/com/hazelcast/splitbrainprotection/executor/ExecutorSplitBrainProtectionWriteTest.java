@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -663,8 +663,8 @@ public class ExecutorSplitBrainProtectionWriteTest extends AbstractSplitBrainPro
 
         @Override
         public void onResponse(Member member, Object response) {
-            if (response instanceof Throwable) {
-                throwable = (Throwable) response;
+            if (response instanceof Throwable t) {
+                throwable = t;
             }
         }
 

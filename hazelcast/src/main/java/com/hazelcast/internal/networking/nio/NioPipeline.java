@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -304,8 +304,8 @@ public abstract class NioPipeline implements MigratablePipeline, Runnable {
         // we can't call wakeup directly unfortunately because wakeup isn't defined on this
         // abstract class and can't be defined due to incompatible return types of the wakeup
         // on the inbound and outbound pipeline.
-        if (this instanceof NioOutboundPipeline) {
-            ((NioOutboundPipeline) this).wakeup();
+        if (this instanceof NioOutboundPipeline pipeline) {
+            pipeline.wakeup();
         } else {
             ((NioInboundPipeline) this).wakeup();
         }

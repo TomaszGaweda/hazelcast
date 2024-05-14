@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("StaticVariableName")
 public final class DummySourceConnector extends SourceConnector {
 
     static final String ITEMS_SIZE = "dummy.source.connector.items.size";
@@ -122,7 +123,7 @@ public final class DummySourceConnector extends SourceConnector {
             SOURCE_PARTITION.put("sourcePartition", 1);
         }
 
-        private List<SourceRecord> committedRecords = new ArrayList<>();
+        private final List<SourceRecord> committedRecords = new ArrayList<>();
 
         public DummyTask() {
             super();
@@ -163,6 +164,7 @@ public final class DummySourceConnector extends SourceConnector {
             for (int i = 0; i < size; i++) {
                 sourceRecords.add(dummyRecord(counter.getAndIncrement()));
             }
+            System.out.println("Returning " + size + " items");
             return sourceRecords;
         }
 

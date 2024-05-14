@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class ExtractionInSingleValueSpecTest extends AbstractExtractionTest {
     );
 
     private static final Person HUNT_WITH_NULLS = person(null,
-            limb(null, new ArrayList<String>(), new Finger[]{})
+            limb(null, new ArrayList<>(), new Finger[]{})
     );
 
     public ExtractionInSingleValueSpecTest(InMemoryFormat inMemoryFormat, Index index, Multivalue multivalue) {

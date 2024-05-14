@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import com.hazelcast.jet.impl.pipeline.transform.SinkTransform;
 import com.hazelcast.jet.impl.pipeline.transform.StreamSourceTransform;
 import com.hazelcast.jet.impl.pipeline.transform.TimestampTransform;
 import com.hazelcast.jet.impl.pipeline.transform.Transform;
-import com.hazelcast.jet.impl.util.LoggingUtil;
 import com.hazelcast.jet.impl.util.Util;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
@@ -99,18 +98,16 @@ public class Planner {
         if (frameSizeGcd > MAXIMUM_WATERMARK_GAP) {
             frameSizeGcd = Util.gcd(frameSizeGcd, MAXIMUM_WATERMARK_GAP);
         }
-        LoggingUtil.logFine(LOGGER, "Watermarks in the pipeline will be throttled to %d", frameSizeGcd);
+        LOGGER.fine("Watermarks in the pipeline will be throttled to %d", frameSizeGcd);
         // Update watermark throttling frame length on all transforms with the determined length
         for (Transform transform : adjacencyMap.keySet()) {
-            if (transform instanceof StreamSourceTransform) {
-                StreamSourceTransform t = (StreamSourceTransform) transform;
-                EventTimePolicy policy = t.getEventTimePolicy();
+            if (transform instanceof StreamSourceTransform streamSourceTransform) {
+                EventTimePolicy policy = streamSourceTransform.getEventTimePolicy();
                 if (policy != null) {
-                    t.setEventTimePolicy(withFrameSize(policy, frameSizeGcd));
+                    streamSourceTransform.setEventTimePolicy(withFrameSize(policy, frameSizeGcd));
                 }
-            } else if (transform instanceof TimestampTransform) {
-                TimestampTransform t = (TimestampTransform) transform;
-                t.setEventTimePolicy(withFrameSize(t.getEventTimePolicy(), frameSizeGcd));
+            } else if (transform instanceof TimestampTransform timestampTransform) {
+                timestampTransform.setEventTimePolicy(withFrameSize(timestampTransform.getEventTimePolicy(), frameSizeGcd));
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,8 +156,8 @@ public class DelegatingCompletableFuture<V> extends InternalCompletableFuture<V>
 
     @Override
     public V joinInternal() {
-        if (future instanceof InternalCompletableFuture) {
-            return resolve(((InternalCompletableFuture) future).joinInternal());
+        if (future instanceof InternalCompletableFuture completableFuture) {
+            return resolve(completableFuture.joinInternal());
         } else {
             try {
                 return resolve(future.join());
@@ -185,9 +185,8 @@ public class DelegatingCompletableFuture<V> extends InternalCompletableFuture<V>
             return (V) deserializedValue;
         }
 
-        if (object instanceof Data) {
+        if (object instanceof Data data) {
             // we need to deserialize.
-            Data data = (Data) object;
             object = serializationService.toObject(data);
             serializationService.disposeData(data);
 

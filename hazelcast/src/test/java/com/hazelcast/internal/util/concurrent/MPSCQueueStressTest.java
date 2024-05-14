@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,12 +71,12 @@ public class MPSCQueueStressTest extends HazelcastTestSupport {
     }
 
     public void test(int producerCount, IdleStrategy idleStrategy) throws Exception {
-        MPSCQueue<Item> queue = new MPSCQueue<Item>(idleStrategy);
+        MPSCQueue<Item> queue = new MPSCQueue<>(idleStrategy);
         ConsumerThread consumers = new ConsumerThread(queue, producerCount);
         queue.setConsumerThread(consumers);
         consumers.start();
 
-        List<ProducerThread> producers = new LinkedList<ProducerThread>();
+        List<ProducerThread> producers = new LinkedList<>();
         for (int k = 0; k < producerCount; k++) {
             ProducerThread producer = new ProducerThread(queue, k);
             producer.start();

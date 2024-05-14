@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ public class DuplicateDetectingMultiResultTest {
     }
 
     public void addEntry(QueryableEntry entry) {
-        ConcurrentMap<Data, QueryableEntry> values = new ConcurrentHashMap<Data, QueryableEntry>();
+        ConcurrentMap<Data, QueryableEntry> values = new ConcurrentHashMap<>();
         values.put(entry.getKeyData(), entry);
         result.addResultSet(values);
     }

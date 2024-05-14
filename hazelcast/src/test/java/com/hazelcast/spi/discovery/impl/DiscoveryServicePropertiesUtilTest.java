@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ public class DiscoveryServicePropertiesUtilTest {
         // given
         Map<String, Comparable> properties = emptyMap();
         Collection<PropertyDefinition> propertyDefinitions = singletonList(
-                (PropertyDefinition) new SimplePropertyDefinition(PROPERTY_KEY_1, true, STRING));
+                new SimplePropertyDefinition(PROPERTY_KEY_1, true, STRING));
 
         // when
         Map<String, Comparable> result = prepareProperties(properties, propertyDefinitions);
@@ -113,7 +113,7 @@ public class DiscoveryServicePropertiesUtilTest {
         ValueValidator<String> valueValidator = mock(ValueValidator.class);
         willThrow(new ValidationException("Invalid property")).given(valueValidator).validate(PROPERTY_VALUE_1);
         Collection<PropertyDefinition> propertyDefinitions = singletonList(
-                (PropertyDefinition) new SimplePropertyDefinition(PROPERTY_KEY_1, false, STRING, new DummyValidator()));
+                new SimplePropertyDefinition(PROPERTY_KEY_1, false, STRING, new DummyValidator()));
 
         // when
         prepareProperties(properties, propertyDefinitions);
@@ -146,7 +146,7 @@ public class DiscoveryServicePropertiesUtilTest {
             }
         };
         Collection<PropertyDefinition> propertyDefinitions = singletonList(
-                (PropertyDefinition) new SimplePropertyDefinition(PROPERTY_KEY_1, true, typeConverter));
+                new SimplePropertyDefinition(PROPERTY_KEY_1, true, typeConverter));
 
         // when
         Map<String, Comparable> result = prepareProperties(properties, propertyDefinitions);

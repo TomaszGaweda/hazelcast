@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import static com.hazelcast.test.HazelcastTestSupport.assertInstanceOf;
 import static com.hazelcast.test.HazelcastTestSupport.assertTrueEventually;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -89,7 +90,7 @@ public class ClientDelegatingFutureTest {
     }
 
     @Test
-    public void get_whenCompletedExceptionally() throws Exception {
+    public void get_whenCompletedExceptionally() {
         invocationFuture.completeExceptionally(new IllegalArgumentException());
 
         assertTrue(delegatingFuture.isDone());
@@ -117,13 +118,13 @@ public class ClientDelegatingFutureTest {
     }
 
     @Test
-    public void getNow_whenNotDoneShouldReturnDefaultValue() throws Exception {
-        assertTrue(!delegatingFuture.isDone());
+    public void getNow_whenNotDoneShouldReturnDefaultValue() {
+        assertFalse(delegatingFuture.isDone());
         assertEquals(DESERIALIZED_DEFAULT_VALUE, delegatingFuture.getNow(DESERIALIZED_DEFAULT_VALUE));
     }
 
     @Test
-    public void getNow_whenDoneReturnValue() throws Exception {
+    public void getNow_whenDoneReturnValue() {
         invocationFuture.complete(response);
 
         assertTrue(delegatingFuture.isDone());
@@ -132,9 +133,7 @@ public class ClientDelegatingFutureTest {
 
     @Test
     public void whenComplete() {
-        CompletableFuture<String> nextStage = delegatingFuture.whenComplete((v, t) -> {
-            assertEquals(DESERIALIZED_VALUE, v);
-        });
+        CompletableFuture<String> nextStage = delegatingFuture.whenComplete((v, t) -> assertEquals(DESERIALIZED_VALUE, v));
         invocationFuture.complete(response);
 
         assertTrueEventually(() -> assertTrue(nextStage.isDone()));
@@ -143,9 +142,7 @@ public class ClientDelegatingFutureTest {
 
     @Test
     public void whenComplete_whenExceptional() {
-        CompletableFuture<String> nextStage = delegatingFuture.whenComplete((v, t) -> {
-            assertInstanceOf(IllegalArgumentException.class, t);
-        });
+        CompletableFuture<String> nextStage = delegatingFuture.whenComplete((v, t) -> assertInstanceOf(IllegalArgumentException.class, t));
         invocationFuture.completeExceptionally(new IllegalArgumentException());
 
         assertTrueEventually(() -> assertTrue(nextStage.isDone()));

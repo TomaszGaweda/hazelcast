@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,10 @@ public class DriverManagerTranslatorTest {
         String myProperty = "5000";
 
 
-        hzProperties.put(JDBC_URL, jdbcUrl);
-        hzProperties.put(USER, user);
-        hzProperties.put(PASSWORD, password);
-        hzProperties.put("myProperty", myProperty);
+        hzProperties.setProperty(JDBC_URL, jdbcUrl);
+        hzProperties.setProperty(USER, user);
+        hzProperties.setProperty(PASSWORD, password);
+        hzProperties.setProperty("myProperty", myProperty);
 
 
         Properties driverManagerProperties = translate(hzProperties);

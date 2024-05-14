@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,18 +175,16 @@ public abstract class AbstractGracefulShutdownCorrectnessTest extends PartitionC
             return Collections.singleton(address);
         } else {
             final CountDownLatch latch = new CountDownLatch(count);
-            Collection<Address> addresses = new HashSet<Address>();
+            Collection<Address> addresses = new HashSet<>();
 
             for (int i = 0; i < count; i++) {
                 final HazelcastInstance hz = instances.remove(0);
                 addresses.add(getNode(hz).getThisAddress());
 
-                new Thread() {
-                    public void run() {
-                        hz.shutdown();
-                        latch.countDown();
-                    }
-                }.start();
+                new Thread(() -> {
+                    hz.shutdown();
+                    latch.countDown();
+                }).start();
             }
             assertTrue(latch.await(2, TimeUnit.MINUTES));
             return addresses;

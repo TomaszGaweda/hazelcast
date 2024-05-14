@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ public final class ProxyRegistry {
         INTERNAL_OBJECTS_PREFIXES.add(INTERNAL_JET_OBJECTS_PREFIX);
         INTERNAL_OBJECTS_PREFIXES.add("__mc.");
         INTERNAL_OBJECTS_PREFIXES.add("__sql.");
+        INTERNAL_OBJECTS_PREFIXES.add("__ts.");
     }
 
     private final ProxyServiceImpl proxyService;
@@ -261,9 +262,9 @@ public final class ProxyRegistry {
             proxy = service.createDistributedObject(name, source, local);
             tenantControl.registerObject(proxy.getDestroyContextForTenant());
 
-            if (initialize && proxy instanceof InitializingObject) {
+            if (initialize && proxy instanceof InitializingObject object) {
                 try {
-                    ((InitializingObject) proxy).initialize();
+                    object.initialize();
                 } catch (Exception e) {
                     // log and throw exception to be handled in outer catch block
                     proxyService.logger.warning("Error while initializing proxy: " + proxy, e);
@@ -368,8 +369,8 @@ public final class ProxyRegistry {
 
     private void invalidate(DistributedObject distributedObject) {
         if (distributedObject != null
-                && distributedObject instanceof AbstractDistributedObject) {
-            ((AbstractDistributedObject) distributedObject).invalidate();
+                && distributedObject instanceof AbstractDistributedObject object) {
+            object.invalidate();
         }
     }
 

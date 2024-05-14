@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class OrResultSet extends AbstractSet<QueryableEntry> {
                 entries = Collections.emptySet();
             } else {
                 if (indexedResults.size() == 1) {
-                    entries = new HashSet<QueryableEntry>(indexedResults.get(0));
+                    entries = new HashSet<>(indexedResults.get(0));
                 } else {
                     entries = createHashSet(Math.max(ENTRY_MIN_SIZE, indexedResults.size() * ENTRY_MULTIPLE));
                     for (Set<QueryableEntry> result : indexedResults) {

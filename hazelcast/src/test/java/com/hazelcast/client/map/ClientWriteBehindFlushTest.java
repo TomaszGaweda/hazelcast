@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.map.MapStore;
 import com.hazelcast.map.impl.mapstore.writebehind.MapStoreWithCounter;
 import com.hazelcast.map.impl.mapstore.writebehind.TemporaryBlockerMapStore;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -117,12 +116,9 @@ public class ClientWriteBehindFlushTest extends HazelcastTestSupport {
     }
 
     protected void assertWriteBehindQueuesEmpty(final String mapName, final List<HazelcastInstance> nodes) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                for (HazelcastInstance instance : nodes) {
-                    assertEquals(0, writeBehindQueueSize(instance, mapName));
-                }
+        assertTrueEventually(() -> {
+            for (HazelcastInstance instance : nodes) {
+                assertEquals(0, writeBehindQueueSize(instance, mapName));
             }
         });
     }

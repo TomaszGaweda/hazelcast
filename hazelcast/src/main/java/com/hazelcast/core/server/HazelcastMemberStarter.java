@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Starts a Hazelcast Member.
@@ -40,16 +40,16 @@ public final class HazelcastMemberStarter {
      *
      * @param args none
      */
-    public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
+    public static void main(String[] args) throws IOException {
         System.setProperty("hazelcast.tracking.server", "true");
         HazelcastInstance hz = Hazelcast.newHazelcastInstance();
         printMemberPort(hz);
     }
 
-    private static void printMemberPort(HazelcastInstance hz) throws FileNotFoundException, UnsupportedEncodingException {
+    private static void printMemberPort(HazelcastInstance hz) throws IOException {
         String printPort = System.getProperty("print.port");
         if (printPort != null) {
-            try (PrintWriter printWriter = new PrintWriter("ports" + File.separator + printPort, "UTF-8")) {
+            try (PrintWriter printWriter = new PrintWriter("ports" + File.separator + printPort, StandardCharsets.UTF_8)) {
                 printWriter.println(hz.getCluster().getLocalMember().getAddress().getPort());
             }
         }

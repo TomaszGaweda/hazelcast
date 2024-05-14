@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,17 +44,16 @@ public class JobRecord implements IdentifiedDataSerializable {
     private long jobId;
     private long creationTime;
     private Data dag;
-    // JSON representation of DAG, used by Management Center
+    /** JSON representation of DAG, used by Management Center */
     private String dagJson;
     private JobConfig config;
     private Set<String> ownedObservables;
     private Subject subject;
 
-    public JobRecord() {
-    }
+    public JobRecord() { }
 
-    public JobRecord(Version clusterVersion, long jobId, Data dag, String dagJson, JobConfig config,
-                     Set<String> ownedObservables, Subject subject) {
+    public JobRecord(Version clusterVersion, long jobId, Data dag, String dagJson,
+                     JobConfig config, Set<String> ownedObservables, Subject subject) {
         this.clusterVersion = clusterVersion;
         this.jobId = jobId;
         this.creationTime = Clock.currentTimeMillis();
@@ -118,7 +117,7 @@ public class JobRecord implements IdentifiedDataSerializable {
         out.writeLong(jobId);
         out.writeLong(creationTime);
         IOUtil.writeData(out, dag);
-        out.writeUTF(dagJson);
+        out.writeString(dagJson);
         out.writeObject(config);
         out.writeObject(ownedObservables);
         ImdgUtil.writeSubject(out, subject);
@@ -130,7 +129,7 @@ public class JobRecord implements IdentifiedDataSerializable {
         jobId = in.readLong();
         creationTime = in.readLong();
         dag = IOUtil.readData(in);
-        dagJson = in.readUTF();
+        dagJson = in.readString();
         config = in.readObject();
         ownedObservables = in.readObject();
         subject = ImdgUtil.readSubject(in);

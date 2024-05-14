@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import javax.transaction.Transaction;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -70,14 +69,7 @@ public class ClientXATest {
     public void cleanAtomikosLogs() {
         try {
             File currentDir = new File(".");
-            final File[] tmLogs = currentDir.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    if (name.endsWith(".epoch") || name.startsWith("tmlog")) {
-                        return true;
-                    }
-                    return false;
-                }
-            });
+            final File[] tmLogs = currentDir.listFiles((dir, name) -> name.endsWith(".epoch") || name.startsWith("tmlog"));
             for (File tmLog : tmLogs) {
                 tmLog.delete();
             }
@@ -219,15 +211,13 @@ public class ClientXATest {
         ExecutorService executorService = Executors.newFixedThreadPool(5);
         final CountDownLatch latch = new CountDownLatch(size);
         for (int i = 0; i < size; i++) {
-            executorService.execute(new Runnable() {
-                public void run() {
-                    try {
-                        txn(client);
-                    } catch (Exception e) {
-                        logger.severe("Exception during txn", e);
-                    } finally {
-                        latch.countDown();
-                    }
+            executorService.execute(() -> {
+                try {
+                    txn(client);
+                } catch (Exception e) {
+                    logger.severe("Exception during txn", e);
+                } finally {
+                    latch.countDown();
                 }
             });
         }

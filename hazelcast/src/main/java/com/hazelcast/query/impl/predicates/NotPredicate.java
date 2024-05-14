@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,8 +73,8 @@ public final class NotPredicate
     @Override
     public Predicate accept(Visitor visitor, IndexRegistry indexes) {
         Predicate target = predicate;
-        if (predicate instanceof VisitablePredicate) {
-            target = ((VisitablePredicate) predicate).accept(visitor, indexes);
+        if (predicate instanceof VisitablePredicate visitablePredicate) {
+            target = visitablePredicate.accept(visitor, indexes);
         }
         if (target == predicate) {
             // visitor didn't change the inner predicate

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package com.hazelcast.internal.server.tcp;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.instance.impl.Node;
-import com.hazelcast.spi.impl.NodeEngineImpl;
+import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.properties.HazelcastProperties;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
@@ -48,7 +48,7 @@ public class TcpServerContextTest extends HazelcastTestSupport {
     @Before
     public void setUp() {
         Node mockNode = mock(Node.class);
-        NodeEngineImpl mockNodeEngine = mock(NodeEngineImpl.class);
+        NodeEngine mockNodeEngine = mock(NodeEngine.class);
         Config config = new Config();
         HazelcastProperties properties = new HazelcastProperties(config);
         networkConfig = config.getNetworkConfig();

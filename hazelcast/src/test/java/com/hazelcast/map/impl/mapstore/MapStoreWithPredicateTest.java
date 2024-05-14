@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.query.Predicates;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.annotation.QuickTest;
 import org.junit.Test;
@@ -40,9 +39,9 @@ public class MapStoreWithPredicateTest extends AbstractMapStoreTest {
 
     @Test
     public void testKeySetWithPredicate_checksMapStoreLoad() {
-        EventBasedMapStore<String, Integer> testMapStore = new EventBasedMapStore<String, Integer>();
+        EventBasedMapStore<String, Integer> testMapStore = new EventBasedMapStore<>();
 
-        Map<String, Integer> mapForStore = new HashMap<String, Integer>();
+        Map<String, Integer> mapForStore = new HashMap<>();
         mapForStore.put("key1", 17);
         mapForStore.put("key2", 37);
         mapForStore.put("key3", 47);
@@ -52,23 +51,20 @@ public class MapStoreWithPredicateTest extends AbstractMapStoreTest {
         HazelcastInstance instance = createHazelcastInstance(config);
         final IMap map = instance.getMap("default");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                Set expected = map.keySet(Predicates.greaterThan("value", 1));
-                assertEquals(3, expected.size());
-                assertContains(expected, "key1");
-                assertContains(expected, "key2");
-                assertContains(expected, "key3");
-            }
+        assertTrueEventually(() -> {
+            Set expected = map.keySet(Predicates.greaterThan("value", 1));
+            assertEquals(3, expected.size());
+            assertContains(expected, "key1");
+            assertContains(expected, "key2");
+            assertContains(expected, "key3");
         });
     }
 
     @Test
     public void testValuesWithPredicate_checksMapStoreLoad() {
-        EventBasedMapStore<String, Integer> testMapStore = new EventBasedMapStore<String, Integer>();
+        EventBasedMapStore<String, Integer> testMapStore = new EventBasedMapStore<>();
 
-        Map<String, Integer> mapForStore = new HashMap<String, Integer>();
+        Map<String, Integer> mapForStore = new HashMap<>();
         mapForStore.put("key1", 17);
         mapForStore.put("key2", 37);
         mapForStore.put("key3", 47);
@@ -78,23 +74,20 @@ public class MapStoreWithPredicateTest extends AbstractMapStoreTest {
         HazelcastInstance instance = createHazelcastInstance(config);
         final IMap map = instance.getMap("default");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                final Collection values = map.values(Predicates.greaterThan("value", 1));
-                assertEquals(3, values.size());
-                assertContains(values, 17);
-                assertContains(values, 37);
-                assertContains(values, 47);
-            }
+        assertTrueEventually(() -> {
+            final Collection values = map.values(Predicates.greaterThan("value", 1));
+            assertEquals(3, values.size());
+            assertContains(values, 17);
+            assertContains(values, 37);
+            assertContains(values, 47);
         });
     }
 
     @Test
     public void testEntrySetWithPredicate_checksMapStoreLoad() {
-        EventBasedMapStore<String, Integer> testMapStore = new EventBasedMapStore<String, Integer>();
+        EventBasedMapStore<String, Integer> testMapStore = new EventBasedMapStore<>();
 
-        Map<String, Integer> mapForStore = new HashMap<String, Integer>();
+        Map<String, Integer> mapForStore = new HashMap<>();
         mapForStore.put("key1", 17);
         mapForStore.put("key2", 37);
         mapForStore.put("key3", 47);
@@ -104,12 +97,9 @@ public class MapStoreWithPredicateTest extends AbstractMapStoreTest {
         HazelcastInstance instance = createHazelcastInstance(config);
         final IMap<String, Integer> map = instance.getMap("default");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                final Set<Map.Entry<String, Integer>> entrySet = map.entrySet(Predicates.greaterThan("value", 1));
-                assertEquals(3, entrySet.size());
-            }
+        assertTrueEventually(() -> {
+            final Set<Map.Entry<String, Integer>> entrySet = map.entrySet(Predicates.greaterThan("value", 1));
+            assertEquals(3, entrySet.size());
         });
     }
 }

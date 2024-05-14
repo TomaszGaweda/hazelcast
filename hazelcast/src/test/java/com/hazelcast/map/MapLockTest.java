@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import com.hazelcast.internal.locksupport.LockSupportService;
 import com.hazelcast.internal.locksupport.LockSupportServiceImpl;
 import com.hazelcast.jet.impl.JobRepository;
 import com.hazelcast.spi.impl.NodeEngineImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -80,23 +79,21 @@ public class MapLockTest extends HazelcastTestSupport {
         final int size = 50;
         final CountDownLatch latch = new CountDownLatch(1);
 
-        Runnable runnable = new Runnable() {
-            public void run() {
-                for (int i = 0; i < size; i++) {
-                    map1.lock(i);
-                    sleepMillis(100);
-                }
-                for (int i = 0; i < size; i++) {
-                    assertTrue(map1.isLocked(i));
-                }
-                for (int i = 0; i < size; i++) {
-                    map1.unlock(i);
-                }
-                for (int i = 0; i < size; i++) {
-                    assertFalse(map1.isLocked(i));
-                }
-                latch.countDown();
+        Runnable runnable = () -> {
+            for (int i = 0; i < size; i++) {
+                map1.lock(i);
+                sleepMillis(100);
             }
+            for (int i = 0; i < size; i++) {
+                assertTrue(map1.isLocked(i));
+            }
+            for (int i = 0; i < size; i++) {
+                map1.unlock(i);
+            }
+            for (int i = 0; i < size; i++) {
+                assertFalse(map1.isLocked(i));
+            }
+            latch.countDown();
         };
         new Thread(runnable).start();
         try {
@@ -124,18 +121,16 @@ public class MapLockTest extends HazelcastTestSupport {
         map.lock(1, 1, TimeUnit.SECONDS);
         assertTrue(map.isLocked(1));
         final CountDownLatch latch = new CountDownLatch(1);
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                map.lock(1);
-                latch.countDown();
-            }
+        Thread t = new Thread(() -> {
+            map.lock(1);
+            latch.countDown();
         });
         t.start();
         assertTrue(latch.await(10, TimeUnit.SECONDS));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testLockTTL_whenZeroTimeout() throws Exception {
+    public void testLockTTL_whenZeroTimeout() {
         final IMap<String, String> mm = getMap();
         final String key = "Key";
         mm.lock(key, 0, TimeUnit.SECONDS);
@@ -156,12 +151,10 @@ public class MapLockTest extends HazelcastTestSupport {
             map.lock(i, rand.nextInt(5) + 1, TimeUnit.SECONDS);
         }
         final CountDownLatch latch = new CountDownLatch(5);
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                for (int i = 0; i < 5; i++) {
-                    map.lock(i);
-                    latch.countDown();
-                }
+        Thread t = new Thread(() -> {
+            for (int i = 0; i < 5; i++) {
+                map.lock(i);
+                latch.countDown();
             }
         });
         t.start();
@@ -213,12 +206,10 @@ public class MapLockTest extends HazelcastTestSupport {
             assertTrue(map.isLocked(i));
         }
         final CountDownLatch latch = new CountDownLatch(1000);
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                for (int i = 0; i < 1000; i++) {
-                    map.lock(i);
-                    latch.countDown();
-                }
+        Thread t = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                map.lock(i);
+                latch.countDown();
             }
         });
         t.start();
@@ -226,7 +217,7 @@ public class MapLockTest extends HazelcastTestSupport {
     }
 
     @Test(expected = IllegalMonitorStateException.class)
-    public void testLockOwnership() throws Exception {
+    public void testLockOwnership() {
         final TestHazelcastInstanceFactory nodeFactory = createHazelcastInstanceFactory(2);
         final Config config = getConfig();
         String name = randomString();
@@ -242,7 +233,7 @@ public class MapLockTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testAbsentKeyIsLocked() throws Exception {
+    public void testAbsentKeyIsLocked() {
         final TestHazelcastInstanceFactory nodeFactory = createHazelcastInstanceFactory(2);
         Config config = getConfig();
         final String name = randomString();
@@ -259,11 +250,9 @@ public class MapLockTest extends HazelcastTestSupport {
         boolean putResult = map2.tryPut(key, val, 2, TimeUnit.SECONDS);
 
         assertFalse("the result of try put should be false as the absent key is locked", putResult);
-        assertTrueEventually(new AssertTask() {
-            public void run() {
-                assertEquals("the key should be absent ", null, map1.get(key));
-                assertEquals("the key should be absent ", null, map2.get(key));
-            }
+        assertTrueEventually(() -> {
+            assertEquals("the key should be absent ", null, map1.get(key));
+            assertEquals("the key should be absent ", null, map2.get(key));
         });
     }
 
@@ -323,12 +312,10 @@ public class MapLockTest extends HazelcastTestSupport {
         map.lock(key);
 
         final CountDownLatch cleared = new CountDownLatch(1);
-        new Thread() {
-            public void run() {
-                map.clear();
-                cleared.countDown();
-            }
-        }.start();
+        new Thread(() -> {
+            map.clear();
+            cleared.countDown();
+        }).start();
 
         assertOpenEventually(cleared);
 
@@ -350,11 +337,7 @@ public class MapLockTest extends HazelcastTestSupport {
     public void testTryLockLeaseTime_whenLockAcquiredByOther() throws InterruptedException {
         final IMap<String, String> map = getMap();
         final String key = randomString();
-        Thread thread = new Thread() {
-            public void run() {
-                map.lock(key);
-            }
-        };
+        Thread thread = new Thread(() -> map.lock(key));
         thread.start();
         thread.join();
 
@@ -367,12 +350,7 @@ public class MapLockTest extends HazelcastTestSupport {
         final IMap<String, String> map = getMap();
         final String key = randomString();
         map.tryLock(key, 1000, TimeUnit.MILLISECONDS, 1000, TimeUnit.MILLISECONDS);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertFalse(map.isLocked(key));
-            }
-        }, 30);
+        assertTrueEventually(() -> assertFalse(map.isLocked(key)), 30);
     }
 
     /**

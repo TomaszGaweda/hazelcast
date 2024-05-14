@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.hazelcast.jet.cdc.PostgresTestUtils.getPostgreSqlConnection;
 import static org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT;
 
 @Category({ParallelJVMTest.class, IgnoreInJenkinsOnWindows.class})
@@ -62,7 +63,7 @@ public abstract class AbstractPostgresCdcIntegrationTest extends AbstractCdcInte
 
     protected PostgresCdcSources.Builder sourceBuilder(String name) {
         return PostgresCdcSources.postgres(name)
-                .setDatabaseAddress(postgres.getContainerIpAddress())
+                .setDatabaseAddress(postgres.getHost())
                 .setDatabasePort(postgres.getMappedPort(POSTGRESQL_PORT))
                 .setDatabaseUser("postgres")
                 .setDatabasePassword("postgres")

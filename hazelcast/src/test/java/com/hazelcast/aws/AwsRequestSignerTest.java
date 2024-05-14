@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,10 +69,11 @@ public class AwsRequestSignerTest {
         headers.put("Host", "ecs.eu-central-1.amazonaws.com");
 
         //language=JSON
-        String body = "{\n"
-            + "  \"cluster\": \"123456\",\n"
-            + "  \"family\": \"abcdef\"\n"
-            + "}";
+        String body = """
+                {
+                  "cluster": "123456",
+                  "family": "abcdef"
+                }""";
 
         AwsCredentials credentials = AwsCredentials.builder()
             .setAccessKey("AKIDEXAMPLE")

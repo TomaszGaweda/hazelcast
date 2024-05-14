@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,10 @@ import com.hazelcast.client.test.TestHazelcastFactory;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
 import com.hazelcast.topic.ITopic;
-import com.hazelcast.topic.Message;
 import com.hazelcast.topic.MessageListener;
 import org.junit.After;
 import org.junit.Before;
@@ -77,13 +75,7 @@ public class ClientTopicTest {
     public void testListener() throws InterruptedException {
         ITopic<String> topic = client.getTopic(randomString());
         final CountDownLatch latch = new CountDownLatch(10);
-        topic.addMessageListener(new MessageListener<String>() {
-
-            @Override
-            public void onMessage(Message<String> message) {
-                latch.countDown();
-            }
-        });
+        topic.addMessageListener(message -> latch.countDown());
         for (int i = 0; i < 10; i++) {
             topic.publish("message " + i);
         }
@@ -95,9 +87,7 @@ public class ClientTopicTest {
     public void testRemoveListener() {
         ITopic topic = client.getTopic(randomString());
 
-        MessageListener listener = new MessageListener() {
-            public void onMessage(Message message) {
-            }
+        MessageListener listener = message -> {
         };
         UUID id = topic.addMessageListener(listener);
 
@@ -105,26 +95,23 @@ public class ClientTopicTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testGetLocalTopicStats() throws Exception {
+    public void testGetLocalTopicStats() {
         ITopic topic = client.getTopic(randomString());
 
         topic.getLocalTopicStats();
     }
 
     @Test
-    public void testPublish() throws InterruptedException {
+    public void testPublish() {
         String publishValue = "message";
         final AtomicInteger count = new AtomicInteger(0);
         final Collection<String> receivedValues = new ArrayList<>();
         ITopic<String> topic = createTopic(count, receivedValues);
 
         topic.publish(publishValue);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(1, count.get());
-                assertTrue(receivedValues.contains(publishValue));
-            }
+        assertTrueEventually(() -> {
+            assertEquals(1, count.get());
+            assertTrue(receivedValues.contains(publishValue));
         });
     }
 
@@ -136,12 +123,9 @@ public class ClientTopicTest {
 
         final String message = "message";
         topic.publishAsync(message);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(1, count.get());
-                assertEquals(Arrays.asList(message), receivedValues);
-            }
+        assertTrueEventually(() -> {
+            assertEquals(1, count.get());
+            assertEquals(Arrays.asList(message), receivedValues);
         });
     }
 
@@ -153,12 +137,9 @@ public class ClientTopicTest {
 
         final List<String> messages = Arrays.asList("message 1", "message 2", "message 3");
         topic.publishAll(messages);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(messages.size(), count.get());
-                assertTrue(messages.containsAll(receivedValues));
-            }
+        assertTrueEventually(() -> {
+            assertEquals(messages.size(), count.get());
+            assertTrue(messages.containsAll(receivedValues));
         });
     }
 
@@ -170,12 +151,9 @@ public class ClientTopicTest {
 
         final List<String> messages = Arrays.asList("message 1", "message 2", "messgae 3");
         topic.publishAllAsync(messages);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(messages.size(), count.get());
-                assertTrue(messages.containsAll(receivedValues));
-            }
+        assertTrueEventually(() -> {
+            assertEquals(messages.size(), count.get());
+            assertTrue(messages.containsAll(receivedValues));
         });
     }
 
@@ -188,12 +166,9 @@ public class ClientTopicTest {
         final List<String> messages = Arrays.asList("message 1", "message 2", "messgae 3");
         final CompletionStage<Void> completionStage = topic.publishAllAsync(messages);
         completionStage.toCompletableFuture().join();
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(messages.size(), count.get());
-                assertTrue(messages.containsAll(receivedValues));
-            }
+        assertTrueEventually(() -> {
+            assertEquals(messages.size(), count.get());
+            assertTrue(messages.containsAll(receivedValues));
         });
     }
 
@@ -224,13 +199,9 @@ public class ClientTopicTest {
     @Nonnull
     private ITopic<String> createTopic(AtomicInteger count, Collection<String> receivedValues) {
         ITopic<String> topic = client.getTopic(randomString());
-        topic.addMessageListener(new MessageListener<String>() {
-
-            @Override
-            public void onMessage(Message<String> message) {
-                count.incrementAndGet();
-                receivedValues.add(message.getMessageObject());
-            }
+        topic.addMessageListener(message -> {
+            count.incrementAndGet();
+            receivedValues.add(message.getMessageObject());
         });
         return topic;
     }

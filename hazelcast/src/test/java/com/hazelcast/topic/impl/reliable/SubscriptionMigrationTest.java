@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.hazelcast.partition.MigrationState;
 import com.hazelcast.partition.MigrationListener;
 import com.hazelcast.partition.ReplicaMigrationEvent;
 import com.hazelcast.ringbuffer.impl.RingbufferService;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.OverridePropertyRule;
@@ -64,8 +63,8 @@ public class SubscriptionMigrationTest extends HazelcastTestSupport {
         final CountingMigrationListener migrationListener = new CountingMigrationListener();
         instance1.getPartitionService().addMigrationListener(migrationListener);
 
-        final PayloadMessageListener<String> listener0 = new PayloadMessageListener<String>();
-        final PayloadMessageListener<String> listener1 = new PayloadMessageListener<String>();
+        final PayloadMessageListener<String> listener0 = new PayloadMessageListener<>();
+        final PayloadMessageListener<String> listener1 = new PayloadMessageListener<>();
 
         topic0.addMessageListener(listener0);
         topic1.addMessageListener(listener1);
@@ -85,20 +84,17 @@ public class SubscriptionMigrationTest extends HazelcastTestSupport {
         topic0.publish("itemB");
         topic1.publish("item2");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertTrue(listener0.isReceived("itemA"));
-                assertTrue(listener0.isReceived("itemB"));
-                assertTrue(listener1.isReceived("item1"));
-                assertTrue(listener1.isReceived("item2"));
-            }
+        assertTrueEventually(() -> {
+            assertTrue(listener0.isReceived("itemA"));
+            assertTrue(listener0.isReceived("itemB"));
+            assertTrue(listener1.isReceived("item1"));
+            assertTrue(listener1.isReceived("item2"));
         });
     }
 
     public class PayloadMessageListener<V> implements MessageListener<V> {
 
-        private Collection<V> receivedMessages = new HashSet<V>();
+        private Collection<V> receivedMessages = new HashSet<>();
 
         @Override
         public void onMessage(Message<V> message) {

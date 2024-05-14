@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -185,7 +185,7 @@ class MockJoiner extends AbstractJoiner {
     }
 
     public void searchForOtherClusters() {
-        Collection<Address> possibleAddresses = new ArrayList<Address>(registry.getJoinAddresses());
+        Collection<Address> possibleAddresses = new ArrayList<>(registry.getJoinAddresses());
         possibleAddresses.remove(node.getThisAddress());
         possibleAddresses.removeAll(node.getClusterService().getMemberAddresses());
         SplitBrainJoinMessage request = node.createSplitBrainJoinMessage();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public final class SetUtil {
      */
     public static <E> Set<E> createHashSet(int expectedMapSize) {
         final int initialCapacity = (int) (expectedMapSize / HASHSET_DEFAULT_LOAD_FACTOR) + 1;
-        return new HashSet<E>(initialCapacity, HASHSET_DEFAULT_LOAD_FACTOR);
+        return new HashSet<>(initialCapacity, HASHSET_DEFAULT_LOAD_FACTOR);
     }
 
     /**
@@ -49,7 +49,7 @@ public final class SetUtil {
      */
     public static <E> Set<E> createLinkedHashSet(int expectedMapSize) {
         final int initialCapacity = (int) (expectedMapSize / HASHSET_DEFAULT_LOAD_FACTOR) + 1;
-        return new LinkedHashSet<E>(initialCapacity, HASHSET_DEFAULT_LOAD_FACTOR);
+        return new LinkedHashSet<>(initialCapacity, HASHSET_DEFAULT_LOAD_FACTOR);
     }
 
     public static PartitionIdSet singletonPartitionIdSet(int partitionCount, int partitionId) {

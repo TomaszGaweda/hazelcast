@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import com.hazelcast.map.impl.recordstore.RecordStore;
 import com.hazelcast.query.impl.JsonMetadata;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelParametersRunnerFactory;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.HazelcastTestSupport;
@@ -63,6 +62,7 @@ import static com.hazelcast.test.Accessors.getNodeEngineImpl;
 import static com.hazelcast.test.Accessors.getPartitionService;
 import static com.hazelcast.test.Accessors.getSerializationService;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -249,7 +249,7 @@ public class JsonMetadataCreationTest extends HazelcastTestSupport {
 
     @Test
     public void testPutAllCreatesMetadataForJson() {
-        Map<HazelcastJsonValue, HazelcastJsonValue> localMap = new HashMap<HazelcastJsonValue, HazelcastJsonValue>();
+        Map<HazelcastJsonValue, HazelcastJsonValue> localMap = new HashMap<>();
         for (int i = 0; i < ENTRY_COUNT; i++) {
             localMap.put(createJsonValue("key", i), createJsonValue("value", i));
         }
@@ -327,12 +327,7 @@ public class JsonMetadataCreationTest extends HazelcastTestSupport {
     }
 
     private void assertMetadataCreatedEventually(final String mapName) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertMetadataCreated(mapName);
-            }
-        });
+        assertTrueEventually(() -> assertMetadataCreated(mapName));
     }
 
     private void assertMetadataCreated(String mapName) {
@@ -371,13 +366,13 @@ public class JsonMetadataCreationTest extends HazelcastTestSupport {
         assertNotNull(msg, metadata);
         JsonSchemaNode keyNode = (JsonSchemaNode) metadata.getKeyMetadata();
         assertNotNull(keyNode);
-        assertTrue(!keyNode.isTerminal());
+        assertFalse(keyNode.isTerminal());
         JsonSchemaNode childNode = ((JsonSchemaStructNode) keyNode).getChild(0).getValue();
         assertTrue(childNode.isTerminal());
 
         JsonSchemaNode valueNode = (JsonSchemaNode) metadata.getValueMetadata();
         assertNotNull(valueNode);
-        assertTrue(!valueNode.isTerminal());
+        assertFalse(valueNode.isTerminal());
         JsonSchemaNode valueChildNode = ((JsonSchemaStructNode) valueNode).getChild(0).getValue();
         assertTrue(valueChildNode.isTerminal());
     }
@@ -392,7 +387,7 @@ public class JsonMetadataCreationTest extends HazelcastTestSupport {
 
         @Override
         public Map<HazelcastJsonValue, HazelcastJsonValue> loadAll(Collection<HazelcastJsonValue> keys) {
-            Map<HazelcastJsonValue, HazelcastJsonValue> localMap = new HashMap<HazelcastJsonValue, HazelcastJsonValue>();
+            Map<HazelcastJsonValue, HazelcastJsonValue> localMap = new HashMap<>();
             for (HazelcastJsonValue key : keys) {
                 int value = Json.parse(key.toString()).asObject().get("value").asInt();
                 localMap.put(key, createJsonValue("value", value));
@@ -403,7 +398,7 @@ public class JsonMetadataCreationTest extends HazelcastTestSupport {
 
         @Override
         public Iterable<HazelcastJsonValue> loadAllKeys() {
-            Collection<HazelcastJsonValue> localKeys = new ArrayList<HazelcastJsonValue>();
+            Collection<HazelcastJsonValue> localKeys = new ArrayList<>();
             for (int i = 0; i < ENTRY_COUNT; i++) {
                 localKeys.add(createJsonValue("key", i));
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ public class NodeAnswer extends AbstractAnswer {
             return mock(InternalPartitionService.class, new PartitionServiceAnswer(partitionService));
         } else if (arguments.length == 0 && methodName.equals("getNodeEngine")) {
             Object nodeEngine = invokeForMock(invocation);
+            // Do not change to NodeEngine.class - causes compatibility tests to fail
             return mock(NodeEngineImpl.class, new NodeEngineAnswer(nodeEngine));
         } else if (arguments.length == 1 && methodName.equals("getConnectionManager")) {
             arguments = proxyArgumentsIfNeeded(arguments, delegateClassloader);

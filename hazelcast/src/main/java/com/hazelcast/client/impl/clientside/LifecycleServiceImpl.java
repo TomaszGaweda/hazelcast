@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public final class LifecycleServiceImpl implements LifecycleService {
 
     private final HazelcastClientInstanceImpl client;
     private final ConcurrentMap<UUID, LifecycleListener> lifecycleListeners
-            = new ConcurrentHashMap<UUID, LifecycleListener>();
+            = new ConcurrentHashMap<>();
     private final AtomicBoolean active = new AtomicBoolean(false);
     private final BuildInfo buildInfo;
     private final ExecutorService executor;
@@ -82,8 +82,8 @@ public final class LifecycleServiceImpl implements LifecycleService {
                     }
                 }
 
-                if (implementation instanceof LifecycleListener) {
-                    addLifecycleListener((LifecycleListener) implementation);
+                if (implementation instanceof LifecycleListener listener) {
+                    addLifecycleListener(listener);
                 }
             }
         }
@@ -129,12 +129,9 @@ public final class LifecycleServiceImpl implements LifecycleService {
                 + buildInfo.getBuild() + revision + ") is "
                 + lifecycleEvent.getState());
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                for (LifecycleListener lifecycleListener : lifecycleListeners.values()) {
-                    lifecycleListener.stateChanged(lifecycleEvent);
-                }
+        executor.execute(() -> {
+            for (LifecycleListener lifecycleListener : lifecycleListeners.values()) {
+                lifecycleListener.stateChanged(lifecycleEvent);
             }
         });
     }

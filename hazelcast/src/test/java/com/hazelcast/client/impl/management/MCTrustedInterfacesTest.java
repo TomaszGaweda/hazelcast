@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.hazelcast.client.impl.protocol.codec.MCChangeClusterVersionCodec;
 import com.hazelcast.client.impl.protocol.codec.MCChangeWanReplicationStateCodec;
 import com.hazelcast.client.impl.protocol.codec.MCCheckWanConsistencyCodec;
 import com.hazelcast.client.impl.protocol.codec.MCClearWanQueuesCodec;
-import com.hazelcast.client.impl.protocol.codec.MCGetCPMembersCodec;
 import com.hazelcast.client.impl.protocol.codec.MCGetClusterMetadataCodec;
 import com.hazelcast.client.impl.protocol.codec.MCGetMapConfigCodec;
 import com.hazelcast.client.impl.protocol.codec.MCGetMemberConfigCodec;
@@ -39,10 +38,7 @@ import com.hazelcast.client.impl.protocol.codec.MCInterruptHotRestartBackupCodec
 import com.hazelcast.client.impl.protocol.codec.MCMatchMCConfigCodec;
 import com.hazelcast.client.impl.protocol.codec.MCPollMCEventsCodec;
 import com.hazelcast.client.impl.protocol.codec.MCPromoteLiteMemberCodec;
-import com.hazelcast.client.impl.protocol.codec.MCPromoteToCPMemberCodec;
 import com.hazelcast.client.impl.protocol.codec.MCReadMetricsCodec;
-import com.hazelcast.client.impl.protocol.codec.MCRemoveCPMemberCodec;
-import com.hazelcast.client.impl.protocol.codec.MCResetCPSubsystemCodec;
 import com.hazelcast.client.impl.protocol.codec.MCRunConsoleCommandCodec;
 import com.hazelcast.client.impl.protocol.codec.MCRunGcCodec;
 import com.hazelcast.client.impl.protocol.codec.MCRunScriptCodec;
@@ -131,7 +127,7 @@ public class MCTrustedInterfacesTest extends HazelcastTestSupport {
 
         ClientMessage clientMessage = MCAddWanBatchPublisherConfigCodec.encodeRequest(randomString(), randomString(),
                 randomString(), randomString(), random.nextInt(), random.nextInt(), random.nextInt(), random.nextInt(),
-                random.nextInt(), random.nextInt());
+                random.nextInt(), random.nextInt(), (byte) random.nextInt(2));
 
         assertFailureOnUntrustedInterface(clientMessage);
     }
@@ -175,11 +171,6 @@ public class MCTrustedInterfacesTest extends HazelcastTestSupport {
     @Test
     public void testGetClusterMetadataMessageTask() throws Exception {
         assertFailureOnUntrustedInterface(MCGetClusterMetadataCodec.encodeRequest());
-    }
-
-    @Test
-    public void testGetCPMembersMessageTask() throws Exception {
-        assertFailureOnUntrustedInterface(MCGetCPMembersCodec.encodeRequest());
     }
 
     @Test
@@ -243,21 +234,6 @@ public class MCTrustedInterfacesTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testPromoteToCPMemberMessageTask() throws Exception {
-        assertFailureOnUntrustedInterface(MCPromoteToCPMemberCodec.encodeRequest());
-    }
-
-    @Test
-    public void testRemoveCPMemberMessageTask() throws Exception {
-        assertFailureOnUntrustedInterface(MCRemoveCPMemberCodec.encodeRequest(randomUUID()));
-    }
-
-    @Test
-    public void testResetCPSubsystemMessageTask() throws Exception {
-        assertFailureOnUntrustedInterface(MCResetCPSubsystemCodec.encodeRequest());
-    }
-
-    @Test
     public void testRunConsoleCommandMessageTask() throws Exception {
         assertFailureOnUntrustedInterface(MCRunConsoleCommandCodec.encodeRequest(randomString(), "help"));
     }
@@ -286,7 +262,7 @@ public class MCTrustedInterfacesTest extends HazelcastTestSupport {
 
     @Test
     public void testUpdateMapConfigMessageTask() throws Exception {
-        assertFailureOnUntrustedInterface(MCUpdateMapConfigCodec.encodeRequest(randomString(), 100, 200, 0, false, 100, 0));
+        assertFailureOnUntrustedInterface(MCUpdateMapConfigCodec.encodeRequest(randomString(), 100, 200, 0, false, 100, 0, null));
     }
 
     @Test

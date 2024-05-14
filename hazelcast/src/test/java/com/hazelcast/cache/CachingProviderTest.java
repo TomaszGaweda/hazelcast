@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class CachingProviderTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void whenDefaultURI_instanceNameAsProperty_thenThatInstanceIsUsed() throws URISyntaxException {
+    public void whenDefaultURI_instanceNameAsProperty_thenThatInstanceIsUsed() {
         HazelcastCacheManager cacheManager = (HazelcastCacheManager) cachingProvider.getCacheManager(
                 null, null, propertiesByInstanceName(INSTANCE_2_NAME));
         assertCacheManagerInstance(cacheManager, instance2);
@@ -120,7 +120,7 @@ public class CachingProviderTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void whenDefaultURI_noInstanceName_thenUseDefaultHazelcastInstance() throws URISyntaxException {
+    public void whenDefaultURI_noInstanceName_thenUseDefaultHazelcastInstance() {
         HazelcastCacheManager cacheManager = (HazelcastCacheManager) cachingProvider.getCacheManager();
         assertCacheManagerInstance(cacheManager, instance1);
     }
@@ -178,7 +178,7 @@ public class CachingProviderTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void whenInstanceItselfAsProperty_andDefaultURI_thenInstanceItselfIsUsed() throws URISyntaxException {
+    public void whenInstanceItselfAsProperty_andDefaultURI_thenInstanceItselfIsUsed() {
         HazelcastCacheManager cacheManager = (HazelcastCacheManager) cachingProvider.getCacheManager(
                 null, null, propertiesByInstanceItself(instance3));
         assertCacheManagerInstance(cacheManager, instance3);

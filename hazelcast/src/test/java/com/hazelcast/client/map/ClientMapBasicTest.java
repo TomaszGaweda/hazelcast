@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1015,7 +1015,7 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
         int max = 100;
         IMap<Integer, Integer> map = client.getMap(randomString());
 
-        Map<Integer, Integer> expected = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> expected = new HashMap<>();
         for (int i = 0; i < max; i++) {
             expected.put(i, i);
         }
@@ -1039,7 +1039,7 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
         int max = 100;
         IMap<Integer, Integer> map = client.getMap(randomString());
 
-        Map<Integer, Integer> expected = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> expected = new HashMap<>();
         for (int i = 0; i < max; i++) {
             map.put(i, i);
             expected.put(i, i);
@@ -1057,7 +1057,7 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
     public void testGetAll_whenMapEmpty() {
         int max = 10;
         IMap<Integer, Integer> map = client.getMap(randomString());
-        Map<Integer, Integer> expected = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> expected = new HashMap<>();
         for (int i = 0; i < max; i++) {
             expected.put(i, i);
         }
@@ -1253,7 +1253,7 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
         int max = 81;
         IMap<Integer, String> map = client.getMap(randomString());
 
-        Set<Integer> expected = new TreeSet<Integer>();
+        Set<Integer> expected = new TreeSet<>();
         for (int key = 0; key < max; key++) {
             String value = key + "value";
             expected.add(key);
@@ -1269,7 +1269,7 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
         int max = 44;
         IMap<Integer, String> map = client.getMap(randomString());
 
-        Set<Integer> expected = new TreeSet<Integer>();
+        Set<Integer> expected = new TreeSet<>();
         for (int key = 0; key < max; key++) {
             String value = key + "value";
             map.put(key, value);
@@ -1293,14 +1293,14 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
         int max = 23;
         IMap<Integer, String> map = client.getMap(randomString());
 
-        Set<String> expected = new TreeSet<String>();
+        Set<String> expected = new TreeSet<>();
         for (int key = 0; key < max; key++) {
             String value = key + "value";
             expected.add(value);
             map.put(key, value);
         }
         Collection<String> collection = map.values();
-        Set<String> resultSet = new TreeSet<String>(collection);
+        Set<String> resultSet = new TreeSet<>(collection);
 
         assertEquals(expected, resultSet);
     }
@@ -1310,7 +1310,7 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
         int max = 27;
         IMap<Integer, String> map = client.getMap(randomString());
 
-        Set<String> expected = new TreeSet<String>();
+        Set<String> expected = new TreeSet<>();
         for (int key = 0; key < max; key++) {
             String value = key + "value";
             map.put(key, value);
@@ -1318,7 +1318,7 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
         expected.add("4value");
 
         Collection<String> collection = map.values(Predicates.sql("this == 4value"));
-        Set<String> resultSet = new TreeSet<String>(collection);
+        Set<String> resultSet = new TreeSet<>(collection);
 
         assertEquals(expected, resultSet);
     }
@@ -1335,7 +1335,7 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
         int max = 34;
         IMap<Integer, String> map = client.getMap(randomString());
 
-        Map<Integer, String> expected = new HashMap<Integer, String>();
+        Map<Integer, String> expected = new HashMap<>();
         for (int key = 0; key < max; key++) {
             String value = key + "value";
             expected.put(key, value);
@@ -1353,35 +1353,35 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
     }
 
     @Test
-    public void github_11489_verifyNoFailingCastOnValueForPagingPredicate() throws Exception {
+    public void github_11489_verifyNoFailingCastOnValueForPagingPredicate() {
         PagingPredicate<Integer, Integer> predicate = Predicates.pagingPredicate(100);
         github_11489_verifyNoFailingCastOnValue(map -> map.values(predicate));
     }
 
     @Test
-    public void github_11489_verifyNoFailingCastOnValueForTruePredicate() throws Exception {
+    public void github_11489_verifyNoFailingCastOnValueForTruePredicate() {
         github_11489_verifyNoFailingCastOnValue(map -> map.values(Predicates.alwaysTrue()));
     }
 
     @Test
-    public void github_11489_verifyNoFailingCastOnKeySetForPagingPredicate() throws Exception {
+    public void github_11489_verifyNoFailingCastOnKeySetForPagingPredicate() {
         PagingPredicate<Integer, Integer> predicate = Predicates.pagingPredicate(100);
         github_11489_verifyNoFailingCastOnValue(map -> map.keySet(predicate));
     }
 
     @Test
-    public void github_11489_verifyNoFailingCastOnKeySetForTruePredicate() throws Exception {
+    public void github_11489_verifyNoFailingCastOnKeySetForTruePredicate() {
         github_11489_verifyNoFailingCastOnValue(map -> map.keySet(Predicates.alwaysTrue()));
     }
 
     @Test
-    public void github_11489_verifyNoFailingCastOnEntriesForPagingPredicate() throws Exception {
+    public void github_11489_verifyNoFailingCastOnEntriesForPagingPredicate() {
         PagingPredicate<Integer, Integer> predicate = Predicates.pagingPredicate(100);
         github_11489_verifyNoFailingCastOnValue(map -> map.entrySet(predicate));
     }
 
     @Test
-    public void github_11489_verifyNoFailingCastOnEntriesForTruePredicate() throws Exception {
+    public void github_11489_verifyNoFailingCastOnEntriesForTruePredicate() {
         github_11489_verifyNoFailingCastOnValue(map -> map.entrySet(Predicates.alwaysTrue()));
     }
 
@@ -1524,8 +1524,8 @@ public class ClientMapBasicTest extends AbstractClientMapTest {
 
         Object values = function.apply(test);
         Type genericSuperClass = values.getClass().getGenericSuperclass();
-        if (genericSuperClass instanceof ParameterizedType) {
-            Type actualType = ((ParameterizedType) genericSuperClass).getActualTypeArguments()[0];
+        if (genericSuperClass instanceof ParameterizedType type) {
+            Type actualType = type.getActualTypeArguments()[0];
             // Raw class is expected. ParameterizedType-s cause troubles to Jackson serializer.
             assertInstanceOf(Class.class, actualType);
         }

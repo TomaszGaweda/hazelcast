@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,7 +215,7 @@ public final class Backup extends Operation implements BackupOperation, AllowedD
         OperationServiceImpl operationService = nodeEngine.getOperationService();
 
         if (isCallerClient()) {
-            ClientEngine clientEngine = ((NodeEngineImpl) getNodeEngine()).getNode().getClientEngine();
+            ClientEngine clientEngine = getNodeEngine().getNode().getClientEngine();
             UUID clientUUID = getCallerUuid();
             clientEngine.dispatchBackupEvent(clientUUID, clientCorrelationId);
         } else if (nodeEngine.getThisAddress().equals(originalCaller)) {

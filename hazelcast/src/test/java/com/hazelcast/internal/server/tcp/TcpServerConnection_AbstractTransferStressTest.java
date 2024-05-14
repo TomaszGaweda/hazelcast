@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.hazelcast.internal.networking.nio.NioChannel;
 import com.hazelcast.internal.networking.nio.NioInboundPipeline;
 import com.hazelcast.internal.nio.Packet;
 import com.hazelcast.internal.server.DummyPayload;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.TestThread;
 import org.junit.Before;
 import org.junit.Test;
@@ -118,19 +117,16 @@ public abstract class TcpServerConnection_AbstractTransferStressTest extends Tcp
 
         final TcpServerConnection connection = connect(tcpServerB, addressA);
         long start = System.currentTimeMillis();
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                logger.info("writer total frames pending   : " + totalFramesPending(connection));
-                logger.info("writer last write time millis : " + connection.getChannel().lastWriteTimeMillis());
+        assertTrueEventually(() -> {
+            logger.info("writer total frames pending   : " + totalFramesPending(connection));
+            logger.info("writer last write time millis : " + connection.getChannel().lastWriteTimeMillis());
 
-                logger.info("reader total frames handled   : " + framesRead(connection, false)
-                        + framesRead(connection, true));
-                logger.info("reader last read time millis  : " + connection.getChannel().lastReadTimeMillis());
+            logger.info("reader total frames handled   : " + framesRead(connection, false)
+                    + framesRead(connection, true));
+            logger.info("reader last read time millis  : " + connection.getChannel().lastReadTimeMillis());
 
-                assertEquals(expectedNormalPackets, framesRead(connection, false));
-                assertEquals(expectedUrgentPackets, framesRead(connection, true));
-            }
+            assertEquals(expectedNormalPackets, framesRead(connection, false));
+            assertEquals(expectedUrgentPackets, framesRead(connection, true));
         }, verifyTimeoutInMillis);
         logger.info("Waiting for pending packets to be sent and received finished in "
                 + (System.currentTimeMillis() - start) + " milliseconds");
@@ -138,8 +134,8 @@ public abstract class TcpServerConnection_AbstractTransferStressTest extends Tcp
 
     private int totalFramesPending(TcpServerConnection connection) {
         Channel channel = connection.getChannel();
-        if (channel instanceof NioChannel) {
-            return ((NioChannel) channel).outboundPipeline().totalFramesPending();
+        if (channel instanceof NioChannel nioChannel) {
+            return nioChannel.outboundPipeline().totalFramesPending();
         } else {
             throw new RuntimeException();
         }
@@ -147,8 +143,8 @@ public abstract class TcpServerConnection_AbstractTransferStressTest extends Tcp
 
     private long framesRead(TcpServerConnection connection, boolean priority) {
         Channel channel = connection.getChannel();
-        if (channel instanceof NioChannel) {
-            NioInboundPipeline reader = ((NioChannel) channel).inboundPipeline();
+        if (channel instanceof NioChannel nioChannel) {
+            NioInboundPipeline reader = nioChannel.inboundPipeline();
             return priority ? reader.priorityFramesRead() : reader.normalFramesRead();
         } else {
             throw new RuntimeException();

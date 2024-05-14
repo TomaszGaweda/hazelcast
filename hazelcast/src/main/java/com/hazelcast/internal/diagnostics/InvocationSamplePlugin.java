@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,8 @@ public class InvocationSamplePlugin extends DiagnosticsPlugin {
     private final long samplePeriodMillis;
     private final long thresholdMillis;
     private final int maxCount;
-    private final ItemCounter<String> slowOccurrences = new ItemCounter<String>();
-    private final ItemCounter<String> occurrences = new ItemCounter<String>();
+    private final ItemCounter<String> slowOccurrences = new ItemCounter<>();
+    private final ItemCounter<String> occurrences = new ItemCounter<>();
 
     public InvocationSamplePlugin(NodeEngineImpl nodeEngine) {
         super(nodeEngine.getLogger(PendingInvocationsPlugin.class));

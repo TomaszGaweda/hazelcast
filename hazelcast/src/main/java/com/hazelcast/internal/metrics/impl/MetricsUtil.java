@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,13 +68,11 @@ final class MetricsUtil {
      * @return the excluded targets
      */
     static Collection<MetricTarget> extractExcludedTargets(ProbeFunction function, ProbeLevel minimumLevel) {
-        if (function instanceof FieldProbe) {
-            FieldProbe fieldProbe = (FieldProbe) function;
+        if (function instanceof FieldProbe fieldProbe) {
             return extractExcludedTargets(fieldProbe.probe, fieldProbe.sourceMetadata, minimumLevel);
         }
 
-        if (function instanceof MethodProbe) {
-            MethodProbe methodProbe = (MethodProbe) function;
+        if (function instanceof MethodProbe methodProbe) {
             return extractExcludedTargets(methodProbe.probe, methodProbe.sourceMetadata, minimumLevel);
         }
 

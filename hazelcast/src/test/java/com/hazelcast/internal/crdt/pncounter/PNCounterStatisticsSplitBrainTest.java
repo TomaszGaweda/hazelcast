@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.crdt.pncounter.PNCounter;
 import com.hazelcast.internal.monitor.LocalPNCounterStats;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.SplitBrainTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -91,15 +90,12 @@ public class PNCounterStatisticsSplitBrainTest extends SplitBrainTestSupport {
     }
 
     private void assertContainsCounterStatsEventually(final boolean contains, final HazelcastInstance... instances) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                for (HazelcastInstance instance : instances) {
-                    PNCounterService service = getNodeEngineImpl(instance).getService(PNCounterService.SERVICE_NAME);
-                    Map<String, LocalPNCounterStats> stats = service.getStats();
+        assertTrueEventually(() -> {
+            for (HazelcastInstance instance : instances) {
+                PNCounterService service = getNodeEngineImpl(instance).getService(PNCounterService.SERVICE_NAME);
+                Map<String, LocalPNCounterStats> stats = service.getStats();
 
-                    assertEquals(contains, stats.containsKey(counterName));
-                }
+                assertEquals(contains, stats.containsKey(counterName));
             }
         });
     }

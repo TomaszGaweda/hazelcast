@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,6 @@ import org.junit.runner.RunWith;
 
 import javax.net.ssl.SSLContext;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.Comparator;
@@ -170,13 +169,15 @@ public class ClientConfigXmlGeneratorTest extends HazelcastTestSupport {
                 .setRedoOperation(true)
                 .setConnectionTimeout(randomInt())
                 .addAddress(randomString())
-                .setOutboundPortDefinitions(Collections.singleton(randomString()));
+                .setOutboundPortDefinitions(Collections.singleton(randomString()))
+                .getSubsetRoutingConfig().setEnabled(true);
 
 
         clientConfig.setNetworkConfig(expected);
         ClientNetworkConfig actual = newConfigViaGenerator().getNetworkConfig();
 
         assertFalse(actual.isSmartRouting());
+        assertTrue(actual.getSubsetRoutingConfig().isEnabled());
         assertTrue(actual.isRedoOperation());
         assertEquals(expected.getConnectionTimeout(), actual.getConnectionTimeout());
         assertCollection(expected.getAddresses(), actual.getAddresses());
@@ -239,7 +240,7 @@ public class ClientConfigXmlGeneratorTest extends HazelcastTestSupport {
 
     private static class TestSSLContextFactory implements SSLContextFactory {
         @Override
-        public void init(Properties properties) throws Exception { }
+        public void init(Properties properties) { }
 
         @Override
         public SSLContext getSSLContext() {
@@ -471,12 +472,12 @@ public class ClientConfigXmlGeneratorTest extends HazelcastTestSupport {
 
     private static class TestSerializer implements StreamSerializer {
         @Override
-        public void write(ObjectDataOutput out, Object object) throws IOException {
+        public void write(ObjectDataOutput out, Object object) {
 
         }
 
         @Override
-        public Object read(ObjectDataInput in) throws IOException {
+        public Object read(ObjectDataInput in) {
             return null;
         }
 
@@ -779,7 +780,9 @@ public class ClientConfigXmlGeneratorTest extends HazelcastTestSupport {
 
     @Test
     public void testTpcConfig() {
-        ClientTpcConfig originalConfig = new ClientTpcConfig().setEnabled(true);
+        ClientTpcConfig originalConfig = new ClientTpcConfig()
+                .setEnabled(true)
+                .setConnectionCount(10);
         clientConfig.setTpcConfig(originalConfig);
         ClientTpcConfig generatedConfig = newConfigViaGenerator().getTpcConfig();
         assertEquals(originalConfig, generatedConfig);

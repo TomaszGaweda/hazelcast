@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.hazelcast.jet.hadoop.impl;
 
 import com.hazelcast.cluster.Address;
-import com.hazelcast.cluster.Member;
 import com.hazelcast.function.BiFunctionEx;
 import com.hazelcast.jet.JetException;
 import com.hazelcast.jet.Traverser;
@@ -105,8 +104,7 @@ public final class ReadHadoopOldApiP<K, V, R> extends AbstractProcessor {
     }
 
     public static class MetaSupplier<K, V, R> extends ReadHdfsMetaSupplierBase<R> {
-
-        static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 1L;
 
         @SuppressFBWarnings("SE_BAD_FIELD")
         private final JobConf jobConf;
@@ -129,10 +127,8 @@ public final class ReadHadoopOldApiP<K, V, R> extends AbstractProcessor {
                 InputSplit[] splits = getSplits(jobConf, totalParallelism);
                 IndexedInputSplit[] indexedInputSplits = new IndexedInputSplit[splits.length];
                 Arrays.setAll(indexedInputSplits, i -> new IndexedInputSplit(i, splits[i]));
-
-                Address[] addrs = context.hazelcastInstance().getCluster().getMembers()
-                        .stream().map(Member::getAddress).toArray(Address[]::new);
-                assigned = assignSplitsToMembers(indexedInputSplits, addrs);
+                Address[] addresses = context.partitionAssignment().keySet().toArray(Address[]::new);
+                assigned = assignSplitsToMembers(indexedInputSplits, addresses);
                 printAssignments(assigned);
             }
         }
@@ -155,7 +151,7 @@ public final class ReadHadoopOldApiP<K, V, R> extends AbstractProcessor {
     }
 
     private static final class Supplier<K, V, R> implements ProcessorSupplier {
-        static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 1L;
 
         @SuppressFBWarnings("SE_BAD_FIELD")
         private final JobConf jobConf;

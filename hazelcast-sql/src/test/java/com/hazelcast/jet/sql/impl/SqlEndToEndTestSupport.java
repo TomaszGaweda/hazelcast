@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,22 @@
 package com.hazelcast.jet.sql.impl;
 
 import com.hazelcast.cluster.Address;
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.config.PartitioningAttributeConfig;
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.cluster.MemberInfo;
+import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.jet.config.JobConfig;
 import com.hazelcast.jet.core.DAG;
-import com.hazelcast.jet.impl.JetServiceBackend;
+import com.hazelcast.jet.core.JetTestSupport;
+import com.hazelcast.jet.datamodel.Tuple2;
 import com.hazelcast.jet.impl.JobCoordinationService;
 import com.hazelcast.jet.impl.JobInvocationObserver;
+import com.hazelcast.jet.impl.execution.init.ExecutionPlan;
 import com.hazelcast.jet.impl.util.Util;
 import com.hazelcast.jet.sql.SqlTestSupport;
+import com.hazelcast.partition.PartitionService;
+import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.sql.SqlExpectedResultType;
 import com.hazelcast.sql.SqlResult;
@@ -40,6 +48,7 @@ import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.ObjectAssert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -49,12 +58,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import static com.hazelcast.internal.util.PartitioningStrategyUtil.constructAttributeBasedKey;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(HazelcastSerialClassRunner.class)
 @Category({QuickTest.class, ParallelJVMTest.class})
@@ -76,9 +92,7 @@ public abstract class SqlEndToEndTestSupport extends SqlTestSupport {
         jobInvocationObserver = new JobInvocationObserverImpl();
         sqlService = (SqlServiceImpl) instance().getSql();
         planExecutor = sqlService.getOptimizer().getPlanExecutor();
-        jobCoordinationService = ((JetServiceBackend) nodeEngine
-                .getService(JetServiceBackend.SERVICE_NAME))
-                .getJobCoordinationService();
+        jobCoordinationService = getJetServiceBackend(instance()).getJobCoordinationService();
 
         planExecutor.registerJobInvocationObserver(sqlJobInvocationObserver);
         jobCoordinationService.registerInvocationObserver(jobInvocationObserver);
@@ -89,6 +103,11 @@ public abstract class SqlEndToEndTestSupport extends SqlTestSupport {
                 Util.getSerializationService(instance()),
                 null
         );
+    }
+
+    @After
+    public void teardown() {
+        jobCoordinationService.unregisterInvocationObserver(jobInvocationObserver);
     }
 
     SqlPlanImpl.SelectPlan assertQueryPlan(String query) {
@@ -102,6 +121,19 @@ public abstract class SqlEndToEndTestSupport extends SqlTestSupport {
 
         assertInstanceOf(SqlPlanImpl.SelectPlan.class, plan);
         return (SqlPlanImpl.SelectPlan) plan;
+    }
+
+    SqlPlanImpl.DmlPlan assertDmlQueryPlan(String query) {
+        SqlStatement sql = new SqlStatement(query);
+        SqlPlan plan = sqlService.prepare(
+                sql.getSchema(),
+                query,
+                sql.getParameters(),
+                SqlExpectedResultType.UPDATE_COUNT,
+                NoOpSqlSecurityContext.INSTANCE);
+
+        assertInstanceOf(SqlPlanImpl.DmlPlan.class, plan);
+        return (SqlPlanImpl.DmlPlan) plan;
     }
 
     void assertQueryResult(SqlPlanImpl.SelectPlan selectPlan, Collection<Row> expectedResults, Object... args) {
@@ -135,6 +167,22 @@ public abstract class SqlEndToEndTestSupport extends SqlTestSupport {
         return Assertions.<DAG>assertThat(sqlJobInvocationObserver.dag);
     }
 
+    protected void assertInvokedOnlyOnMembers(HazelcastInstance... members) {
+        Set<Address> expectedMembers = Arrays.stream(members)
+                .map(JetTestSupport::getAddress)
+                .collect(Collectors.toSet());
+        assertEquals(expectedMembers, jobInvocationObserver.getMembers());
+    }
+
+    protected void configureMapWithAttributes(String mapName, String... attributes) {
+        MapConfig mc = new MapConfig(mapName);
+        for (String attribute : attributes) {
+            mc.getPartitioningAttributeConfigs()
+                    .add(new PartitioningAttributeConfig(attribute));
+        }
+        instance().getConfig().addMapConfig(mc);
+    }
+
     protected static class SqlJobInvocationObserverImpl implements SqlJobInvocationObserver {
         public DAG dag;
         public JobConfig jobConfig;
@@ -153,6 +201,14 @@ public abstract class SqlEndToEndTestSupport extends SqlTestSupport {
         public JobConfig jobConfig;
 
         @Override
+        public void onJobInvocation(long jobId, Map<MemberInfo, ExecutionPlan> planMap, DAG dag, JobConfig jobConfig) {
+            this.jobId = jobId;
+            this.members = planMap.keySet();
+            this.dag = dag;
+            this.jobConfig = jobConfig;
+        }
+
+        @Override
         public void onLightJobInvocation(long jobId, Set<MemberInfo> members, DAG dag, JobConfig jobConfig) {
             this.jobId = jobId;
             this.members = members;
@@ -163,5 +219,50 @@ public abstract class SqlEndToEndTestSupport extends SqlTestSupport {
         public Set<Address> getMembers() {
             return members.stream().map(MemberInfo::getAddress).collect(toSet());
         }
+    }
+
+    @SuppressWarnings({"SameParameterValue", "DanglingJavadoc"})
+    /**
+     * Calculates expected partitions and members to participate in the query execution.
+     *
+     * @param shouldUseCoordinator           whether coordinator should be included in the expected members
+     * @param arity                          number of fields in partitioning attribute key
+     *                                       (e.g. 2 for f0, f1)
+     * @param partitionedPredicateConstants  constants used in the predicate in query
+     */
+    static Tuple2<Set<Address>, Set<Integer>> calculateExpectedPartitions(
+            NodeEngine nodeEngine,
+            Map<Address, int[]> partitionAssignment,
+            boolean shouldUseCoordinator,
+            int arity,
+            int... partitionedPredicateConstants) {
+        HazelcastInstance hz = nodeEngine.getHazelcastInstance();
+        PartitionService partitionService = hz.getPartitionService();
+        Map<Integer, Address> reversedPartitionAssignment = new HashMap<>();
+        for (Map.Entry<Address, int[]> entry : partitionAssignment.entrySet()) {
+            for (int partitionId : entry.getValue()) {
+                reversedPartitionAssignment.put(partitionId, entry.getKey());
+            }
+        }
+
+        Set<Integer> expectedPartitionsToParticipate = new HashSet<>();
+        Set<Address> expectedMembersToParticipate = new HashSet<>();
+        for (int equalityConstants : partitionedPredicateConstants) {
+            Object[] constants = new Object[arity];
+            Arrays.fill(constants, equalityConstants);
+            Data keyData = nodeEngine.getSerializationService().toData(constructAttributeBasedKey(constants), v -> v);
+            int partitionId = nodeEngine.getPartitionService().getPartitionId(keyData);
+            assertTrue(reversedPartitionAssignment.containsKey(partitionId));
+
+            expectedPartitionsToParticipate.add(partitionId);
+            expectedMembersToParticipate.add(reversedPartitionAssignment.get(partitionId));
+        }
+
+        if (shouldUseCoordinator) {
+            expectedMembersToParticipate.add(hz.getCluster().getLocalMember().getAddress());
+            expectedPartitionsToParticipate.add(partitionService.getPartition("").getPartitionId());
+        }
+
+        return Tuple2.tuple2(expectedMembersToParticipate, expectedPartitionsToParticipate);
     }
 }

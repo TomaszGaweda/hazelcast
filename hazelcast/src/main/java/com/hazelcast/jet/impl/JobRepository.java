@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import com.hazelcast.core.LifecycleService;
 import com.hazelcast.flakeidgen.FlakeIdGenerator;
 import com.hazelcast.internal.nio.IOUtil;
+import com.hazelcast.internal.tpcengine.util.OS;
 import com.hazelcast.jet.JetException;
 import com.hazelcast.jet.Job;
 import com.hazelcast.jet.config.JobConfig;
@@ -32,7 +33,7 @@ import com.hazelcast.jet.impl.deployment.IMapOutputStream;
 import com.hazelcast.jet.impl.execution.init.JetInitDataSerializerHook;
 import com.hazelcast.jet.impl.metrics.RawJobMetrics;
 import com.hazelcast.jet.impl.util.ConcurrentMemoizingSupplier;
-import com.hazelcast.jet.impl.util.ExceptionUtil;
+import com.hazelcast.internal.util.ExceptionUtil;
 import com.hazelcast.jet.impl.util.ImdgUtil;
 import com.hazelcast.jet.impl.util.Util;
 import com.hazelcast.logging.ILogger;
@@ -50,10 +51,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -70,10 +71,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -83,7 +84,6 @@ import static com.hazelcast.jet.Util.idToString;
 import static com.hazelcast.jet.impl.util.IOUtil.fileNameFromUrl;
 import static com.hazelcast.jet.impl.util.IOUtil.packDirectoryIntoZip;
 import static com.hazelcast.jet.impl.util.IOUtil.packStreamIntoZip;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFine;
 import static com.hazelcast.jet.impl.util.Util.memoizeConcurrent;
 import static com.hazelcast.map.impl.EntryRemovingProcessor.ENTRY_REMOVING_PROCESSOR;
 import static com.hazelcast.map.impl.MapService.SERVICE_NAME;
@@ -228,46 +228,46 @@ public class JobRepository {
             Supplier<IMap<String, byte[]>> jobFileStorage = Util.memoize(() -> getJobResources(jobId));
             for (ResourceConfig rc : jobConfig.getResourceConfigs().values()) {
                 switch (rc.getResourceType()) {
-                    case CLASSPATH_RESOURCE:
-                    case CLASS:
+                    case CLASSPATH_RESOURCE, CLASS -> {
                         try (InputStream in = rc.getUrl().openStream()) {
                             readStreamAndPutCompressedToMap(rc.getId(), tmpMap, in);
                         }
-                        break;
-                    case FILE:
+                    }
+                    case FILE -> {
                         try (InputStream in = rc.getUrl().openStream();
                              IMapOutputStream os = new IMapOutputStream(jobFileStorage.get(), fileKeyName(rc.getId()))
                         ) {
                             packStreamIntoZip(in, os, requireNonNull(fileNameFromUrl(rc.getUrl())));
                         }
-                        break;
-                    case DIRECTORY:
+                    }
+                    case DIRECTORY -> {
                         Path baseDir = validateAndGetDirectoryPath(rc);
                         try (IMapOutputStream os = new IMapOutputStream(jobFileStorage.get(), fileKeyName(rc.getId()))) {
                             packDirectoryIntoZip(baseDir, os);
                         }
-                        break;
-                    case JAR:
-                        loadJar(tmpMap, rc);
-                        break;
-                    case JARS_IN_ZIP:
-                        loadJarsInZip(tmpMap, rc.getUrl());
-                        break;
-                    default:
-                        throw new JetException("Unsupported resource type: " + rc.getResourceType());
+                    }
+                    case JAR -> loadJar(tmpMap, rc);
+                    case JARS_IN_ZIP -> loadJarsInZip(tmpMap, rc.getUrl());
+                    default -> throw new JetException("Unsupported resource type: " + rc.getResourceType());
                 }
             }
         } catch (IOException | URISyntaxException e) {
             throw new JetException("Job resource upload failed", e);
         }
         // avoid creating resources map if map is empty
-        if (tmpMap.size() > 0) {
+        if (!tmpMap.isEmpty()) {
             IMap<String, byte[]> jobResourcesMap = getJobResources(jobId);
             // now upload it all
             try {
                 jobResourcesMap.putAll(tmpMap);
             } catch (Exception e) {
-                jobResourcesMap.destroy();
+                try {
+                    jobResourcesMap.destroy();
+                } catch (Exception ee) {
+                    JetException wrapper = new JetException("Job resource upload failed", ee);
+                    wrapper.addSuppressed(e);
+                    throw wrapper;
+                }
                 throw new JetException("Job resource upload failed", e);
             }
         }
@@ -295,15 +295,34 @@ public class JobRepository {
      * Unzips the ZIP archive and processes JAR files
      */
     private void loadJarsInZip(Map<String, byte[]> map, URL url) throws IOException {
-        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(url.openStream()))) {
-            ZipEntry zipEntry;
-            while ((zipEntry = zis.getNextEntry()) != null) {
-                if (zipEntry.isDirectory()) {
-                    continue;
-                }
-                if (lowerCaseInternal(zipEntry.getName()).endsWith(".jar")) {
+        try (InputStream inputStream = new BufferedInputStream(url.openStream())) {
+            executeOnJarsInZIP(inputStream, zis -> {
+                try {
                     loadJarFromInputStream(map, zis);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
                 }
+            });
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
+        }
+    }
+
+    /**
+     * Extracts JARs from a ZIP, provided by an {@link InputStream}, passing them to a consumer to process.
+     * <p>
+     * Caller is responsible for closing stream.
+     */
+    public static void executeOnJarsInZIP(InputStream zip, Consumer<ZipInputStream> processor) throws IOException {
+        ZipInputStream zis = new ZipInputStream(zip);
+        ZipEntry zipEntry;
+
+        while ((zipEntry = zis.getNextEntry()) != null) {
+            if (zipEntry.isDirectory()) {
+                continue;
+            }
+            if (lowerCaseInternal(zipEntry.getName()).endsWith(".jar")) {
+                processor.accept(zis);
             }
         }
     }
@@ -323,20 +342,11 @@ public class JobRepository {
         }
     }
 
-    private void readStreamAndPutCompressedToMap(
+    private static void readStreamAndPutCompressedToMap(
             String resourceName, Map<String, byte[]> map, InputStream in
     ) throws IOException {
         // ignore duplicates: the first resource in first jar takes precedence
-        if (map.containsKey(resourceName)) {
-            return;
-        }
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (DeflaterOutputStream compressor = new DeflaterOutputStream(baos)) {
-            IOUtil.drainTo(in, compressor);
-        }
-
-        map.put(classKeyName(resourceName), baos.toByteArray());
+        map.putIfAbsent(classKeyName(resourceName), IOUtil.compress(in.readAllBytes()));
     }
 
     /**
@@ -484,7 +494,7 @@ public class JobRepository {
             if (map.getName().startsWith(SNAPSHOT_DATA_MAP_PREFIX)) {
                 long id = jobIdFromPrefixedName(map.getName(), SNAPSHOT_DATA_MAP_PREFIX);
                 if (!activeJobs.contains(id)) {
-                    logFine(logger, "Deleting snapshot data map '%s' because job already finished", map.getName());
+                    logger.fine("Deleting snapshot data map '%s' because job already finished", map.getName());
                     map.destroy();
                 }
             } else if (map.getName().startsWith(RESOURCES_MAP_NAME_PREFIX)) {
@@ -501,7 +511,7 @@ public class JobRepository {
         }
         if (jobResults.get().containsKey(id)) {
             // if job is finished, we can safely delete the map
-            logFine(logger, "Deleting job resource map '%s' because job is already finished", map.getName());
+            logger.fine("Deleting job resource map '%s' because job is already finished", map.getName());
             map.destroy();
         } else {
             // Job might be in the process of uploading resources, check how long the map has been there.
@@ -518,7 +528,7 @@ public class JobRepository {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void cleanupJobResults(NodeEngine nodeEngine) {
         int maxNoResults = Math.max(1, nodeEngine.getProperties().getInteger(ClusterProperty.JOB_RESULTS_MAX_SIZE));
         // delete oldest job results
@@ -546,13 +556,13 @@ public class JobRepository {
             return null;
         }
         if (error.getClass().equals(JetException.class) && error.getMessage() != null) {
-            String stackTrace = ExceptionUtil.stackTraceToString(error);
+            String stackTrace = ExceptionUtil.toString(error);
             // The error message is later thrown as JetException
             // Remove leading 'com.hazelcast.jet.JetException: ' from the stack trace to avoid double JetException
             // in the final stacktrace
             return stackTrace.substring(stackTrace.indexOf(' ') + 1);
         }
-        return ExceptionUtil.stackTraceToString(error);
+        return ExceptionUtil.toString(error);
     }
 
     private static long jobIdFromPrefixedName(String name, String prefix) {
@@ -589,7 +599,7 @@ public class JobRepository {
     }
 
     public boolean jobRecordsMapExists() {
-        return ((AbstractJetInstance) instance.getJet()).existsDistributedObject(SERVICE_NAME, JOB_RECORDS_MAP_NAME);
+        return ((AbstractJetInstance<?>) instance.getJet()).existsDistributedObject(SERVICE_NAME, JOB_RECORDS_MAP_NAME);
     }
 
     private Map<Long, JobRecord> jobRecordsMap() {
@@ -601,7 +611,7 @@ public class JobRepository {
 
     private Map<Long, JobResult> jobResultsMap() {
         if (jobResults.remembered() != null ||
-                ((AbstractJetInstance) instance.getJet()).existsDistributedObject(SERVICE_NAME, JOB_RESULTS_MAP_NAME)) {
+                ((AbstractJetInstance<?>) instance.getJet()).existsDistributedObject(SERVICE_NAME, JOB_RESULTS_MAP_NAME)) {
             return jobResults.get();
         }
         return Collections.emptyMap();
@@ -691,14 +701,14 @@ public class JobRepository {
      * Returns the key name in the form {@code file.<id>}
      */
     public static String fileKeyName(String id) {
-        return FILE_STORAGE_KEY_NAME_PREFIX + id;
+        return OS.ensureUnixSeparators(FILE_STORAGE_KEY_NAME_PREFIX + id);
     }
 
     /**
      * Returns the key name in the form {@code class.<id>}
      */
     public static String classKeyName(String id) {
-        return CLASS_STORAGE_KEY_NAME_PREFIX + id;
+        return OS.ensureUnixSeparators(CLASS_STORAGE_KEY_NAME_PREFIX + id);
     }
 
     /**
@@ -713,7 +723,7 @@ public class JobRepository {
         String mapName = snapshotDataMapName(jobId, dataMapIndex);
         try {
             instance.getMap(mapName).clear();
-            logFine(logger, "Cleared snapshot data map %s", mapName);
+            logger.fine("Cleared snapshot data map %s", mapName);
         } catch (Exception logged) {
             logger.warning("Cannot delete old snapshot data  " + idToString(jobId), logged);
         }
@@ -818,12 +828,12 @@ public class JobRepository {
 
         @Override
         public void writeData(ObjectDataOutput out) throws IOException {
-            out.writeUTF(name);
+            out.writeString(name);
         }
 
         @Override
         public void readData(ObjectDataInput in) throws IOException {
-            name = in.readUTF();
+            name = in.readString();
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.spi.merge.LatestUpdateMergePolicy;
 import com.hazelcast.spi.merge.PassThroughMergePolicy;
 import com.hazelcast.spi.merge.PutIfAbsentMergePolicy;
 import com.hazelcast.spi.merge.SplitBrainMergePolicy;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelParametersRunnerFactory;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.SplitBrainTestSupport;
@@ -348,21 +347,18 @@ public class ReplicatedMapSplitBrainTest extends SplitBrainTestSupport {
     }
 
     private void afterMergeReturnPiMergePolicy() {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertPi(replicatedMapA1.get("key"));
-                assertPi(replicatedMapA2.get("key"));
+        assertTrueEventually(() -> {
+            assertPi(replicatedMapA1.get("key"));
+            assertPi(replicatedMapA2.get("key"));
 
-                assertEquals(1, replicatedMapA1.size());
-                assertEquals(1, replicatedMapA2.size());
+            assertEquals(1, replicatedMapA1.size());
+            assertEquals(1, replicatedMapA2.size());
 
-                assertPi(replicatedMapB1.get("key"));
-                assertPi(replicatedMapB2.get("key"));
+            assertPi(replicatedMapB1.get("key"));
+            assertPi(replicatedMapB2.get("key"));
 
-                assertEquals(1, replicatedMapB1.size());
-                assertEquals(1, replicatedMapB2.size());
-            }
+            assertEquals(1, replicatedMapB1.size());
+            assertEquals(1, replicatedMapB2.size());
         });
     }
 
@@ -382,14 +378,11 @@ public class ReplicatedMapSplitBrainTest extends SplitBrainTestSupport {
     private static void assertReplicatedMaps(final ReplicatedMap<Object, Object> replicatedMap1,
                                              final ReplicatedMap<Object, Object> replicatedMap2,
                                              final Object key, final Object expectedValue) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEqualsStringFormat("expected value %s in replicatedMap1, but was %s",
-                        expectedValue, replicatedMap1.get(key));
-                assertEqualsStringFormat("expected value %s in replicatedMap2, but was %s",
-                        expectedValue, replicatedMap2.get(key));
-            }
+        assertTrueEventually(() -> {
+            assertEqualsStringFormat("expected value %s in replicatedMap1, but was %s",
+                    expectedValue, replicatedMap1.get(key));
+            assertEqualsStringFormat("expected value %s in replicatedMap2, but was %s",
+                    expectedValue, replicatedMap2.get(key));
         });
     }
 
@@ -404,12 +397,9 @@ public class ReplicatedMapSplitBrainTest extends SplitBrainTestSupport {
     private static void assertReplicatedMapsSize(final ReplicatedMap<Object, Object> replicatedMap1,
                                                  final ReplicatedMap<Object, Object> replicatedMap2,
                                                  final int expectedSize) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEqualsStringFormat("replicatedMap1 should have size %d, but was %d", expectedSize, replicatedMap1.size());
-                assertEqualsStringFormat("replicatedMap2 should have size %d, but was %d", expectedSize, replicatedMap2.size());
-            }
+        assertTrueEventually(() -> {
+            assertEqualsStringFormat("replicatedMap1 should have size %d, but was %d", expectedSize, replicatedMap1.size());
+            assertEqualsStringFormat("replicatedMap2 should have size %d, but was %d", expectedSize, replicatedMap2.size());
         });
     }
 }

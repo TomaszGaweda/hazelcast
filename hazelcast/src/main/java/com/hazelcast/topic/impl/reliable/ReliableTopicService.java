@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.internal.services.StatisticsAwareService;
 import com.hazelcast.internal.util.ConstructorFunction;
 import com.hazelcast.internal.util.MapUtil;
 import com.hazelcast.spi.impl.NodeEngine;
-import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.properties.ClusterProperty;
 import com.hazelcast.topic.LocalTopicStats;
 
@@ -96,7 +95,7 @@ public class ReliableTopicService implements ManagedService, RemoteService,
     public void init(NodeEngine nodeEngine, Properties properties) {
         boolean dsMetricsEnabled = nodeEngine.getProperties().getBoolean(ClusterProperty.METRICS_DATASTRUCTURES);
         if (dsMetricsEnabled) {
-            ((NodeEngineImpl) nodeEngine).getMetricsRegistry().registerDynamicMetricsProvider(this);
+            nodeEngine.getMetricsRegistry().registerDynamicMetricsProvider(this);
         }
     }
 
@@ -113,5 +112,24 @@ public class ReliableTopicService implements ManagedService, RemoteService,
     @Override
     public void provideDynamicMetrics(MetricDescriptor descriptor, MetricsCollectionContext context) {
         provide(descriptor, context, RELIABLE_TOPIC_PREFIX, getStats());
+    }
+
+    /**
+     * Looks up the User Code Namespace name associated with the specified reliable topic name. This is done
+     * by checking the Node's config tree directly.
+     *
+     * @param nodeEngine {@link NodeEngine} implementation of this member for service and config lookups
+     * @param topicName  The name of the reliable {@link com.hazelcast.topic.ITopic} to lookup for
+     * @return the Namespace Name if found, or {@code null} otherwise.
+     */
+    public static String lookupNamespace(NodeEngine nodeEngine, String topicName) {
+        if (nodeEngine.getNamespaceService().isEnabled()) {
+            // No regular containers available, fallback to config
+            ReliableTopicConfig topicConfig = nodeEngine.getConfig().findReliableTopicConfig(topicName);
+            if (topicConfig != null) {
+                return topicConfig.getUserCodeNamespace();
+            }
+        }
+        return null;
     }
 }

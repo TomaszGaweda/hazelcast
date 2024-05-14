@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ import static com.hazelcast.internal.util.ThreadUtil.createThreadPoolName;
 /**
  * Class that requests, listeners from client handled in node side.
  */
-@SuppressWarnings("checkstyle:classdataabstractioncoupling")
+@SuppressWarnings({"checkstyle:classdataabstractioncoupling", "ClassFanOutComplexity", "MethodCount"})
 public class ClientEngineImpl implements ClientEngine, CoreService,
         ManagedService, EventPublishingService<ClientEvent, ClientListener> {
 
@@ -182,7 +182,8 @@ public class ClientEngineImpl implements ClientEngine, CoreService,
         String hzName = nodeEngine.getHazelcastInstance().getName();
         String internalName = name.substring("hz:".length());
         String threadNamePrefix = createThreadPoolName(hzName, internalName);
-        UnblockablePoolExecutorThreadFactory factory = new UnblockablePoolExecutorThreadFactory(threadNamePrefix, classLoader);
+        UnblockablePoolExecutorThreadFactory factory = new UnblockablePoolExecutorThreadFactory(threadNamePrefix,
+                classLoader, nodeEngine);
         return executionService.register(ExecutionService.CLIENT_EXECUTOR,
                 threadCount, coreSize * EXECUTOR_QUEUE_CAPACITY_PER_CORE, factory);
     }
@@ -228,16 +229,15 @@ public class ClientEngineImpl implements ClientEngine, CoreService,
         Connection connection = clientMessage.getConnection();
         MessageTask messageTask = messageTaskFactory.create(clientMessage, connection);
 
-        if (tpcEnabled && messageTask instanceof AbstractMessageTask) {
-            AbstractMessageTask abstractMessageTask = (AbstractMessageTask) messageTask;
+        if (tpcEnabled && messageTask instanceof AbstractMessageTask abstractMessageTask) {
             abstractMessageTask.setAsyncSocket(clientMessage.getAsyncSocket());
             abstractMessageTask.setResponseBufAllocator(responseBufAllocator);
         }
         OperationServiceImpl operationService = nodeEngine.getOperationService();
         if (isUrgent(messageTask)) {
             operationService.execute((UrgentMessageTask) messageTask);
-        } else if (messageTask instanceof AbstractPartitionMessageTask) {
-            operationService.execute((AbstractPartitionMessageTask) messageTask);
+        } else if (messageTask instanceof AbstractPartitionMessageTask task) {
+            operationService.execute(task);
         } else if (isQuery(messageTask)) {
             queryExecutor.execute(messageTask);
         } else if (messageTask instanceof TransactionalMessageTask) {
@@ -421,7 +421,7 @@ public class ClientEngineImpl implements ClientEngine, CoreService,
     }
 
     @Override
-    public ClusterViewListenerService getClusterListenerService() {
+    public ClusterViewListenerService getClusterViewListenerService() {
         return clusterListenerService;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.hazelcast.internal.services.ObjectNamespace;
 import com.hazelcast.ringbuffer.Ringbuffer;
 import com.hazelcast.ringbuffer.impl.RingbufferContainer;
 import com.hazelcast.ringbuffer.impl.RingbufferService;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -150,12 +149,7 @@ public class ReliableTopicCreateTest extends HazelcastTestSupport {
 
         topic.publish("item");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertContains(messageListener.objects, "item");
-            }
-        });
+        assertTrueEventually(() -> assertContains(messageListener.objects, "item"));
     }
 
     @Test
@@ -174,12 +168,7 @@ public class ReliableTopicCreateTest extends HazelcastTestSupport {
 
         topic.publish("item");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertContains(messageListener.objects, "item");
-            }
-        });
+        assertTrueEventually(() -> assertContains(messageListener.objects, "item"));
     }
 
     static class InstanceAwareReliableMessageListenerMock extends ReliableMessageListenerMock implements HazelcastInstanceAware {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.map.impl.proxy.NearCachedMapProxyImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -76,7 +75,7 @@ public class MapNearCacheStalenessTest extends HazelcastTestSupport {
 
     @Test
     public void testNearCache_notContainsStaleValue_whenUpdatedByMultipleThreads() {
-        List<Thread> threads = new ArrayList<Thread>();
+        List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < NEAR_CACHE_INVALIDATOR_THREAD_COUNT; i++) {
             Thread putter = new NearCacheInvalidator(stop, map1, ENTRY_COUNT);
             threads.add(putter);
@@ -99,12 +98,9 @@ public class MapNearCacheStalenessTest extends HazelcastTestSupport {
             assertJoinable(thread);
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertNoStaleDataExistInNearCache(map1);
-                assertNoStaleDataExistInNearCache(map2);
-            }
+        assertTrueEventually(() -> {
+            assertNoStaleDataExistInNearCache(map1);
+            assertNoStaleDataExistInNearCache(map2);
         });
     }
 
@@ -148,7 +144,7 @@ public class MapNearCacheStalenessTest extends HazelcastTestSupport {
     }
 
     public static HashMap<Integer, Integer> getAllEntries(IMap<Integer, Integer> map, int entryCount) {
-        HashMap<Integer, Integer> localMap = new HashMap<Integer, Integer>(entryCount);
+        HashMap<Integer, Integer> localMap = new HashMap<>(entryCount);
         for (int i = 0; i < entryCount; i++) {
             localMap.put(i, map.get(i));
         }

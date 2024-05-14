@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class ClientReplicatedMapListenerTest extends AbstractReplicatedMapListen
         HazelcastInstance client = factory.newHazelcastClient();
 
         ReplicatedMap<DeserializationCounter, DeserializationCounter> replicatedMap = client.getReplicatedMap("test");
-        replicatedMap.addEntryListener(new EntryAdapter<DeserializationCounter, DeserializationCounter>() {
+        replicatedMap.addEntryListener(new EntryAdapter<>() {
             @Override
             public void onEntryEvent(EntryEvent<DeserializationCounter, DeserializationCounter> event) {
                 eventReceivedLatch.countDown();

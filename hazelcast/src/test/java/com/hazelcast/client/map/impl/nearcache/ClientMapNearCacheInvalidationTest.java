@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.map.impl.nearcache.TestReadOnlyProcessor;
 import com.hazelcast.nearcache.NearCacheStats;
 import com.hazelcast.query.Predicates;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -280,16 +279,12 @@ public class ClientMapNearCacheInvalidationTest extends ClientTestSupport {
 
     @Test
     public void testMapExecuteOnEntriesWithPredicate_withReadOnlyProcessor_noInvalidations() {
-        verifyNoInvalidationsWith((map, size) -> {
-            map.executeOnEntries(new TestReadOnlyProcessor(), Predicates.alwaysTrue());
-        });
+        verifyNoInvalidationsWith((map, size) -> map.executeOnEntries(new TestReadOnlyProcessor(), Predicates.alwaysTrue()));
     }
 
     @Test
     public void testMapExecuteOnEntriesWithoutPredicate_withReadOnlyProcessor_noInvalidations() {
-        verifyNoInvalidationsWith((map, size) -> {
-            map.executeOnEntries(new TestReadOnlyProcessor());
-        });
+        verifyNoInvalidationsWith((map, size) -> map.executeOnEntries(new TestReadOnlyProcessor()));
     }
 
     @Test
@@ -385,13 +380,10 @@ public class ClientMapNearCacheInvalidationTest extends ClientTestSupport {
     }
 
     private static void assertNearCacheSizeEventually(final IMap map, final int nearCacheSize) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                NearCache nearCache = ((NearCachedClientMapProxy) map).getNearCache();
+        assertTrueEventually(() -> {
+            NearCache nearCache = ((NearCachedClientMapProxy) map).getNearCache();
 
-                assertEquals(nearCacheSize, nearCache.size());
-            }
+            assertEquals(nearCacheSize, nearCache.size());
         });
     }
 }

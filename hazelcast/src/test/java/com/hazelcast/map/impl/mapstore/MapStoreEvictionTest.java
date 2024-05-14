@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -66,7 +65,7 @@ public class MapStoreEvictionTest extends HazelcastTestSupport {
     }
 
     @Test(timeout = 2 * MINUTE)
-    public void testLoadsAll_whenEvictionDisabled() throws Exception {
+    public void testLoadsAll_whenEvictionDisabled() {
         final String mapName = randomMapName();
         Config cfg = newConfig(mapName, false, EAGER);
 
@@ -87,7 +86,7 @@ public class MapStoreEvictionTest extends HazelcastTestSupport {
     }
 
     @Test(timeout = 2 * MINUTE)
-    public void testLoadsLessThanMaxSize_whenEvictionEnabled() throws Exception {
+    public void testLoadsLessThanMaxSize_whenEvictionEnabled() {
         final String mapName = randomMapName();
         Config cfg = newConfig(mapName, true, EAGER);
 
@@ -99,7 +98,7 @@ public class MapStoreEvictionTest extends HazelcastTestSupport {
     }
 
     @Test(timeout = 2 * MINUTE)
-    public void testLoadsLessThanMaxSize_AfterContainsKey_whenEvictionEnabled() throws Exception {
+    public void testLoadsLessThanMaxSize_AfterContainsKey_whenEvictionEnabled() {
         final String mapName = randomMapName();
         Config cfg = newConfig(mapName, true, EAGER);
 
@@ -113,7 +112,7 @@ public class MapStoreEvictionTest extends HazelcastTestSupport {
     }
 
     @Test(timeout = 2 * MINUTE)
-    public void testLoadsLessThanMaxSize_AfterGet_whenEvictionEnabled() throws Exception {
+    public void testLoadsLessThanMaxSize_AfterGet_whenEvictionEnabled() {
         final String mapName = randomMapName();
         Config cfg = newConfig(mapName, true, EAGER);
 
@@ -127,7 +126,7 @@ public class MapStoreEvictionTest extends HazelcastTestSupport {
     }
 
     @Test(timeout = 2 * MINUTE)
-    public void testLoadsLessThanMaxSize_whenEvictionEnabledAndReloaded() throws Exception {
+    public void testLoadsLessThanMaxSize_whenEvictionEnabledAndReloaded() {
         final String mapName = randomMapName();
         Config cfg = newConfig(mapName, true, EAGER);
 
@@ -143,12 +142,7 @@ public class MapStoreEvictionTest extends HazelcastTestSupport {
     }
 
     private void assertLoaderIsClosedEventually() {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertTrue(loader.isLoadAllKeysClosed());
-            }
-        });
+        assertTrueEventually(() -> assertTrue(loader.isLoadAllKeysClosed()));
     }
 
     private Config newConfig(String mapName, boolean sizeLimited, MapStoreConfig.InitialLoadMode loadMode) {

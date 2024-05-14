@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class ExportPackageViewer {
         String data = reader.readLine();
 
         List<String> strings = ElementParser.parseDelimitedString(data, ',');
-        Set<String> packages = new HashSet<String>();
+        Set<String> packages = new HashSet<>();
         for (String entry : strings) {
             int usesIndex = entry.indexOf(";");
             if (usesIndex != -1) {
@@ -46,7 +46,7 @@ public class ExportPackageViewer {
             packages.add(entry);
         }
 
-        List<String> result = new ArrayList<String>(packages);
+        List<String> result = new ArrayList<>(packages);
         Collections.sort(result);
 
         for (String p : result) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
 import com.hazelcast.transaction.TransactionException;
-import com.hazelcast.transaction.TransactionalTask;
-import com.hazelcast.transaction.TransactionalTaskContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,41 +51,29 @@ public class ClientTransactionTest extends HazelcastTestSupport {
 
     @Test(expected = TransactionException.class)
     public void testTxnRollback_WithExecuteTask_throwsTransactionException() {
-        client.executeTransaction(new TransactionalTask<Object>() {
-            @Override
-            public Object execute(TransactionalTaskContext context) throws TransactionException {
-                throw new TransactionException();
-            }
+        client.executeTransaction(context -> {
+            throw new TransactionException();
         });
     }
 
     @Test(expected = TransactionException.class)
     public void testTxnRollback_WithExecuteTask_throwsTransactionExceptionAsCause() {
-        client.executeTransaction(new TransactionalTask<Object>() {
-            @Override
-            public Object execute(TransactionalTaskContext context) throws TransactionException {
-                throw new RuntimeException(new TransactionException());
-            }
+        client.executeTransaction(context -> {
+            throw new RuntimeException(new TransactionException());
         });
     }
 
     @Test(expected = RuntimeException.class)
     public void testTxnRollback_WithExecuteTask_throwsRuntimeException() {
-        client.executeTransaction(new TransactionalTask<Object>() {
-            @Override
-            public Object execute(TransactionalTaskContext context) throws TransactionException {
-                throw new RuntimeException();
-            }
+        client.executeTransaction(context -> {
+            throw new RuntimeException();
         });
     }
 
     @Test(expected = TransactionException.class)
     public void testTxnRollback_WithExecuteTask_throwsError() {
-        client.executeTransaction(new TransactionalTask<Object>() {
-            @Override
-            public Object execute(TransactionalTaskContext context) throws TransactionException {
-                throw new Error();
-            }
+        client.executeTransaction(context -> {
+            throw new Error();
         });
     }
 

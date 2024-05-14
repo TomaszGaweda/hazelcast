@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.FieldKind;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -206,6 +208,37 @@ public class Schema implements IdentifiedDataSerializable {
         init();
     }
 
+    public static List<Schema> readSchemas(DataInput in) throws IOException {
+        int schemaCount = in.readInt();
+        List<Schema> schemas = new ArrayList<>(schemaCount);
+        for (int i = 0; i < schemaCount; i++) {
+            String typeName = in.readUTF();
+            int fieldCount = in.readInt();
+            List<FieldDescriptor> fields = new ArrayList<>(fieldCount);
+            for (int j = 0; j < fieldCount; j++) {
+                String name = in.readUTF();
+                FieldKind kind = FieldKind.get(in.readInt());
+                FieldDescriptor descriptor = new FieldDescriptor(name, kind);
+                fields.add(descriptor);
+            }
+            var schema = new Schema(typeName, fields);
+            schemas.add(schema);
+        }
+        return schemas;
+    }
+
+    public static void writeSchemas(DataOutput out, Collection<Schema> schemas) throws IOException {
+        out.writeInt(schemas.size());
+        for (Schema schema : schemas) {
+            out.writeUTF(schema.getTypeName());
+            out.writeInt(schema.getFieldCount());
+            for (FieldDescriptor descriptor : schema.getFields()) {
+                out.writeUTF(descriptor.getFieldName());
+                out.writeInt(descriptor.getKind().getId());
+            }
+        }
+    }
+
     @Override
     public int getFactoryId() {
         return SchemaDataSerializerHook.F_ID;
@@ -237,4 +270,5 @@ public class Schema implements IdentifiedDataSerializable {
     public int hashCode() {
         return (int) schemaId;
     }
+
 }

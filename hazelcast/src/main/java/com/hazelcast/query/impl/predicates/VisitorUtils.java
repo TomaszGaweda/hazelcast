@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,8 @@ public final class VisitorUtils {
         boolean copyCreated = false;
         for (int i = 0; i < predicates.length; i++) {
             Predicate predicate = predicates[i];
-            if (predicate instanceof VisitablePredicate) {
-                Predicate transformed = ((VisitablePredicate) predicate).accept(visitor, indexes);
+            if (predicate instanceof VisitablePredicate visitablePredicate) {
+                Predicate transformed = visitablePredicate.accept(visitor, indexes);
                 if (transformed != predicate) {
                     if (!copyCreated) {
                         copyCreated = true;

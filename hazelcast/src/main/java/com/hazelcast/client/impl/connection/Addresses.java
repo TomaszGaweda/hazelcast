@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ import java.util.List;
  * primary group of addresses could not be connected to).
  */
 public class Addresses {
-    private final List<Address> primary = new LinkedList<Address>();
-    private final List<Address> secondary = new LinkedList<Address>();
+    private final List<Address> primary = new LinkedList<>();
+    private final List<Address> secondary = new LinkedList<>();
 
     public Addresses() {
     }

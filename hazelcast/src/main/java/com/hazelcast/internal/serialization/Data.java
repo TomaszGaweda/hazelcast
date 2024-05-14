@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,11 @@ public interface Data {
      * false otherwise.
      *
      * @return true if source object is <code>Portable</code>, false otherwise.
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     boolean isPortable();
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.map.impl.nearcache.MapNearCacheStalenessTest;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -82,7 +81,7 @@ public class ClientMapNearCacheStalenessTest extends HazelcastTestSupport {
 
     @Test
     public void testNearCache_notContainsStaleValue_whenUpdatedByMultipleThreads() {
-        List<Thread> threads = new ArrayList<Thread>();
+        List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < NEAR_CACHE_INVALIDATOR_THREAD_COUNT; i++) {
             Thread putter = new MapNearCacheStalenessTest.NearCacheInvalidator(stop, memberMap, ENTRY_COUNT);
             threads.add(putter);
@@ -105,12 +104,7 @@ public class ClientMapNearCacheStalenessTest extends HazelcastTestSupport {
             assertJoinable(thread);
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertNoStaleDataExistInNearCache(clientMap);
-            }
-        });
+        assertTrueEventually(() -> assertNoStaleDataExistInNearCache(clientMap));
     }
 
     @Override

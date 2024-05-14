@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public class MapChunk extends Operation
     }
 
     @Override
-    public final void beforeRun() {
+    public void beforeRun() {
         RecordStore recordStore = getRecordStore(mapName);
         recordStore.beforeOperation();
     }
@@ -339,7 +339,8 @@ public class MapChunk extends Operation
         }
 
         MapContainer mapContainer = recordStore.getMapContainer();
-        if (mapContainer.isGlobalIndexEnabled()) {
+        MapServiceContext mapServiceContext = mapContainer.getMapServiceContext();
+        if (mapContainer.shouldUseGlobalIndex()) {
             // creating global indexes on partition thread in case they do not exist
             for (IndexConfig indexConfig : indexConfigs) {
                 IndexRegistry indexRegistry = mapContainer.getGlobalIndexRegistry();
@@ -348,12 +349,14 @@ public class MapChunk extends Operation
                 if (indexRegistry.getIndex(indexConfig.getName()) == null) {
                     indexRegistry.addOrGetIndex(indexConfig);
                 }
+                mapServiceContext.registerIndex(mapName, indexConfig);
             }
         } else {
             IndexRegistry indexRegistry = mapContainer.getOrCreateIndexRegistry(getPartitionId());
             indexRegistry.createIndexesFromRecordedDefinitions();
             for (IndexConfig indexConfig : indexConfigs) {
                 indexRegistry.addOrGetIndex(indexConfig);
+                mapServiceContext.registerIndex(mapName, indexConfig);
             }
         }
     }
@@ -377,7 +380,7 @@ public class MapChunk extends Operation
         return true;
     }
 
-    private RecordStore getRecordStore(String mapName) {
+    protected RecordStore getRecordStore(String mapName) {
         MapService mapService = getService();
         MapServiceContext mapServiceContext = mapService.getMapServiceContext();
         return mapServiceContext.getRecordStore(getPartitionId(), mapName, true);

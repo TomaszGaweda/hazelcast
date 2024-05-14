@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,7 +172,7 @@ public class MapNearCacheSerializationCountTest extends AbstractNearCacheSeriali
         NearCacheTestContextBuilder<K, V, Data, String> builder = createNearCacheContextBuilder();
         return builder
                 .setDataInstance(dataMember)
-                .setDataAdapter(new IMapDataStructureAdapter<K, V>(dataMap))
+                .setDataAdapter(new IMapDataStructureAdapter<>(dataMap))
                 .setHasLocalData(true)
                 .build();
     }
@@ -215,7 +215,7 @@ public class MapNearCacheSerializationCountTest extends AbstractNearCacheSeriali
 
         return new NearCacheTestContextBuilder<K, V, Data, String>(nearCacheConfig, getSerializationService(nearCacheMember))
                 .setNearCacheInstance(nearCacheMember)
-                .setNearCacheAdapter(new IMapDataStructureAdapter<K, V>(nearCacheMap))
+                .setNearCacheAdapter(new IMapDataStructureAdapter<>(nearCacheMap))
                 .setNearCache(nearCache)
                 .setNearCacheManager(nearCacheManager);
     }

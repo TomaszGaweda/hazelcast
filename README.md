@@ -279,12 +279,7 @@ in-depth details about how to install Hazelcast and an overview of the features.
 
 ## Get Help
 
-You can use the following channels for getting help with Hazelcast:
-
-* [Hazelcast mailing list](http://groups.google.com/group/hazelcast)
-* [Slack](https://slack.hazelcast.com/) for chatting with the
-  development team and other Hazelcast users.
-* [Stack Overflow](https://stackoverflow.com/tags/hazelcast)
+You can use [Slack](https://slack.hazelcast.com/) for getting help with Hazelcast
 
 ## How to Contribute
 
@@ -295,7 +290,7 @@ marked as good first issue for some guidance.
 
 ### Building From Source
 
-Building Hazelcast requires at minimum JDK 11. Pull the latest source from the
+Building Hazelcast requires at minimum JDK 17. Pull the latest source from the
 repository and use Maven install (or package) to build:
 
 ```bash
@@ -308,19 +303,32 @@ It is also possible to use local Maven distribution with the same
 version that is used in the Maven wrapper script.
 
 Additionally, there is a `quick` build activated by setting the `-Dquick` system
-property that skips tests, checkstyle validation, javadoc and source plugins and
-does not build `extensions` and `distribution` modules.
+property that skips validation tasks for faster local builds (e.g. tests, checkstyle
+validation, javadoc, source plugins etc) and does not build `extensions` and `distribution` 
+modules.
 
 ### Testing
 
 Take into account that the default build executes thousands of tests which may
 take a considerable amount of time. Hazelcast has 3 testing profiles:
 
-* Default: Type `./mvnw test` to run quick/integration tests (those can be run
+* Default: 
+  ```bash
+  ./mvnw test
+  ```
+to run quick/integration tests (those can be run
   in parallel without using network by using `-P parallelTest` profile).
-* Slow Tests: Type `./mvnw test -P nightly-build` to run tests that are either slow
+* Slow Tests: 
+  ```bash
+  ./mvnw test -P nightly-build
+  ```
+to run tests that are either slow
   or cannot be run in parallel.
-* All Tests: Type `./mvnw test -P all-tests` to run all tests serially using
+* All Tests:
+  ```bash
+  ./mvnw test -P all-tests
+  ```
+to run all tests serially using
   network.
 
 Some tests require Docker to run. Set `-Dhazelcast.disable.docker.tests` system property to ignore them.
@@ -337,11 +345,10 @@ trigger the build using special comments. These are the phrases you may
 see used in the comments on your PR:
 
 * `run-lab-run` - run the default PR builder
-* `run-lts-compilers` - compiles the sources with JDK 11 and JDK 17 (without running tests)
+* `run-lts-compilers` - compiles the sources with JDK 17 and JDK 21 (without running tests)
 * `run-ee-compile` - compile hazelcast-enterprise with this PR
 * `run-ee-tests` - run tests from hazelcast-enterprise with this PR
 * `run-windows` - run the tests on a Windows machine (HighFive is not supported here)
-* `run-with-jdk17` - run the tests with JDK 17
 * `run-with-ibm-jdk-8` - run the tests with IBM JDK 8
 * `run-cdc-debezium-tests` - run all tests in the
   `extensions/cdc-debezium` module
@@ -358,7 +365,7 @@ see used in the comments on your PR:
 * `run-sonar` - run SonarCloud analysis
 * `run-arm64` - run the tests on arm64 machine
 
-Where not indicated, the builds run on a Linux machine with Oracle JDK 11.
+Where not indicated, the builds run on a Linux machine with Oracle JDK 17.
 
 ### Creating PRs for Hazelcast SQL
 
@@ -396,6 +403,6 @@ We owe (the good parts of) our CLI tool's user experience to
 
 ## Copyright
 
-Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
 
 Visit [www.hazelcast.com](http://www.hazelcast.com/) for more info.

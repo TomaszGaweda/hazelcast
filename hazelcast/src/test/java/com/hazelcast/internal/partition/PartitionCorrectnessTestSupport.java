@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -356,7 +356,7 @@ public abstract class PartitionCorrectnessTestSupport extends HazelcastTestSuppo
                 + "! Before: " + beforeEventsCount + ", Commit: " + commitEventsCount
                 + ", Rollback: " + rollbackEventsCount, beforeEventsCount, commitEventsCount + rollbackEventsCount);
 
-        Collection<PartitionMigrationEvent> beforeEventsCopy = new ArrayList<PartitionMigrationEvent>(beforeEvents);
+        Collection<PartitionMigrationEvent> beforeEventsCopy = new ArrayList<>(beforeEvents);
         beforeEvents.removeAll(commitEvents);
         beforeEvents.removeAll(rollbackEvents);
         assertTrue("Remaining before events: " + beforeEvents, beforeEvents.isEmpty());
@@ -397,7 +397,7 @@ public abstract class PartitionCorrectnessTestSupport extends HazelcastTestSuppo
         }
 
         @Override
-        public void run() throws Exception {
+        public void run() {
             assertSizeAndData(allowDirty);
         }
     }

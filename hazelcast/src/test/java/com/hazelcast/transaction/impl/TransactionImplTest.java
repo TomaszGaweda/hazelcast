@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class TransactionImplTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void getTimeoutMillis() throws Exception {
+    public void getTimeoutMillis() {
         TransactionImpl tx = new TransactionImpl(txManagerService, nodeEngine, options, UUID.randomUUID());
         assertEquals(options.getTimeoutMillis(), tx.getTimeoutMillis());
     }
@@ -81,7 +81,7 @@ public class TransactionImplTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void getOwnerUUID() throws Exception {
+    public void getOwnerUUID() {
         UUID ownerUUID = UUID.randomUUID();
         TransactionImpl tx = new TransactionImpl(txManagerService, nodeEngine, options, ownerUUID);
         assertEquals(ownerUUID, tx.getOwnerUuid());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import com.hazelcast.security.impl.function.SecuredFunction;
 
 import java.io.Serializable;
 import java.util.function.Function;
-
-import static com.hazelcast.internal.util.Preconditions.checkNotNull;
 
 /**
  * {@code Serializable} variant of {@link Function java.util.function.Function}
@@ -63,14 +61,20 @@ public interface FunctionEx<T, R> extends Function<T, R>, Serializable, SecuredF
     }
 
     /**
+     * Enforces that the return type is FunctionEx, to be used to wrap some expressions without casting.
+     */
+    static <V, R> FunctionEx<V, R> unchecked(FunctionEx<V, R> function) {
+        return function::apply;
+    }
+
+    /**
      * {@code Serializable} variant of {@link Function#compose(Function)
      * java.util.function.Function#compose(Function)}.
      * @param <V> the type of input to the {@code before} function, and to the
      *           composed function
      */
     default <V> FunctionEx<V, R> compose(FunctionEx<? super V, ? extends T> before) {
-        checkNotNull(before, "before");
-        return v -> apply(before.apply(v));
+        return new FunctionsImpl.ComposedFunctionEx<>(before, this);
     }
 
     /**
@@ -80,7 +84,6 @@ public interface FunctionEx<T, R> extends Function<T, R>, Serializable, SecuredF
      *           composed function
      */
     default <V> FunctionEx<T, V> andThen(FunctionEx<? super R, ? extends V> after) {
-        checkNotNull(after, "after");
-        return t -> after.apply(apply(t));
+        return new FunctionsImpl.ComposedFunctionEx<>(this, after);
     }
 }

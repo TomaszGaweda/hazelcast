@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,8 +90,8 @@ public final class Version implements IdentifiedDataSerializable, Comparable<Ver
 
     @Override
     public int hashCode() {
-        int result = (int) major;
-        result = 31 * result + (int) minor;
+        int result = major;
+        result = 31 * result + minor;
         return result;
     }
 

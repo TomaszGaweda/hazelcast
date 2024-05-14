@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.hazelcast.internal.ascii.memcache;
 
-import com.hazelcast.core.HazelcastException;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -48,10 +47,5 @@ public class MemcacheUtilsTest extends HazelcastTestSupport {
         MapNameAndKeyPair mapNameKeyPair = MemcacheUtils.parseMemcacheKey("map:key");
         assertEquals("hz_memcache_map", mapNameKeyPair.getMapName());
         assertEquals("key", mapNameKeyPair.getKey());
-    }
-
-    @Test(expected = HazelcastException.class)
-    public void testdecodeKey_whenInvalidEncoding_thenThrowException() {
-        MemcacheUtils.decodeKey("key", "");
     }
 }

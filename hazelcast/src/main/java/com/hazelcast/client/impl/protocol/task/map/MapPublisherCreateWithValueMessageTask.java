@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.hazelcast.client.impl.protocol.task.BlockingMessageTask;
 import com.hazelcast.cluster.impl.MemberImpl;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.cluster.ClusterService;
+import com.hazelcast.internal.namespace.NamespaceUtil;
 import com.hazelcast.internal.util.collection.InflatableSet;
 import com.hazelcast.map.impl.MapService;
 import com.hazelcast.map.impl.query.QueryResult;
@@ -36,7 +37,7 @@ import com.hazelcast.query.Predicate;
 import com.hazelcast.security.permission.ActionConstants;
 import com.hazelcast.security.permission.MapPermission;
 import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
-import com.hazelcast.spi.impl.operationservice.impl.OperationServiceImpl;
+import com.hazelcast.spi.impl.operationservice.OperationService;
 import com.hazelcast.internal.util.ExceptionUtil;
 
 import java.security.Permission;
@@ -66,13 +67,15 @@ public class MapPublisherCreateWithValueMessageTask
     protected Object call() throws Exception {
         ClusterService clusterService = clientEngine.getClusterService();
         Collection<MemberImpl> members = clusterService.getMemberImpls();
-        List<Future> snapshotFutures = createPublishersAndGetSnapshotOf(members);
+        List<Future> snapshotFutures = NamespaceUtil.callWithNamespace(nodeEngine,
+                MapService.lookupNamespace(nodeEngine, parameters.mapName),
+                () -> createPublishersAndGetSnapshotOf(members));
         return fetchMapSnapshotFrom(snapshotFutures);
     }
 
     private List<Future> createPublishersAndGetSnapshotOf(Collection<MemberImpl> members) {
-        List<Future> futures = new ArrayList<Future>(members.size());
-        OperationServiceImpl operationService = nodeEngine.getOperationService();
+        List<Future> futures = new ArrayList<>(members.size());
+        OperationService operationService = nodeEngine.getOperationService();
         for (MemberImpl member : members) {
             Predicate predicate = serializationService.toObject(parameters.predicate);
             AccumulatorInfo accumulatorInfo =
@@ -93,7 +96,7 @@ public class MapPublisherCreateWithValueMessageTask
     }
 
     private static Set<Map.Entry<Data, Data>> fetchMapSnapshotFrom(List<Future> futures) {
-        List<Object> queryResults = new ArrayList<Object>(futures.size());
+        List<Object> queryResults = new ArrayList<>(futures.size());
         int queryResultSize = 0;
 
         for (Future future : futures) {

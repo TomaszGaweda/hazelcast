@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,18 +67,13 @@ public final class JetConfigDataSerializerHook implements DataSerializerHook {
     private static class Factory implements DataSerializableFactory {
         @Override
         public IdentifiedDataSerializable create(int typeId) {
-            switch (typeId) {
-                case JOB_CONFIG:
-                    return new JobConfig();
-                case EDGE_CONFIG:
-                    return new EdgeConfig();
-                case RESOURCE_CONFIG:
-                    return new ResourceConfig();
-                case DELTA_JOB_CONFIG:
-                    return new DeltaJobConfig();
-                default:
-                    throw new IllegalArgumentException("Unknown type id " + typeId);
-            }
+            return switch (typeId) {
+                case JOB_CONFIG -> new JobConfig();
+                case EDGE_CONFIG -> new EdgeConfig();
+                case RESOURCE_CONFIG -> new ResourceConfig();
+                case DELTA_JOB_CONFIG -> new DeltaJobConfig();
+                default -> throw new IllegalArgumentException("Unknown type id " + typeId);
+            };
         }
     }
 }

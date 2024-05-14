@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,15 +47,12 @@ public class InvalidationEventQueueTest {
     @Test
     public void itemsShouldBeOfferedCorrectly() throws InterruptedException, ExecutionException, TimeoutException {
         final InvalidationQueue queue = new InvalidationQueue();
-        List<Future> futureList = new ArrayList<Future>(WORKER_COUNT);
+        List<Future> futureList = new ArrayList<>(WORKER_COUNT);
 
         for (int i = 0; i < WORKER_COUNT; i++) {
-            Future future = spawn(new Runnable() {
-                @Override
-                public void run() {
-                    for (int i = 0; i < ITEM_COUNT_PER_WORKER; i++) {
-                        queue.offer(newInvalidation());
-                    }
+            Future future = spawn((Runnable) () -> {
+                for (int i1 = 0; i1 < ITEM_COUNT_PER_WORKER; i1++) {
+                    queue.offer(newInvalidation());
                 }
             });
             futureList.add(future);
@@ -71,19 +68,16 @@ public class InvalidationEventQueueTest {
     @Test
     public void itemsShouldBePolledCorrectly() throws InterruptedException, ExecutionException, TimeoutException {
         final InvalidationQueue queue = new InvalidationQueue();
-        List<Future> futureList = new ArrayList<Future>(WORKER_COUNT);
+        List<Future> futureList = new ArrayList<>(WORKER_COUNT);
 
         for (int i = 0; i < WORKER_COUNT * ITEM_COUNT_PER_WORKER; i++) {
             queue.offer(newInvalidation());
         }
 
         for (int i = 0; i < WORKER_COUNT; i++) {
-            Future future = spawn(new Runnable() {
-                @Override
-                public void run() {
-                    for (int i = 0; i < ITEM_COUNT_PER_WORKER; i++) {
-                        queue.poll();
-                    }
+            Future future = spawn((Runnable) () -> {
+                for (int i1 = 0; i1 < ITEM_COUNT_PER_WORKER; i1++) {
+                    queue.poll();
                 }
             });
             futureList.add(future);

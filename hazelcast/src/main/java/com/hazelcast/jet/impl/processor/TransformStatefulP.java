@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -203,8 +203,8 @@ public class TransformStatefulP<T, K, S, R> extends AbstractProcessor {
 
     @Override
     protected void restoreFromSnapshot(@Nonnull Object key, @Nonnull Object value) {
-        if (key instanceof BroadcastKey) {
-            assert ((BroadcastKey<?>) key).key() == SnapshotKeys.WATERMARK : "Unexpected " + key;
+        if (key instanceof BroadcastKey broadcastKey) {
+            assert broadcastKey.key() == SnapshotKeys.WATERMARK : "Unexpected " + key;
             long wm = (long) value;
             currentWm = (currentWm == Long.MIN_VALUE) ? wm : min(currentWm, wm);
         } else {

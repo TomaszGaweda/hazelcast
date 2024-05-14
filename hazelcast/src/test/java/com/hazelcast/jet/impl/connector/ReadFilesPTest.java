@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,18 +173,20 @@ public class ReadFilesPTest extends SimpleTestInClusterSupport {
     private File[] createJsonFiles(boolean prettyPrinted) throws IOException {
         File file1 = new File(directory, randomName() + ".json");
         String jsonItem1 = prettyPrinted
-                ? "{\n"
-                + "    \"name\": \"hello world\",\n"
-                + "    \"age\": 5,\n"
-                + "    \"status\": true\n"
-                + "}"
+                ? """
+                {
+                    "name": "hello world",
+                    "age": 5,
+                    "status": true
+                }"""
                 : "{\"name\": \"hello world\", \"age\": 5, \"status\": true}";
         String jsonItem2 = prettyPrinted
-                ? "{\n"
-                + "    \"name\": \"hello jupiter\",\n"
-                + "    \"age\": 8,\n"
-                + "    \"status\": false\n"
-                + "}"
+                ? """
+                {
+                    "name": "hello jupiter",
+                    "age": 8,
+                    "status": false
+                }"""
                 : "{\"name\": \"hello jupiter\", \"age\": 8, \"status\": false}";
         appendToFile(file1, jsonItem1, jsonItem1);
         File file2 = new File(directory, randomName() + ".json");

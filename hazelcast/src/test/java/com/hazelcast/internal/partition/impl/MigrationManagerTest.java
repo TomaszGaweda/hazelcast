@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,12 +69,12 @@ public class MigrationManagerTest {
     PartitionStateManager partitionStateManager;
     ClusterServiceImpl clusterService;
     Lock lock = new ReentrantLock();
-    MigrationManager.RedoPartitioningTask task;
+    MigrationManagerImpl.RedoPartitioningTask task;
 
     @Before
     public void setup() {
         setupMocks();
-        MigrationManager migrationManager = new MigrationManager(node, partitionService, lock);
+        MigrationManagerImpl migrationManager = new MigrationManagerImpl(node, partitionService, lock);
         task = migrationManager.new RedoPartitioningTask();
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -223,8 +223,7 @@ public class MySqlCdcWhiteBlackListIntegrationTest extends AbstractMySqlCdcInteg
 
         List<String> allTable1ExpectedOperations = allTable1ExpectedOperations(1);
         setNullToValue(allTable1ExpectedOperations, "value2");
-        List<String> expectedRecords = new ArrayList<>();
-        expectedRecords.addAll(allTable1ExpectedOperations);
+        List<String> expectedRecords = new ArrayList<>(allTable1ExpectedOperations);
 
         test(source, expectedRecords, 3);
     }
@@ -278,6 +277,7 @@ public class MySqlCdcWhiteBlackListIntegrationTest extends AbstractMySqlCdcInteg
         return pipeline;
     }
 
+    @SuppressWarnings("SqlDialectInspection")
     private void createDbWithData(int dbSuffix) throws SQLException {
         String database = DB_PREFIX + dbSuffix;
         createDb(database);
@@ -309,6 +309,7 @@ public class MySqlCdcWhiteBlackListIntegrationTest extends AbstractMySqlCdcInteg
 
     }
 
+    @SuppressWarnings("SqlDialectInspection")
     private void executeStatementsOnDb(int dbSuffix) throws SQLException {
         String database = DB_PREFIX + dbSuffix;
         try (Connection connection = getConnection(mysql, database)) {

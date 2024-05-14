@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,17 +44,17 @@ public class ClassFilter {
     private AtomicBoolean warningLogged = new AtomicBoolean();
 
     public ClassFilter() {
-        classes = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
-        packages = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
-        prefixes = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+        classes = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        packages = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        prefixes = Collections.newSetFromMap(new ConcurrentHashMap<>());
     }
 
     public ClassFilter(ClassFilter filter) {
-        classes = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+        classes = Collections.newSetFromMap(new ConcurrentHashMap<>());
         classes.addAll(filter.classes);
-        packages = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+        packages = Collections.newSetFromMap(new ConcurrentHashMap<>());
         packages.addAll(filter.packages);
-        prefixes = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+        prefixes = Collections.newSetFromMap(new ConcurrentHashMap<>());
         prefixes.addAll(filter.prefixes);
         warningLogged = new AtomicBoolean(filter.warningLogged.get());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,8 +174,8 @@ public abstract class AbstractYamlConfigBuilder extends AbstractConfigBuilder {
 
     private void mergeSequenceNodes(YamlSequence sourceAsSequence, YamlSequence targetAsSequence) {
         for (YamlNode sourceChild : sourceAsSequence.children()) {
-            if (targetAsSequence instanceof MutableYamlSequence) {
-                ((MutableYamlSequence) targetAsSequence).addChild(sourceChild);
+            if (targetAsSequence instanceof MutableYamlSequence sequence) {
+                sequence.addChild(sourceChild);
             }
         }
     }
@@ -186,8 +186,8 @@ public abstract class AbstractYamlConfigBuilder extends AbstractConfigBuilder {
             if (targetChild != null) {
                 merge(sourceChild, targetChild);
             } else {
-                if (targetAsMapping instanceof MutableYamlMapping) {
-                    ((MutableYamlMapping) targetAsMapping).addChild(sourceChild.nodeName(), sourceChild);
+                if (targetAsMapping instanceof MutableYamlMapping mapping) {
+                    mapping.addChild(sourceChild.nodeName(), sourceChild);
                 }
             }
         }
@@ -247,7 +247,7 @@ public abstract class AbstractYamlConfigBuilder extends AbstractConfigBuilder {
             String childName = childNodePair.nodeName();
             YamlNode child = childNodePair.childNode();
             Object nodeValue = asScalar(child).nodeValue();
-            properties.put(childName, nodeValue != null ? nodeValue.toString() : "");
+            properties.setProperty(childName, nodeValue != null ? nodeValue.toString() : "");
         }
     }
 }

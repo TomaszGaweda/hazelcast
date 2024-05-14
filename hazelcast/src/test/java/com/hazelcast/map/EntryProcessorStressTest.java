@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -47,7 +46,7 @@ public class EntryProcessorStressTest extends HazelcastTestSupport {
     private static final int MAX_TASKS = 20;
 
     @Test
-    public void droppedEntryProcessorTest_withKeyOwningNodeTermination() throws Exception {
+    public void droppedEntryProcessorTest_withKeyOwningNodeTermination() {
         String mapName = randomString();
 
         Config config = new Config();
@@ -61,7 +60,7 @@ public class EntryProcessorStressTest extends HazelcastTestSupport {
             final Object key = generateKeyOwnedBy(instance2);
 
             final IMap<Object, List<Integer>> processorMap = instance1.getMap(mapName);
-            processorMap.put(key, new ArrayList<Integer>());
+            processorMap.put(key, new ArrayList<>());
 
             for (int i = 0; i < MAX_TASKS; i++) {
                 processorMap.submitToKey(key, new SimpleEntryProcessor(i));
@@ -71,14 +70,12 @@ public class EntryProcessorStressTest extends HazelcastTestSupport {
                 }
             }
 
-            assertTrueEventually(new AssertTask() {
-                public void run() throws Exception {
-                    // using >= for the test, as it can be the case that an EntryProcessor could be executed more than once,
-                    // when the owning node is terminated after running the EntryProcessor (and the backup),
-                    // but before the response is sent
-                    List<Integer> actualOrder = processorMap.get(key);
-                    assertTrue("failed to execute all entry processor tasks at iteration", actualOrder.size() >= MAX_TASKS);
-                }
+            assertTrueEventually(() -> {
+                // using >= for the test, as it can be the case that an EntryProcessor could be executed more than once,
+                // when the owning node is terminated after running the EntryProcessor (and the backup),
+                // but before the response is sent
+                List<Integer> actualOrder = processorMap.get(key);
+                assertTrue("failed to execute all entry processor tasks at iteration", actualOrder.size() >= MAX_TASKS);
             }, 30);
         }
     }

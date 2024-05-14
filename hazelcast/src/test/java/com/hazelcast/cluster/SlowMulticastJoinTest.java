@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.impl.HazelcastInstanceFactory;
 import com.hazelcast.internal.cluster.impl.MulticastJoiner;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.annotation.NightlyTest;
 import org.junit.After;
@@ -60,7 +59,7 @@ public class SlowMulticastJoinTest extends AbstractJoinTest {
     }
 
     @Test
-    public void testMembersFormAClusterWhenHostIsTrusted() throws Exception {
+    public void testMembersFormAClusterWhenHostIsTrusted() {
         Config config2 = newConfig("*.*.*.*"); //matching everything
 
         testJoin(config2);
@@ -125,18 +124,14 @@ public class SlowMulticastJoinTest extends AbstractJoinTest {
 
     private void assertSplitBrainMessagesCount(final int clusterSize, final HazelcastInstance[] instances,
                                                final MulticastJoiner[] joiners) {
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run()
-                    throws Exception {
-                for (int i = 0; i < instances.length; i++) {
-                    // a master can have at most (clusterSize-1) split brain join messages
-                    if (getNode(instances[i]).isMaster()) {
-                        assertTrue(joiners[i].getSplitBrainMessagesCount() < clusterSize);
-                    } else {
-                        // other members should not have any split brain join messages
-                        assertEquals(0, joiners[i].getSplitBrainMessagesCount());
-                    }
+        assertTrueAllTheTime(() -> {
+            for (int i = 0; i < instances.length; i++) {
+                // a master can have at most (clusterSize-1) split brain join messages
+                if (getNode(instances[i]).isMaster()) {
+                    assertTrue(joiners[i].getSplitBrainMessagesCount() < clusterSize);
+                } else {
+                    // other members should not have any split brain join messages
+                    assertEquals(0, joiners[i].getSplitBrainMessagesCount());
                 }
             }
         }, 10);

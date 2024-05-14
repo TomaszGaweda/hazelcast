@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@
 package com.hazelcast.client.impl.spi.impl;
 
 import com.hazelcast.client.HazelcastClientNotActiveException;
-import com.hazelcast.client.impl.clientside.HazelcastClientInstanceImpl;
+import com.hazelcast.client.impl.clientside.HazelcastClientInstance;
 import com.hazelcast.client.impl.connection.ClientConnection;
+import com.hazelcast.client.impl.connection.tcp.RoutingMode;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.spi.EventHandler;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
@@ -57,7 +58,7 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
             = AtomicLongFieldUpdater.newUpdater(ClientInvocation.class, "invokeCount");
     final LifecycleService lifecycleService;
     private final ClientInvocationFuture clientInvocationFuture;
-    private final ClientInvocationServiceImpl invocationService;
+    private final ClientInvocationServiceInternal invocationService;
     private final TaskScheduler executionService;
     private volatile ClientMessage clientMessage;
     private final CallIdSequence callIdSequence;
@@ -67,7 +68,7 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
     private final long startTimeMillis;
     private final long retryPauseMillis;
     private final Object objectName;
-    private final boolean isUnisocketClient;
+    private final RoutingMode routingMode;
     /**
      * We achieve synchronization of different threads via this field
      * sentConnection starts as null.
@@ -87,15 +88,15 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
     private boolean allowRetryOnRandom = true;
     private volatile boolean invoked;
 
-    protected ClientInvocation(HazelcastClientInstanceImpl client,
+    protected ClientInvocation(HazelcastClientInstance client,
                                ClientMessage clientMessage,
                                Object objectName,
                                int partitionId,
                                UUID uuid,
                                ClientConnection connection) {
-        super(((ClientInvocationServiceImpl) client.getInvocationService()).invocationLogger);
+        super(((ClientInvocationServiceInternal) client.getInvocationService()).getInvocationLogger());
         this.lifecycleService = client.getLifecycleService();
-        this.invocationService = (ClientInvocationServiceImpl) client.getInvocationService();
+        this.invocationService = (ClientInvocationServiceInternal) client.getInvocationService();
         this.executionService = client.getTaskScheduler();
         this.objectName = objectName;
         this.clientMessage = clientMessage;
@@ -107,20 +108,20 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
         this.callIdSequence = invocationService.getCallIdSequence();
         this.clientInvocationFuture = new ClientInvocationFuture(this, clientMessage, logger, callIdSequence);
         this.invocationTimeoutMillis = invocationService.getInvocationTimeoutMillis();
-        this.isUnisocketClient = invocationService.isUnisocketClient();
+        this.routingMode = invocationService.getRoutingMode();
     }
 
     /**
      * Create an invocation that will be executed on random member.
      */
-    public ClientInvocation(HazelcastClientInstanceImpl client, ClientMessage clientMessage, Object objectName) {
+    public ClientInvocation(HazelcastClientInstance client, ClientMessage clientMessage, Object objectName) {
         this(client, clientMessage, objectName, UNASSIGNED_PARTITION, null, null);
     }
 
     /**
      * Create an invocation that will be executed on owner of {@code partitionId}.
      */
-    public ClientInvocation(HazelcastClientInstanceImpl client, ClientMessage clientMessage, Object objectName,
+    public ClientInvocation(HazelcastClientInstance client, ClientMessage clientMessage, Object objectName,
                             int partitionId) {
         this(client, clientMessage, objectName, partitionId, null, null);
         clientMessage.setPartitionId(partitionId);
@@ -129,7 +130,7 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
     /**
      * Create an invocation that will be executed on member with given {@code address}.
      */
-    public ClientInvocation(HazelcastClientInstanceImpl client, ClientMessage clientMessage, Object objectName,
+    public ClientInvocation(HazelcastClientInstance client, ClientMessage clientMessage, Object objectName,
                             UUID uuid) {
         this(client, clientMessage, objectName, UNASSIGNED_PARTITION, uuid, null);
     }
@@ -137,7 +138,7 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
     /**
      * Create an invocation that will be executed on given {@code connection}.
      */
-    public ClientInvocation(HazelcastClientInstanceImpl client, ClientMessage clientMessage, Object objectName,
+    public ClientInvocation(HazelcastClientInstance client, ClientMessage clientMessage, Object objectName,
                             ClientConnection connection) {
         this(client, clientMessage, objectName, UNASSIGNED_PARTITION, null, connection);
     }
@@ -188,7 +189,7 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
             }
 
             boolean invoked;
-            if (!isUnisocketClient) {
+            if (routingMode != RoutingMode.UNISOCKET) {
                 if (partitionId != -1) {
                     invoked = invocationService.invokeOnPartitionOwner(this, partitionId);
                 } else if (uuid != null) {
@@ -202,6 +203,7 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
             } else {
                 invoked = invocationService.invoke(this);
             }
+
             if (!invoked) {
                 notifyExceptionWithOwnedPermission(new IOException("No connection found to invoke"));
             }
@@ -210,7 +212,6 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
             notifyExceptionWithOwnedPermission(e);
         }
     }
-
 
     @Override
     public void run() {
@@ -279,6 +280,10 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
         return SENT_CONNECTION.compareAndSet(this, deadConnection, null);
     }
 
+    public ClientConnection getSentConnection() {
+        return SENT_CONNECTION.get(this);
+    }
+
     @Override
     protected boolean shouldCompleteWithoutBackups() {
         return true;
@@ -296,6 +301,7 @@ public class ClientInvocation extends BaseInvocation implements Runnable {
         invocationService.deRegisterInvocation(clientMessage.getCorrelationId());
     }
 
+    @Override
     protected boolean shouldFailOnIndeterminateOperationState() {
         return invocationService.shouldFailOnIndeterminateOperationState();
     }

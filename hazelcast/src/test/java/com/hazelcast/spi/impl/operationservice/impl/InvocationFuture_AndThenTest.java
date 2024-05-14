@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.cluster.Address;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import com.hazelcast.spi.impl.InternalCompletableFuture;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -112,12 +111,7 @@ public class InvocationFuture_AndThenTest extends HazelcastTestSupport {
         // callback can be completed immediately, since a response (NULL_RESPONSE) has been already set
         future.whenCompleteAsync(callback);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                verify(callback, times(1)).accept(isNull(), isNull());
-            }
-        });
+        assertTrueEventually(() -> verify(callback, times(1)).accept(isNull(), isNull()));
     }
 
     @SuppressWarnings("unchecked")

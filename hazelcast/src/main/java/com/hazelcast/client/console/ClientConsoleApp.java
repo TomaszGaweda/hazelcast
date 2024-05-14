@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ import static org.jline.utils.AttributedStyle.BRIGHT;
 /**
  * A demo application to demonstrate a Hazelcast client. This is probably NOT something you want to use in production.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "checkstyle:ClassFanOutComplexity"})
+@SuppressWarnings({"WeakerAccess", "unused", "checkstyle:ClassFanOutComplexity", "MethodCount"})
 public class ClientConsoleApp implements EntryListener, ItemListener, MessageListener {
 
     private static final int ONE_KB = 1024;
@@ -286,18 +286,16 @@ public class ClientConsoleApp implements EntryListener, ItemListener, MessageLis
             final String threadCommand = command.substring(first.length());
             for (int i = 0; i < fork; i++) {
                 final int threadID = i;
-                pool.submit(new Runnable() {
-                    public void run() {
-                        String command = threadCommand;
-                        String[] threadArgs = command.replaceAll("\\$t", "" + threadID).trim().split(" ");
-                        // TODO &t #4 m.putmany x k
-                        if ("m.putmany".equals(threadArgs[0]) || "m.removemany".equals(threadArgs[0])) {
-                            if (threadArgs.length < LENGTH_BORDER) {
-                                command += " " + Integer.parseInt(threadArgs[1]) * threadID;
-                            }
+                pool.submit(() -> {
+                    String command1 = threadCommand;
+                    String[] threadArgs = command1.replaceAll("\\$t", "" + threadID).trim().split(" ");
+                    // TODO &t #4 m.putmany x k
+                    if ("m.putmany".equals(threadArgs[0]) || "m.removemany".equals(threadArgs[0])) {
+                        if (threadArgs.length < LENGTH_BORDER) {
+                            command1 += " " + Integer.parseInt(threadArgs[1]) * threadID;
                         }
-                        handleCommand(command);
                     }
+                    handleCommand(command1);
                 });
             }
             pool.shutdown();
@@ -496,8 +494,8 @@ public class ClientConsoleApp implements EntryListener, ItemListener, MessageLis
         long startMs = System.currentTimeMillis();
 
         IExecutorService executor = client.getExecutorService(executorNamespace + ' ' + threadCount);
-        List<Future> futures = new LinkedList<Future>();
-        List<Member> members = new LinkedList<Member>(client.getCluster().getMembers());
+        List<Future> futures = new LinkedList<>();
+        List<Member> members = new LinkedList<>(client.getCluster().getMembers());
 
         int totalThreadCount = client.getCluster().getMembers().size() * threadCount;
 
@@ -636,7 +634,7 @@ public class ClientConsoleApp implements EntryListener, ItemListener, MessageLis
 
     protected void handlePartitions(String[] args) {
         Set<Partition> partitions = client.getPartitionService().getPartitions();
-        Map<Member, Integer> partitionCounts = new HashMap<Member, Integer>();
+        Map<Member, Integer> partitionCounts = new HashMap<>();
         for (Partition partition : partitions) {
             Member owner = partition.getOwner();
             if (owner != null) {
@@ -1272,8 +1270,8 @@ public class ClientConsoleApp implements EntryListener, ItemListener, MessageLis
         int c = 1;
         for (int i = 0; i < count; i++) {
             Object obj = getQueue().poll();
-            if (obj instanceof byte[]) {
-                println(c++ + " " + ((byte[]) obj).length);
+            if (obj instanceof byte[] bytes) {
+                println(c++ + " " + bytes.length);
             } else {
                 println(c++ + " " + obj);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class GetCommandParser implements CommandParser {
             decoder.publishRequest(r);
         } else {
             StringTokenizer st = new StringTokenizer(key);
-            List<String> keys = new ArrayList<String>();
+            List<String> keys = new ArrayList<>();
             while (st.hasMoreTokens()) {
                 String singleKey = st.nextToken();
                 keys.add(singleKey);

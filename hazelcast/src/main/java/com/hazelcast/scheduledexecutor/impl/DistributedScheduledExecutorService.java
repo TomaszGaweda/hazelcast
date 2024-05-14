@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import com.hazelcast.internal.util.ContextMutexFactory;
 import com.hazelcast.map.impl.ExecutorStats;
 import com.hazelcast.scheduledexecutor.impl.operations.MergeOperation;
 import com.hazelcast.spi.impl.NodeEngine;
-import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.impl.merge.AbstractContainerMerger;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.merge.SplitBrainMergePolicy;
@@ -94,7 +93,7 @@ public class DistributedScheduledExecutorService
     private final ConcurrentMap<String, Object> splitBrainProtectionConfigCache = new ConcurrentHashMap<>();
     private final ContextMutexFactory splitBrainProtectionConfigCacheMutexFactory = new ContextMutexFactory();
     private final ConstructorFunction<String, Object> splitBrainProtectionConfigConstructor =
-            new ConstructorFunction<String, Object>() {
+            new ConstructorFunction<>() {
                 @Override
                 public Object createNew(String name) {
                     ScheduledExecutorConfig executorConfig = nodeEngine.getConfig().findScheduledExecutorConfig(name);
@@ -118,7 +117,7 @@ public class DistributedScheduledExecutorService
         this.partitions = new ScheduledExecutorPartition[partitionCount];
         boolean dsMetricsEnabled = nodeEngine.getProperties().getBoolean(ClusterProperty.METRICS_DATASTRUCTURES);
         if (dsMetricsEnabled) {
-            ((NodeEngineImpl) nodeEngine).getMetricsRegistry().registerDynamicMetricsProvider(this);
+            nodeEngine.getMetricsRegistry().registerDynamicMetricsProvider(this);
         }
         reset();
     }
@@ -399,5 +398,23 @@ public class DistributedScheduledExecutorService
             MergeOperation operation = new MergeOperation(name, mergingEntries, mergePolicy);
             invoke(SERVICE_NAME, operation, partitionId);
         }
+    }
+
+    /**
+     * Looks up the User Code Namespace name associated with the specified executor name. This is done
+     * by checking the Node's config tree directly.
+     *
+     * @param engine       {@link NodeEngine} implementation of this member for service and config lookups
+     * @param executorName The name of the {@link com.hazelcast.core.IExecutorService} to lookup for
+     * @return the Namespace Name if found, or {@code null} otherwise.
+     */
+    public static String lookupNamespace(NodeEngine engine, String executorName) {
+        if (engine.getNamespaceService().isEnabled()) {
+            ScheduledExecutorConfig config = engine.getConfig().findScheduledExecutorConfig(executorName);
+            if (config != null) {
+                return config.getUserCodeNamespace();
+            }
+        }
+        return null;
     }
 }

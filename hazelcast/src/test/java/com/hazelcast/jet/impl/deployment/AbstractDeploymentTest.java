@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.hazelcast.jet.pipeline.ServiceFactories;
 import com.hazelcast.jet.pipeline.ServiceFactory;
 import com.hazelcast.jet.pipeline.Sinks;
 import com.hazelcast.jet.pipeline.test.TestSources;
+import com.hazelcast.test.UserCodeUtil;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
 import org.junit.Test;
@@ -46,7 +47,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static com.hazelcast.jet.core.JobStatus.RUNNING;
 import static com.hazelcast.jet.core.TestUtil.executeAndPeel;
@@ -61,8 +61,6 @@ import static org.junit.Assert.assertTrue;
 
 @Category({QuickTest.class, ParallelJVMTest.class})
 public abstract class AbstractDeploymentTest extends SimpleTestInClusterSupport {
-
-    public static final String CLASS_DIRECTORY = "src/test/class";
 
     // We must use 1 member because the tests use assertCollected which runs only on
     // one member to check the existence of files. If 2 members are used, the path on the
@@ -90,14 +88,8 @@ public abstract class AbstractDeploymentTest extends SimpleTestInClusterSupport 
         DAG dag = new DAG();
         dag.newVertex("create and print person", () -> new LoadClassesIsolated(true));
 
-        JobConfig jobConfig = new JobConfig();
-        URL classUrl = new File(CLASS_DIRECTORY).toURI().toURL();
-        try (URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{classUrl}, null)) {
-            Class<?> appearance = urlClassLoader.loadClass("com.sample.pojo.person.Person$Appereance");
-            jobConfig.addClass(appearance);
-
-            executeAndPeel(getJet().newJob(dag, jobConfig));
-        }
+        JobConfig jobConfig = getJobConfigForClass("com.sample.pojo.person.Person$Appereance");
+        executeAndPeel(getJet().newJob(dag, jobConfig));
     }
 
     @Test
@@ -106,18 +98,13 @@ public abstract class AbstractDeploymentTest extends SimpleTestInClusterSupport 
         LoadClassesIsolated.assertionErrorInClose = null;
         dag.newVertex("v", () -> new LoadClassesIsolated(false));
 
-        JobConfig jobConfig = new JobConfig();
-        URL classUrl = new File(CLASS_DIRECTORY).toURI().toURL();
-        try (URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{classUrl}, null)) {
-            Class<?> appearanceClz = urlClassLoader.loadClass("com.sample.pojo.person.Person$Appereance");
-            jobConfig.addClass(appearanceClz);
+        JobConfig jobConfig = getJobConfigForClass("com.sample.pojo.person.Person$Appereance");
 
-            Job job = getJet().newJob(dag, jobConfig);
-            assertJobStatusEventually(job, RUNNING);
-            cancelAndJoin(job);
-            if (LoadClassesIsolated.assertionErrorInClose != null) {
-                throw LoadClassesIsolated.assertionErrorInClose;
-            }
+        Job job = getJet().newJob(dag, jobConfig);
+        assertJobStatusEventually(job, RUNNING);
+        cancelAndJoin(job);
+        if (LoadClassesIsolated.assertionErrorInClose != null) {
+            throw LoadClassesIsolated.assertionErrorInClose;
         }
     }
 
@@ -126,14 +113,8 @@ public abstract class AbstractDeploymentTest extends SimpleTestInClusterSupport 
         DAG dag = new DAG();
         dag.newVertex("executes lambda from a nested class", NestedClassIsLoaded::new);
 
-        JobConfig jobConfig = new JobConfig();
-        URL classUrl = new File(CLASS_DIRECTORY).toURI().toURL();
-        try (URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{classUrl}, null)) {
-            Class<?> worker = urlClassLoader.loadClass("com.sample.lambda.Worker");
-            jobConfig.addClass(worker);
-
-            executeAndPeel(getJet().newJob(dag, jobConfig));
-        }
+        JobConfig jobConfig = getJobConfigForClass("com.sample.lambda.Worker");
+        executeAndPeel(getJet().newJob(dag, jobConfig));
     }
 
     @Test
@@ -199,7 +180,7 @@ public abstract class AbstractDeploymentTest extends SimpleTestInClusterSupport 
         executeAndPeel(getJet().newJob(pipeline, jobConfig));
     }
 
-    private Pipeline attachFilePipeline(String attachedFile) {
+    private static Pipeline attachFilePipeline(String attachedFile) {
         Pipeline pipeline = Pipeline.create();
         pipeline.readFrom(TestSources.items(1))
                 .mapUsingService(ServiceFactory.withCreateContextFn(context -> context.attachedFile(attachedFile))
@@ -244,7 +225,7 @@ public abstract class AbstractDeploymentTest extends SimpleTestInClusterSupport 
         executeAndPeel(getJet().newJob(pipeline, jobConfig));
     }
 
-    private Pipeline attachDirectoryPipeline(String attachedDirectory) {
+    private static Pipeline attachDirectoryPipeline(String attachedDirectory) {
         Pipeline pipeline = Pipeline.create();
         pipeline.readFrom(TestSources.items(1))
                 .flatMapUsingService(
@@ -272,9 +253,8 @@ public abstract class AbstractDeploymentTest extends SimpleTestInClusterSupport 
                     c.forEach(s -> {
                         File dir = new File(s);
                         assertTrue(dir.exists());
-
-                        try (Stream<Path> list = Files.list(dir.toPath())) {
-                            List<Path> subFiles = list.collect(toList());
+                        try {
+                            List<Path> subFiles = Files.list(dir.toPath()).collect(toList());
                             assertEquals("each dir should contain 1 file", 1, subFiles.size());
                         } catch (IOException ex) {
                             throw new RuntimeException(ex);
@@ -334,7 +314,15 @@ public abstract class AbstractDeploymentTest extends SimpleTestInClusterSupport 
         executeAndPeel(getJet().newJob(dag, jobConfig));
     }
 
+    private static JobConfig getJobConfigForClass(String name) throws Throwable {
+        try (URLClassLoader urlClassLoader =
+                new URLClassLoader(new URL[] {UserCodeUtil.urlRelativeToBinariesFolder("sample")}, null)) {
+            return new JobConfig().addClass(urlClassLoader.loadClass(name));
+        }
+    }
+
     static class MyJobClassLoaderFactory implements JobClassLoaderFactory {
+        private static final long serialVersionUID = 1L;
 
         @Nonnull
         @Override

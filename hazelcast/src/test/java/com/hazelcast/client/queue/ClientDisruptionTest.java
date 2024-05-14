@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.hazelcast.client.queue;
 
 import com.hazelcast.client.test.TestHazelcastFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.SlowTest;
@@ -49,7 +48,7 @@ public class ClientDisruptionTest extends HazelcastTestSupport {
 
     @Before
     public void setup() {
-        cluster = new ArrayList<HazelcastInstance>(CLUSTER_SIZE);
+        cluster = new ArrayList<>(CLUSTER_SIZE);
         for (int i = 0; i < CLUSTER_SIZE; i++) {
             cluster.add(hazelcastFactory.newHazelcastInstance());
         }
@@ -80,35 +79,15 @@ public class ClientDisruptionTest extends HazelcastTestSupport {
             }
             final int index = i;
 
-            assertExactlyOneSuccessfulRun(new AssertTask() {
-                @Override
-                public void run() {
-                    assertTrue(getNode(1).getQueue("Q1").offer(index));
-                }
-            });
+            assertExactlyOneSuccessfulRun(() -> assertTrue(getNode(1).getQueue("Q1").offer(index)));
 
-            assertExactlyOneSuccessfulRun(new AssertTask() {
-                @Override
-                public void run() {
-                    assertTrue(getNode(3).getQueue("Q2").offer(index));
-                }
-            });
+            assertExactlyOneSuccessfulRun(() -> assertTrue(getNode(3).getQueue("Q2").offer(index)));
 
             final int expected = expectCount;
 
-            assertExactlyOneSuccessfulRun(new AssertTask() {
-                @Override
-                public void run() {
-                    assertEquals(expected, client1.getQueue("Q1").poll());
-                }
-            });
+            assertExactlyOneSuccessfulRun(() -> assertEquals(expected, client1.getQueue("Q1").poll()));
 
-            assertExactlyOneSuccessfulRun(new AssertTask() {
-                @Override
-                public void run() {
-                    assertEquals(expected, client2.getQueue("Q2").poll());
-                }
-            });
+            assertExactlyOneSuccessfulRun(() -> assertEquals(expected, client2.getQueue("Q2").poll()));
 
             expectCount++;
         }
@@ -136,28 +115,13 @@ public class ClientDisruptionTest extends HazelcastTestSupport {
             }
             final int index = i;
 
-            assertExactlyOneSuccessfulRun(new AssertTask() {
-                @Override
-                public void run() {
-                    assertNull(getNode(2).getMap("m").put(index, index));
-                }
-            });
+            assertExactlyOneSuccessfulRun(() -> assertNull(getNode(2).getMap("m").put(index, index)));
 
             final int expected = expectCount;
 
-            assertExactlyOneSuccessfulRun(new AssertTask() {
-                @Override
-                public void run() {
-                    assertEquals(expected, client1.getMap("m").get(expected));
-                }
-            });
+            assertExactlyOneSuccessfulRun(() -> assertEquals(expected, client1.getMap("m").get(expected)));
 
-            assertExactlyOneSuccessfulRun(new AssertTask() {
-                @Override
-                public void run() {
-                    assertEquals(expected, client2.getMap("m").get(expected));
-                }
-            });
+            assertExactlyOneSuccessfulRun(() -> assertEquals(expected, client2.getMap("m").get(expected)));
 
             expectCount++;
         }

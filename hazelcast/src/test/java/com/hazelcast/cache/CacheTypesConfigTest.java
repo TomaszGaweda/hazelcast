@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ public class CacheTypesConfigTest extends HazelcastTestSupport {
 
     // tests deferred resolution of factories
     @Test
-    public void cacheConfigShouldBeAddedOnJoiningMember_whenCacheLoaderFactoryNotResolvable() throws InterruptedException {
+    public void cacheConfigShouldBeAddedOnJoiningMember_whenCacheLoaderFactoryNotResolvable() {
         HazelcastInstance hz1 = factory.newHazelcastInstance(getConfig());
         CachingProvider cachingProvider = createServerCachingProvider(hz1);
         CacheManager cacheManager1 = cachingProvider.getCacheManager(null, null, propertiesByInstanceItself(hz1));
@@ -158,7 +158,7 @@ public class CacheTypesConfigTest extends HazelcastTestSupport {
 
     // tests deferred resolution of factories, with context class loader set correctly
     @Test
-    public void cacheConfigShouldBeAddedOnJoiningMember_whenCacheLoaderFactoryNotResolvableWithClassLoaderSet() throws InterruptedException {
+    public void cacheConfigShouldBeAddedOnJoiningMember_whenCacheLoaderFactoryNotResolvableWithClassLoaderSet() {
         HazelcastInstance hz1 = factory.newHazelcastInstance(getConfig());
         CachingProvider cachingProvider = createServerCachingProvider(hz1);
         CacheManager cacheManager1 = cachingProvider.getCacheManager(null, null, propertiesByInstanceItself(hz1));
@@ -189,7 +189,7 @@ public class CacheTypesConfigTest extends HazelcastTestSupport {
 
     // tests deferred resolution of expiry policy factory
     @Test
-    public void cacheConfigShouldBeAddedOnJoiningMember_whenExpiryPolicyFactoryNotResolvable() throws InterruptedException {
+    public void cacheConfigShouldBeAddedOnJoiningMember_whenExpiryPolicyFactoryNotResolvable() {
         HazelcastInstance hz1 = factory.newHazelcastInstance(getConfig());
         CachingProvider cachingProvider = createServerCachingProvider(hz1);
         cachingProvider.getCacheManager().createCache(cacheName, createCacheConfig()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,10 +176,10 @@ public class JetInitDataSerializerHookTest {
     }
 
     private static void customAssertEquals(String msg, Object expected, Object actual) {
-        if (expected instanceof AtomicLong) {
-            assertEquals(msg, ((AtomicLong) expected).get(), ((AtomicLong) actual).get());
-        } else if (expected instanceof AtomicInteger) {
-            assertEquals(msg, ((AtomicInteger) expected).get(), ((AtomicInteger) actual).get());
+        if (expected instanceof AtomicLong atomicLong) {
+            assertEquals(msg, atomicLong.get(), ((AtomicLong) actual).get());
+        } else if (expected instanceof AtomicInteger atomicInteger) {
+            assertEquals(msg, atomicInteger.get(), ((AtomicInteger) actual).get());
         } else {
             assertEquals(msg, expected, actual);
         }

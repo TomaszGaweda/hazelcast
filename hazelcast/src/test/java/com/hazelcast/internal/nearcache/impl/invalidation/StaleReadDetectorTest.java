@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class StaleReadDetectorTest extends HazelcastTestSupport {
     private static final String MAP_NAME = "test";
 
     @Test
-    public void no_repairing_handler_created_when_invalidations_disabled() throws Exception {
+    public void no_repairing_handler_created_when_invalidations_disabled() {
         Config config = createConfigWithNearCache(false);
         HazelcastInstance node = createHazelcastInstance(config);
 
@@ -62,7 +62,7 @@ public class StaleReadDetectorTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void repairing_handler_created_when_invalidations_enabled() throws Exception {
+    public void repairing_handler_created_when_invalidations_enabled() {
         Config config = createConfigWithNearCache(true);
         HazelcastInstance node = createHazelcastInstance(config);
 

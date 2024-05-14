@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -179,8 +179,8 @@ public class ExtractionWithExtractorsSpecTest extends AbstractExtractionTest {
         @Override
         public void extract(Object target, Object arguments, final ValueCollector collector) {
             Integer parsedId = Integer.parseInt((String) arguments);
-            if (target instanceof Person) {
-                Integer size = ((Person) target).limbs_array[parsedId].tattoos_array.length;
+            if (target instanceof Person person) {
+                Integer size = person.limbs_array[parsedId].tattoos_array.length;
                 collector.addObject(size);
             } else {
                 ValueReader reader = (ValueReader) target;

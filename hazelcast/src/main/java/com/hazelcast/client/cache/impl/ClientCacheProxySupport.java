@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -798,8 +798,8 @@ abstract class ClientCacheProxySupport<K, V> extends ClientProxy implements ICac
                                       CacheEventListenerAdaptor<K, V> adaptor) {
         listenerCompleter.putListenerIfAbsent(cacheEntryListenerConfiguration, regId);
         CacheEntryListener<K, V> entryListener = adaptor.getCacheEntryListener();
-        if (entryListener instanceof Closeable) {
-            closeableListeners.putIfAbsent(regId, (Closeable) entryListener);
+        if (entryListener instanceof Closeable closeable) {
+            closeableListeners.putIfAbsent(regId, closeable);
         }
     }
 

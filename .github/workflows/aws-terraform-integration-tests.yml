@@ -1,4 +1,4 @@
-name: aws-tests
+name: AWS Discovery Plugin Tests
 
 on:
   workflow_dispatch:
@@ -9,8 +9,8 @@ on:
       - "master"
       - "*.z"
     paths:
-      - 'hazelcast/src/main/java/com/hazelcast/aws/**'
-      - '.github/terraform/aws/**'
+      - "hazelcast/src/main/java/com/hazelcast/aws/**"
+      - ".github/terraform/aws/**"
 
 jobs:
   build:
@@ -37,17 +37,23 @@ jobs:
       AWS_REGION: us-east-1
     strategy:
       matrix:
-        suite: ['ec2_cl_to_ec2_m', 'ec2_cl_to_fargate_ecs_m', 'fargate_ecs_cl_to_ec2_m', 'fargate_ecs_cl_to_fargate_ecs_m']
+        suite:
+          [
+            "ec2_cl_to_ec2_m",
+            "ec2_cl_to_fargate_ecs_m",
+            "fargate_ecs_cl_to_ec2_m",
+            "fargate_ecs_cl_to_fargate_ecs_m",
+          ]
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4.0.1
+        uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Get Secrets
-        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
           secret-ids: |
             DEVOPS_GITHUB_TOKEN,CN/DEVOPS_GITHUB_TOKEN
@@ -60,25 +66,25 @@ jobs:
           path: aws-discovery-suite
 
       - name: Download hazelcast.jar
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: hazelcast.jar
           path: aws-discovery-suite/terraform/tools
 
       - name: Download aws-discovery-client.jar
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: aws-discovery-client.jar
           path: aws-discovery-suite/terraform/tools/client
 
-      - name : Set-up Terraform
-        uses: hashicorp/setup-terraform@v2.0.3
+      - name: Set-up Terraform
+        uses: hashicorp/setup-terraform@v3.1.1
         with:
           terraform_version: 1.5.4
           terraform_wrapper: false
 
       - name: Cache Golang dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build

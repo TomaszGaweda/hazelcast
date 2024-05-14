@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,14 +35,15 @@ import com.hazelcast.map.EntryProcessor;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.spi.impl.NodeEngine;
-import com.hazelcast.spi.impl.NodeEngineImpl;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.security.auth.Subject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -125,16 +126,16 @@ public final class ImdgUtil {
     public static List<Address> getRemoteMembers(@Nonnull NodeEngine engine) {
         final Member localMember = engine.getLocalMember();
         return engine.getClusterService().getMembers().stream()
-                     .filter(m -> !m.equals(localMember))
-                     .map(Member::getAddress)
-                     .collect(toList());
+                .filter(m -> !m.equals(localMember))
+                .map(Member::getAddress)
+                .collect(toList());
     }
 
     public static Connection getMemberConnection(@Nonnull NodeEngine engine, @Nonnull Address memberAddr) {
-        return ((NodeEngineImpl) engine).getNode()
-                                        .getServer()
-                                        .getConnectionManager(EndpointQualifier.MEMBER)
-                                        .get(memberAddr);
+        return engine.getNode()
+                .getServer()
+                .getConnectionManager(EndpointQualifier.MEMBER)
+                .get(memberAddr);
     }
 
     @Nonnull
@@ -205,8 +206,8 @@ public final class ImdgUtil {
      * Writes given array into the ObjectDataOutput to be later read by {@linkplain #readArray}.
      *
      * @param output output to which we write
-     * @param array array what will be written, must not be null
-     * @param <E> element type of the array
+     * @param array  array what will be written, must not be null
+     * @param <E>    element type of the array
      */
     public static <E> void writeArray(@Nonnull ObjectDataOutput output, @Nonnull E[] array) throws IOException {
         output.writeInt(array.length);
@@ -218,10 +219,10 @@ public final class ImdgUtil {
     /**
      * Reads array of type {@code E[]} from given ObjectDataInput, written by {@linkplain #writeArray}.
      *
-     * @param input input from which the array will be read.
+     * @param input            input from which the array will be read.
      * @param arrayConstructor constructor used to construct new instance of E[], returned value should not be null.
+     * @param <E>              element type of the array
      * @return array read from input
-     * @param <E> element type of the array
      */
     @Nonnull
     public static <E> E[] readArray(@Nonnull ObjectDataInput input, @Nonnull IntFunction<E[]> arrayConstructor)
@@ -236,6 +237,7 @@ public final class ImdgUtil {
 
     private static final class ImdgPredicateWrapper<T> implements PredicateEx<T> {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private final Predicate<T> wrapped;
@@ -252,6 +254,7 @@ public final class ImdgUtil {
 
     private static final class ImdgFunctionWrapper<T, R> implements FunctionEx<T, R> {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private final Function<T, R> wrapped;
@@ -263,6 +266,15 @@ public final class ImdgUtil {
         @Override
         public R applyEx(T t) {
             return wrapped.apply(t);
+        }
+
+        @Nullable
+        @Override
+        public List<Permission> permissions() {
+            if (wrapped instanceof FunctionEx) {
+                return ((FunctionEx<T, R>) wrapped).permissions();
+            }
+            return null;
         }
     }
 }

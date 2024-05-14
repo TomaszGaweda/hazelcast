@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package com.hazelcast.internal.cluster.impl.operations;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.cluster.impl.ClusterDataSerializerHook;
 import com.hazelcast.logging.ILogger;
-import com.hazelcast.spi.impl.NodeEngineImpl;
+import com.hazelcast.spi.impl.NodeEngine;
 
 public class AuthenticationFailureOp extends AbstractClusterOperation {
 
@@ -28,7 +28,7 @@ public class AuthenticationFailureOp extends AbstractClusterOperation {
 
     @Override
     public void run() {
-        final NodeEngineImpl nodeEngine = (NodeEngineImpl) getNodeEngine();
+        final NodeEngine nodeEngine = getNodeEngine();
         final Node node = nodeEngine.getNode();
         JoinOperation.verifyCanShutdown(node, "Authentication failed on master node!");
         final ILogger logger = nodeEngine.getLogger("com.hazelcast.security");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class ClientClusterProxyTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void removeMembershipListener() throws Exception {
+    public void removeMembershipListener() {
         Cluster cluster = client().getCluster();
         UUID regId = cluster.addMembershipListener(new MembershipAdapter());
         assertTrue(cluster.removeMembershipListener(regId));
@@ -106,7 +106,7 @@ public class ClientClusterProxyTest extends HazelcastTestSupport {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void changeClusterStateWithOptions() throws Exception {
+    public void changeClusterStateWithOptions() {
         client().getCluster().changeClusterState(ClusterState.FROZEN, new TransactionOptions());
     }
 
@@ -116,7 +116,7 @@ public class ClientClusterProxyTest extends HazelcastTestSupport {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void shutdownWithOptions() throws Exception {
+    public void shutdownWithOptions() {
         client().getCluster().shutdown(new TransactionOptions());
     }
 }

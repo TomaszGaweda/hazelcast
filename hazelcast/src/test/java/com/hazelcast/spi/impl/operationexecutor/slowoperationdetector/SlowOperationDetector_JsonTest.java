@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class SlowOperationDetector_JsonTest extends SlowOperationDetectorAbstrac
     }
 
     @Test
-    public void testJSON() throws InterruptedException {
+    public void testJSON() {
         final String operationDetails = "FakeOperation(id=255, partitionId=2)";
         Object operation = new Object() {
             @Override
@@ -112,7 +112,7 @@ public class SlowOperationDetector_JsonTest extends SlowOperationDetectorAbstrac
     }
 
     @Test
-    public void testJSON_multipleEntryProcessorClasses() throws InterruptedException {
+    public void testJSON_multipleEntryProcessorClasses() {
         for (int i = 0; i < 2; i++) {
             map.executeOnEntries(getSlowEntryProcessor(3));
         }

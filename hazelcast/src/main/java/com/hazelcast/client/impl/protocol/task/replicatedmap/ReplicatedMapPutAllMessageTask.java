@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ public class ReplicatedMapPutAllMessageTask
     protected Object reduce(Map<Integer, Object> map) {
         for (Map.Entry<Integer, Object> entry : map.entrySet()) {
             Object result = serializationService.toObject(entry.getValue());
-            if (result instanceof Throwable) {
-                throw ExceptionUtil.rethrow((Throwable) result);
+            if (result instanceof Throwable throwable) {
+                throw ExceptionUtil.rethrow(throwable);
             }
         }
         return null;
@@ -95,6 +95,12 @@ public class ReplicatedMapPutAllMessageTask
             map.put(entry.getKey(), entry.getValue());
         }
         return new Object[]{map};
+    }
+
+    @Override
+    protected String getUserCodeNamespace() {
+        // This task is not Namespace-aware so it doesn't matter
+        return null;
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class ChannelInitializerFunction implements Function<EndpointQualifier, C
             return;
         }
 
-        Map<EndpointQualifier, ChannelInitializer> map = new HashMap<EndpointQualifier, ChannelInitializer>();
+        Map<EndpointQualifier, ChannelInitializer> map = new HashMap<>();
         for (EndpointConfig endpointConfig : advancedNetworkConfig.getEndpointConfigs().values()) {
             checkSslConfigAvailability(endpointConfig.getSSLConfig());
 

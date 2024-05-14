@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,8 +57,7 @@ public final class MultiAttributeProjection<I> implements Projection<I, Object[]
     @Override
     @SuppressWarnings("unchecked")
     public Object[] transform(I input) {
-        if (input instanceof Extractable) {
-            Extractable extractable = ((Extractable) input);
+        if (input instanceof Extractable extractable) {
             Object[] result = new Object[attributePaths.length];
             for (int i = 0; i < attributePaths.length; i++) {
                 result[i] = extractable.getAttributeValue(attributePaths[i]);

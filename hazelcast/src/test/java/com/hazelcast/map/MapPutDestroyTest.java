@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,38 +37,32 @@ public class MapPutDestroyTest extends HazelcastTestSupport {
     public void testConcurrentPutDestroy_doesNotCauseNPE() {
         final HazelcastInstance instance = createHazelcastInstance(getConfig());
         final String name = randomString();
-        final AtomicReference<Throwable> error = new AtomicReference<Throwable>(null);
+        final AtomicReference<Throwable> error = new AtomicReference<>(null);
 
         final AtomicBoolean stop = new AtomicBoolean();
 
         Thread t1 = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            while (!stop.get()) {
-                                IMap<Object, Object> map = instance.getMap(name);
-                                map.put(System.currentTimeMillis(), Boolean.TRUE);
-                            }
-                        } catch (Throwable e) {
-                            error.set(e);
+                () -> {
+                    try {
+                        while (!stop.get()) {
+                            IMap<Object, Object> map = instance.getMap(name);
+                            map.put(System.currentTimeMillis(), Boolean.TRUE);
                         }
+                    } catch (Throwable e) {
+                        error.set(e);
                     }
                 }
         );
 
         Thread t2 = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            while (!stop.get()) {
-                                IMap<Object, Object> map = instance.getMap(name);
-                                map.destroy();
-                            }
-                        } catch (Throwable e) {
-                            error.set(e);
+                () -> {
+                    try {
+                        while (!stop.get()) {
+                            IMap<Object, Object> map = instance.getMap(name);
+                            map.destroy();
                         }
+                    } catch (Throwable e) {
+                        error.set(e);
                     }
                 }
         );

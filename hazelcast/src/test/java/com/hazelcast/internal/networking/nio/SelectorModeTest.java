@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 public class SelectorModeTest {
 
     @Test
-    public void getConfiguredValue_whenSelectWithFix() throws Exception {
+    public void getConfiguredValue_whenSelectWithFix() {
         String originalValue = System.getProperty("hazelcast.io.selectorMode");
         System.setProperty("hazelcast.io.selectorMode", "selectwithfix");
         try {
@@ -48,17 +48,17 @@ public class SelectorModeTest {
     }
 
     @Test
-    public void fromString_whenSelectNow() throws Exception {
+    public void fromString_whenSelectNow() {
         assertEquals(SelectorMode.SELECT_NOW, SelectorMode.fromString("selectnow"));
     }
 
     @Test
-    public void fromString_whenSelectNowWithConfig() throws Exception {
+    public void fromString_whenSelectNowWithConfig() {
         assertEquals(SelectorMode.SELECT_NOW, SelectorMode.fromString("selectnow,1,2,3,4"));
     }
 
     @Test
-    public void fromString_whenSelect() throws Exception {
+    public void fromString_whenSelect() {
         assertEquals(SelectorMode.SELECT, SelectorMode.fromString("select"));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import com.hazelcast.spi.impl.InternalCompletableFuture;
 import com.hazelcast.spi.impl.operationservice.BackupAwareOperation;
 import com.hazelcast.spi.impl.operationservice.BackupOperation;
 import com.hazelcast.spi.impl.operationservice.Operation;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestThread;
@@ -178,13 +177,8 @@ public class BackpressureRegulatorStressTest extends HazelcastTestSupport {
 
         System.out.println("Completed with asynchronous calls, waiting for everything to complete");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals("the number of completed calls doesn't match the number of expected calls",
-                        globalOperationCount.get(), completedCall.get());
-            }
-        });
+        assertTrueEventually(() -> assertEquals("the number of completed calls doesn't match the number of expected calls",
+                globalOperationCount.get(), completedCall.get()));
 
         assertEquals(0, failedOperationCount.get());
 
@@ -255,7 +249,7 @@ public class BackpressureRegulatorStressTest extends HazelcastTestSupport {
                 if (t == null) {
                     completedCall.incrementAndGet();
 
-                    if (!new Long(expectedResult).equals(response)) {
+                    if (!Long.valueOf(expectedResult).equals(response)) {
                         System.out.println("Wrong result received, expecting: " + expectedResult + " but found:" + response);
                         failedOperationCount.incrementAndGet();
                     }

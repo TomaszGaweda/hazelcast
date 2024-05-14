@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public final class ToBackupSender<RS> {
                                                    BiFunction<S, Collection<ExpiredKey>, Operation> operationSupplier,
                                                    BiPredicate<Integer, Integer> backupOpFilter,
                                                    NodeEngine nodeEngine) {
-        return new ToBackupSender<S>(serviceName, operationSupplier, backupOpFilter, nodeEngine);
+        return new ToBackupSender<>(serviceName, operationSupplier, backupOpFilter, nodeEngine);
     }
 
     private static Collection<ExpiredKey> pollExpiredKeys(Queue<ExpiredKey> expiredKeys) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,8 @@ public abstract class ReplicatedMapAbstractTest extends HazelcastTestSupport {
 
     protected Config buildConfig(InMemoryFormat inMemoryFormat) {
         Config config = new Config();
+        config.getJetConfig().setEnabled(false);
+        config.getMetricsConfig().setEnabled(false);
         ReplicatedMapConfig replicatedMapConfig = config.getReplicatedMapConfig("default");
         replicatedMapConfig.setInMemoryFormat(inMemoryFormat);
         return config;
@@ -100,7 +102,6 @@ public abstract class ReplicatedMapAbstractTest extends HazelcastTestSupport {
         return store.getReplicatedRecord(key);
     }
 
-    @SuppressWarnings("unchecked")
     protected <K, V> ReplicatedRecordStore getStore(ReplicatedMap<K, V> map, K key) throws Exception {
         ReplicatedMapProxy<K, V> proxy = (ReplicatedMapProxy<K, V>) map;
         ReplicatedMapService service = (ReplicatedMapService) REPLICATED_MAP_SERVICE.get(proxy);
@@ -108,7 +109,7 @@ public abstract class ReplicatedMapAbstractTest extends HazelcastTestSupport {
     }
 
     public List<ReplicatedMap<String, Object>> createMapOnEachInstance(HazelcastInstance[] instances, String replicatedMapName) {
-        ArrayList<ReplicatedMap<String, Object>> maps = new ArrayList<ReplicatedMap<String, Object>>();
+        ArrayList<ReplicatedMap<String, Object>> maps = new ArrayList<>();
         for (HazelcastInstance instance : instances) {
             ReplicatedMap<String, Object> replicatedMap = instance.getReplicatedMap(replicatedMapName);
             maps.add(replicatedMap);
@@ -117,7 +118,7 @@ public abstract class ReplicatedMapAbstractTest extends HazelcastTestSupport {
     }
 
     public ArrayList<Integer> generateRandomIntegerList(int count) {
-        final ArrayList<Integer> keys = new ArrayList<Integer>();
+        final ArrayList<Integer> keys = new ArrayList<>();
         final Random random = new Random();
         for (int i = 0; i < count; i++) {
             keys.add(random.nextInt());
@@ -126,12 +127,12 @@ public abstract class ReplicatedMapAbstractTest extends HazelcastTestSupport {
     }
 
     protected Set<String> generateRandomKeys(HazelcastInstance instance, int partitionCount) {
-        Set<String> keys = new HashSet<String>();
+        Set<String> keys = new HashSet<>();
         for (int partitionId = 0; partitionId < partitionCount; partitionId++) {
             keys.add(generateKeyForPartition(instance, partitionId));
         }
 
-        Set<Integer> partitionIds = new HashSet<Integer>();
+        Set<Integer> partitionIds = new HashSet<>();
         for (String key : keys) {
             assertTrue(partitionIds.add(getPartitionId(instance, key)));
         }
@@ -144,7 +145,7 @@ public abstract class ReplicatedMapAbstractTest extends HazelcastTestSupport {
         AbstractMap.SimpleEntry<String, String>[] testValues = new AbstractMap.SimpleEntry[keys.size()];
         int i = 0;
         for (String key : keys) {
-            testValues[i++] = new AbstractMap.SimpleEntry<String, String>(key, key);
+            testValues[i++] = new AbstractMap.SimpleEntry<>(key, key);
         }
         return testValues;
     }

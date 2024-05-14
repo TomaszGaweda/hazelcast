@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import static java.lang.Boolean.FALSE;
@@ -95,12 +94,7 @@ public class OperationExecutorImpl_IsInvocationAllowedTest extends OperationExec
 
         final DummyGenericOperation genericOperation = new DummyGenericOperation();
 
-        FutureTask<Boolean> futureTask = new FutureTask<Boolean>(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return executor.isInvocationAllowed(genericOperation, false);
-            }
-        });
+        FutureTask<Boolean> futureTask = new FutureTask<>(() -> executor.isInvocationAllowed(genericOperation, false));
 
         DummyOperationHostileThread thread = new DummyOperationHostileThread(futureTask);
         thread.start();
@@ -114,17 +108,12 @@ public class OperationExecutorImpl_IsInvocationAllowedTest extends OperationExec
 
         final DummyGenericOperation genericOperation = new DummyGenericOperation();
 
-        FutureTask<Boolean> futureTask = new FutureTask<Boolean>(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return executor.isInvocationAllowed(genericOperation, true);
-            }
-        });
+        FutureTask<Boolean> futureTask = new FutureTask<>(() -> executor.isInvocationAllowed(genericOperation, true));
 
         DummyOperationHostileThread hostileThread = new DummyOperationHostileThread(futureTask);
         hostileThread.start();
 
-        assertEqualsEventually(futureTask, FALSE);
+        assertEqualsEventually(futureTask, TRUE);
     }
 
     // ===================== partition specific operations ========================
@@ -220,12 +209,7 @@ public class OperationExecutorImpl_IsInvocationAllowedTest extends OperationExec
 
         final Operation operation = new DummyOperation(1);
 
-        FutureTask<Boolean> futureTask = new FutureTask<Boolean>(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return executor.isInvocationAllowed(operation, false);
-            }
-        });
+        FutureTask<Boolean> futureTask = new FutureTask<>(() -> executor.isInvocationAllowed(operation, false));
 
         DummyOperationHostileThread thread = new DummyOperationHostileThread(futureTask);
         thread.start();
@@ -239,16 +223,11 @@ public class OperationExecutorImpl_IsInvocationAllowedTest extends OperationExec
 
         final Operation operation = new DummyOperation(1);
 
-        FutureTask<Boolean> futureTask = new FutureTask<Boolean>(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return executor.isInvocationAllowed(operation, true);
-            }
-        });
+        FutureTask<Boolean> futureTask = new FutureTask<>(() -> executor.isInvocationAllowed(operation, true));
 
         DummyOperationHostileThread thread = new DummyOperationHostileThread(futureTask);
         thread.start();
 
-        assertEqualsEventually(futureTask, FALSE);
+        assertEqualsEventually(futureTask, TRUE);
     }
 }

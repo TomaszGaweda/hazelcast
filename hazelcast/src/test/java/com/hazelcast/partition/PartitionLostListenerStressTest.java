@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.partition;
 import com.hazelcast.cluster.Address;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.partition.TestPartitionUtils;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.HazelcastSerialParametersRunnerFactory;
 import com.hazelcast.test.annotation.SlowTest;
@@ -63,7 +62,7 @@ public class PartitionLostListenerStressTest extends AbstractPartitionLostListen
         });
     }
 
-    @Parameter(0)
+    @Parameter
     public int numberOfNodesToCrash;
 
     @Parameter(1)
@@ -86,7 +85,7 @@ public class PartitionLostListenerStressTest extends AbstractPartitionLostListen
     @Test
     public void testPartitionLostListener() {
         List<HazelcastInstance> instances = getCreatedInstancesShuffledAfterWarmedUp();
-        List<HazelcastInstance> survivingInstances = new ArrayList<HazelcastInstance>(instances);
+        List<HazelcastInstance> survivingInstances = new ArrayList<>(instances);
         List<HazelcastInstance> terminatingInstances = survivingInstances.subList(0, numberOfNodesToCrash);
         survivingInstances = survivingInstances.subList(numberOfNodesToCrash, instances.size());
 
@@ -103,19 +102,9 @@ public class PartitionLostListenerStressTest extends AbstractPartitionLostListen
         waitAllForSafeStateAndDumpPartitionServiceOnFailure(survivingInstances, 300);
 
         if (shouldExpectPartitionLostEvents) {
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() {
-                    assertLostPartitions(log, listener, survivingPartitions, partitionTables);
-                }
-            });
+            assertTrueEventually(() -> assertLostPartitions(log, listener, survivingPartitions, partitionTables));
         } else {
-            assertTrueAllTheTime(new AssertTask() {
-                @Override
-                public void run() {
-                    assertTrue(listener.getEvents().isEmpty());
-                }
-            }, 1);
+            assertTrueAllTheTime(() -> assertTrue(listener.getEvents().isEmpty()), 1);
         }
     }
 
@@ -142,8 +131,8 @@ public class PartitionLostListenerStressTest extends AbstractPartitionLostListen
             int lostReplicaIndex = event.getLostBackupCount();
             int survivingReplicaIndex = survivingPartitions.get(failedPartitionId);
 
-            String message = log + ", Event: " + event.toString() + " SurvivingReplicaIndex: " + survivingReplicaIndex
-                    + " PartitionTable: " + partitionTables.get(failedPartitionId);
+            String message = log + ", Event: " + event + " SurvivingReplicaIndex: " + survivingReplicaIndex
+                             + " PartitionTable: " + partitionTables.get(failedPartitionId);
 
             assertTrue(message, survivingReplicaIndex > 0);
             assertTrue(message, lostReplicaIndex >= 0 && lostReplicaIndex < survivingReplicaIndex);
@@ -158,7 +147,7 @@ public class PartitionLostListenerStressTest extends AbstractPartitionLostListen
 
     public static class EventCollectingPartitionLostListener implements PartitionLostListener {
 
-        private List<PartitionLostEvent> lostPartitions = new ArrayList<PartitionLostEvent>();
+        private List<PartitionLostEvent> lostPartitions = new ArrayList<>();
 
         @Override
         public synchronized void partitionLost(PartitionLostEvent event) {
@@ -166,7 +155,7 @@ public class PartitionLostListenerStressTest extends AbstractPartitionLostListen
         }
 
         public synchronized List<PartitionLostEvent> getEvents() {
-            return new ArrayList<PartitionLostEvent>(lostPartitions);
+            return new ArrayList<>(lostPartitions);
         }
 
         public synchronized void clear() {

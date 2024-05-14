@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.spi.impl.operationservice.BackupAwareOperation;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -80,7 +79,7 @@ public class Invocation_OnBackupLeftTest extends HazelcastTestSupport {
         Operation op = new PrimaryOperation(backupId)
                 .setPrimaryResponseDelaySeconds(responseDelaySeconds)
                 .setPartitionId(getPartitionId(local));
-        InvocationFuture f = (InvocationFuture) localOperationService.invokeOnPartition(op);
+        InvocationFuture f = localOperationService.invokeOnPartition(op);
 
         waitForBackupRunning(backupId);
 
@@ -94,7 +93,7 @@ public class Invocation_OnBackupLeftTest extends HazelcastTestSupport {
         String backupId = newUnsecureUuidString();
         Operation op = new PrimaryOperation(backupId)
                 .setPartitionId(getPartitionId(local));
-        InvocationFuture f = (InvocationFuture) localOperationService.invokeOnPartition(op);
+        InvocationFuture f = localOperationService.invokeOnPartition(op);
 
         waitForPrimaryResponse(f);
 
@@ -106,21 +105,11 @@ public class Invocation_OnBackupLeftTest extends HazelcastTestSupport {
     }
 
     private void waitForBackupRunning(final String backupId) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertTrue(backupRunning.contains(backupId));
-            }
-        });
+        assertTrueEventually(() -> assertTrue(backupRunning.contains(backupId)));
     }
 
     private void waitForPrimaryResponse(final InvocationFuture f) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertNotEquals(VOID, f.invocation.pendingResponse);
-            }
-        });
+        assertTrueEventually(() -> assertNotEquals(VOID, f.invocation.pendingResponse));
     }
 
     static class PrimaryOperation extends Operation implements BackupAwareOperation {

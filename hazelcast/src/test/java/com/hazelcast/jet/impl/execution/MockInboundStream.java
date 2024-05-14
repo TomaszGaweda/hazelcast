@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,13 +75,13 @@ public class MockInboundStream implements InboundEdgeStream {
                 done = true;
                 break;
             }
-            if (item instanceof SpecialBroadcastItem) {
+            if (item instanceof SpecialBroadcastItem broadcastItem) {
                 if (i == 0) {
                     // if we meet special item first, just forward it and stop draining iteration.
                     dest.accept(item);
                 } else {
                     // here, if we meet special item after normal items, stop draining iteration without skipping.
-                    pendingItem = (SpecialBroadcastItem) item;
+                    pendingItem = broadcastItem;
                 }
                 break;
             } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,8 @@ public class OperationQueueImplTest extends HazelcastTestSupport {
 
     @Before
     public void setup() {
-        normalQueue = new ArrayBlockingQueue<Object>(100);
-        priorityQueue = new ArrayBlockingQueue<Object>(100);
+        normalQueue = new ArrayBlockingQueue<>(100);
+        priorityQueue = new ArrayBlockingQueue<>(100);
         operationQueue = new OperationQueueImpl(normalQueue, priorityQueue);
     }
 
@@ -56,7 +56,7 @@ public class OperationQueueImplTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void add_whenPriority() throws InterruptedException {
+    public void add_whenPriority() {
         Object task = new Object();
         operationQueue.add(task, true);
 
@@ -176,12 +176,9 @@ public class OperationQueueImplTest extends HazelcastTestSupport {
 
         operationQueue.add(task1, false);
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                sleepSeconds(4);
-                operationQueue.add(task2, true);
-            }
+        spawn((Runnable) () -> {
+            sleepSeconds(4);
+            operationQueue.add(task2, true);
         });
 
         assertSame(task2, operationQueue.take(true));
@@ -222,7 +219,7 @@ public class OperationQueueImplTest extends HazelcastTestSupport {
     }
 
     public void assertContent(Queue<Object> q, Object... expected) {
-        List<Object> actual = new LinkedList<Object>(q);
+        List<Object> actual = new LinkedList<>(q);
         assertEquals(Arrays.asList(expected), actual);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.crdt.AbstractCRDTBounceTest;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.annotation.SlowTest;
 import org.junit.experimental.categories.Category;
@@ -50,12 +49,7 @@ public class PNCounterBounceTest extends AbstractCRDTBounceTest {
 
     @Override
     protected void assertState(final HazelcastInstance hazelcastInstance) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(assertionCounter.get(), hazelcastInstance.getPNCounter(TEST_PN_COUNTER_NAME).get());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(assertionCounter.get(), hazelcastInstance.getPNCounter(TEST_PN_COUNTER_NAME).get()));
     }
 
     @Override

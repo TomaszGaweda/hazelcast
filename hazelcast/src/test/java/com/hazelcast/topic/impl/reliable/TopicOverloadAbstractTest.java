@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.topic.impl.reliable;
 import com.hazelcast.topic.ITopic;
 import com.hazelcast.ringbuffer.Ringbuffer;
 import com.hazelcast.internal.serialization.SerializationService;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -132,20 +131,12 @@ public abstract class TopicOverloadAbstractTest extends HazelcastTestSupport {
         final long head = ringbuffer.headSequence();
 
         // add the item
-        final Future f = spawn(new Runnable() {
-            @Override
-            public void run() {
-                topic.publish("new");
-            }
-        });
+        final Future f = spawn((Runnable) () -> topic.publish("new"));
 
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertFalse(f.isDone());
-                assertEquals(tail, ringbuffer.tailSequence());
-                assertEquals(head, ringbuffer.headSequence());
-            }
+        assertTrueAllTheTime(() -> {
+            assertFalse(f.isDone());
+            assertEquals(tail, ringbuffer.tailSequence());
+            assertEquals(head, ringbuffer.headSequence());
         }, 5);
     }
 
@@ -226,24 +217,18 @@ public abstract class TopicOverloadAbstractTest extends HazelcastTestSupport {
         final long head = ringbuffer.headSequence();
 
         // add the item
-        final Future f = spawn(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    topic.publishAll(Collections.singleton("new"));
-                } catch (ExecutionException | InterruptedException expected) {
-                    ignore(expected);
-                }
+        final Future f = spawn((Runnable) () -> {
+            try {
+                topic.publishAll(Collections.singleton("new"));
+            } catch (ExecutionException | InterruptedException expected) {
+                ignore(expected);
             }
         });
 
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertFalse(f.isDone());
-                assertEquals(tail, ringbuffer.tailSequence());
-                assertEquals(head, ringbuffer.headSequence());
-            }
+        assertTrueAllTheTime(() -> {
+            assertFalse(f.isDone());
+            assertEquals(tail, ringbuffer.tailSequence());
+            assertEquals(head, ringbuffer.headSequence());
         }, 5);
     }
 

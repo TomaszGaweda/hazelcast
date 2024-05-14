@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,16 +44,17 @@ import static com.hazelcast.internal.iteration.IterationPointer.decodePointers;
 import static com.hazelcast.internal.iteration.IterationPointer.encodePointers;
 
 /**
- * Fetches by query a batch of items from a single partition ID for a map.
- * The query is run by the query engine which means it supports projections
- * and filtering.
+ * Fetches by query a batch of items from a single partition ID for a map. The query is run by the query engine which means it
+ * supports projections and filtering.
  *
  * @see com.hazelcast.map.impl.proxy.MapProxyImpl#iterator(int, int, Projection, Predicate)
  * @since 3.9
  */
-public class MapFetchWithQueryMessageTask extends AbstractMapPartitionMessageTask<MapFetchWithQueryCodec.RequestParameters> {
+public class MapFetchWithQueryMessageTask
+        extends AbstractMapPartitionMessageTask<MapFetchWithQueryCodec.RequestParameters> {
     public MapFetchWithQueryMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
+        setNamespaceAware();
     }
 
     @Override

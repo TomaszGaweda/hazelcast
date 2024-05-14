@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class SelectionKeysSetTest {
 
     @Test
     public void add_whenCapacityNotSufficient() {
-        List<SelectionKey> expectedKeys = new LinkedList<SelectionKey>();
+        List<SelectionKey> expectedKeys = new LinkedList<>();
         for (int k = 0; k < SelectionKeys.INITIAL_CAPACITY * 4; k++) {
             SelectionKey key = mock(SelectionKey.class);
             expectedKeys.add(key);

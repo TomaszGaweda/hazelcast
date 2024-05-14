@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -64,11 +63,7 @@ public class HazelcastXATest extends HazelcastTestSupport {
     public void cleanAtomikosLogs() {
         try {
             File currentDir = new File(".");
-            final File[] tmLogs = currentDir.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".epoch") || name.startsWith("tmlog");
-                }
-            });
+            final File[] tmLogs = currentDir.listFiles((dir, name) -> name.endsWith(".epoch") || name.startsWith("tmlog"));
             for (File tmLog : tmLogs) {
                 tmLog.delete();
             }
@@ -168,25 +163,22 @@ public class HazelcastXATest extends HazelcastTestSupport {
     }
 
     private void startTX(final HazelcastInstance instance, final CountDownLatch nodeShutdownLatch) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    HazelcastXAResource xaResource = instance.getXAResource();
-                    Xid xid = new SerializableXID(42, "globalTransactionId".getBytes(), "branchQualifier".getBytes());
-                    xaResource.start(xid, XAResource.TMNOFLAGS);
-                    TransactionContext context = xaResource.getTransactionContext();
-                    final TransactionalMap<Object, Object> map = context.getMap("map");
-                    map.put("key", "value");
-                    xaResource.prepare(xid);
+        new Thread(() -> {
+            try {
+                HazelcastXAResource xaResource = instance.getXAResource();
+                Xid xid = new SerializableXID(42, "globalTransactionId".getBytes(), "branchQualifier".getBytes());
+                xaResource.start(xid, XAResource.TMNOFLAGS);
+                TransactionContext context = xaResource.getTransactionContext();
+                final TransactionalMap<Object, Object> map = context.getMap("map");
+                map.put("key", "value");
+                xaResource.prepare(xid);
 
-                    instance.shutdown();
+                instance.shutdown();
 
-                    nodeShutdownLatch.countDown();
+                nodeShutdownLatch.countDown();
 
-                } catch (XAException e) {
-                    e.printStackTrace();
-                }
+            } catch (XAException e) {
+                e.printStackTrace();
             }
         }).start();
     }

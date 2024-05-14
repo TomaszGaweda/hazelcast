@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.spi.impl.executionservice.impl;
 import com.hazelcast.config.DurableExecutorConfig;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.ScheduledExecutorConfig;
-import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.metrics.DynamicMetricsProvider;
 import com.hazelcast.internal.metrics.MetricDescriptor;
 import com.hazelcast.internal.metrics.MetricsCollectionContext;
@@ -35,7 +34,7 @@ import com.hazelcast.internal.util.executor.PoolExecutorThreadFactory;
 import com.hazelcast.internal.util.executor.SingleExecutorThreadFactory;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.spi.impl.InternalCompletableFuture;
-import com.hazelcast.spi.impl.NodeEngineImpl;
+import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.impl.executionservice.ExecutionService;
 import com.hazelcast.spi.impl.executionservice.TaskScheduler;
 
@@ -77,7 +76,7 @@ public final class ExecutionServiceImpl implements ExecutionService {
     private static final int JOB_OFFLOADABLE_QUEUE_CAPACITY = 100000;
 
     private final ILogger logger;
-    private final NodeEngineImpl nodeEngine;
+    private final NodeEngine nodeEngine;
     private final TaskScheduler globalTaskScheduler;
     private final ExecutorService cachedExecutorService;
     private final LoggingScheduledExecutor scheduledExecutorService;
@@ -86,7 +85,7 @@ public final class ExecutionServiceImpl implements ExecutionService {
     private final ConcurrentMap<String, ManagedExecutorService> durableExecutors = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ManagedExecutorService> scheduleDurableExecutors = new ConcurrentHashMap<>();
     private final ConstructorFunction<String, ManagedExecutorService> constructor =
-            new ConstructorFunction<String, ManagedExecutorService>() {
+            new ConstructorFunction<>() {
                 @Override
                 public ManagedExecutorService createNew(String name) {
                     ExecutorConfig config = nodeEngine.getConfig().findExecutorConfig(name);
@@ -95,7 +94,7 @@ public final class ExecutionServiceImpl implements ExecutionService {
                 }
             };
     private final ConstructorFunction<String, ManagedExecutorService> durableConstructor =
-            new ConstructorFunction<String, ManagedExecutorService>() {
+            new ConstructorFunction<>() {
                 @Override
                 public ManagedExecutorService createNew(String name) {
                     DurableExecutorConfig cfg = nodeEngine.getConfig().findDurableExecutorConfig(name);
@@ -103,7 +102,7 @@ public final class ExecutionServiceImpl implements ExecutionService {
                 }
             };
     private final ConstructorFunction<String, ManagedExecutorService> scheduledDurableConstructor =
-            new ConstructorFunction<String, ManagedExecutorService>() {
+            new ConstructorFunction<>() {
                 @Override
                 public ManagedExecutorService createNew(String name) {
                     ScheduledExecutorConfig cfg = nodeEngine.getConfig().findScheduledExecutorConfig(name);
@@ -111,14 +110,13 @@ public final class ExecutionServiceImpl implements ExecutionService {
                 }
             };
 
-    public ExecutionServiceImpl(NodeEngineImpl nodeEngine) {
+    public ExecutionServiceImpl(NodeEngine nodeEngine) {
         this.nodeEngine = nodeEngine;
 
-        Node node = nodeEngine.getNode();
-        this.logger = node.getLogger(ExecutionService.class.getName());
+        this.logger = nodeEngine.getLogger(ExecutionService.class.getName());
 
         String hzName = nodeEngine.getHazelcastInstance().getName();
-        ClassLoader configClassLoader = node.getConfigClassLoader();
+        ClassLoader configClassLoader = nodeEngine.getConfigClassLoader();
         ThreadFactory threadFactory = new PoolExecutorThreadFactory(createThreadPoolName(hzName, "cached"),
                 configClassLoader);
         this.cachedExecutorService = new ThreadPoolExecutor(
@@ -202,14 +200,14 @@ public final class ExecutionServiceImpl implements ExecutionService {
             if (threadFactory != null) {
                 throw new IllegalArgumentException("Cached executor can not be used with external thread factory");
             }
-            executor = new CachedExecutorServiceDelegate(name, cachedExecutorService, poolSize, queueCapacity);
+            executor = new CachedExecutorServiceDelegate(name, cachedExecutorService, poolSize, queueCapacity, nodeEngine);
         } else if (type == ExecutorType.CONCRETE) {
             if (threadFactory == null) {
                 ClassLoader classLoader = nodeEngine.getConfigClassLoader();
                 String hzName = nodeEngine.getHazelcastInstance().getName();
                 String internalName = name.startsWith("hz:") ? name.substring(BEGIN_INDEX) : name;
                 String threadNamePrefix = createThreadPoolName(hzName, internalName);
-                threadFactory = new PoolExecutorThreadFactory(threadNamePrefix, classLoader);
+                threadFactory = new PoolExecutorThreadFactory(threadNamePrefix, classLoader, nodeEngine);
             }
 
             NamedThreadPoolExecutor pool = new NamedThreadPoolExecutor(name, poolSize, poolSize,

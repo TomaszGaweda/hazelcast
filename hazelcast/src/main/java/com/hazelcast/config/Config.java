@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ package com.hazelcast.config;
 import com.hazelcast.collection.IList;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.collection.ISet;
+import com.hazelcast.config.rest.RestConfig;
 import com.hazelcast.config.tpc.TpcConfig;
 import com.hazelcast.config.cp.CPSubsystemConfig;
 import com.hazelcast.config.matcher.MatchingPointConfigPatternMatcher;
+import com.hazelcast.config.vector.VectorCollectionConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ManagedContext;
 import com.hazelcast.flakeidgen.FlakeIdGenerator;
@@ -81,6 +83,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.hazelcast.config.LocalDeviceConfig.DEFAULT_DEVICE_NAME;
 import static com.hazelcast.internal.config.ConfigUtils.lookupByPattern;
@@ -111,6 +115,8 @@ public class Config {
      * Default cluster name.
      */
     public static final String DEFAULT_CLUSTER_NAME = "dev";
+
+    protected UserCodeNamespacesConfig userCodeNamespacesConfig = new UserCodeNamespacesConfig();
 
     private URL configurationUrl;
 
@@ -207,6 +213,8 @@ public class Config {
 
     private SqlConfig sqlConfig = new SqlConfig();
 
+    private final Map<String, VectorCollectionConfig> vectorCollectionConfigs = new ConcurrentHashMap<>();
+
     private AuditlogConfig auditlogConfig = new AuditlogConfig();
 
     private MetricsConfig metricsConfig = new MetricsConfig();
@@ -225,6 +233,10 @@ public class Config {
 
     // @since 5.3
     private TpcConfig tpcConfig = new TpcConfig();
+
+    // @since 5.4
+    @Beta
+    private RestConfig restConfig = new RestConfig();
 
     public Config() {
     }
@@ -402,19 +414,23 @@ public class Config {
         checkTrue(properties != null, "properties can't be null");
 
         String path = configFile.getPath();
-        InputStream stream = new FileInputStream(configFile);
-        if (path.endsWith(".xml")) {
-            return applyEnvAndSystemVariableOverrides(
-                    new XmlConfigBuilder(stream).setProperties(properties).build().setConfigurationFile(configFile)
-            );
-        }
-        if (path.endsWith(".yaml") || path.endsWith(".yml")) {
-            return applyEnvAndSystemVariableOverrides(
-                    new YamlConfigBuilder(stream).setProperties(properties).build().setConfigurationFile(configFile)
-            );
-        }
+        try (InputStream stream = new FileInputStream(configFile)) {
+            final Config config;
 
-        throw new IllegalArgumentException("Unknown configuration file extension");
+            if (path.endsWith(".xml")) {
+                config = new XmlConfigBuilder(stream).setProperties(properties).build();
+            } else if (path.endsWith(".yaml") || path.endsWith(".yml")) {
+                config = new YamlConfigBuilder(stream).setProperties(properties).build();
+            } else {
+                throw new IllegalArgumentException("Unknown configuration file extension");
+            }
+
+            return applyEnvAndSystemVariableOverrides(config.setConfigurationFile(configFile));
+        } catch (FileNotFoundException e) {
+            throw e;
+        } catch (IOException e) {
+            throw ExceptionUtil.sneakyThrow(e);
+        }
     }
 
     /**
@@ -583,7 +599,7 @@ public class Config {
             throw new IllegalArgumentException("argument 'name' can't be null or empty");
         }
         isNotNull(value, "value");
-        properties.put(name, value);
+        properties.setProperty(name, value);
         return this;
     }
 
@@ -3037,6 +3053,57 @@ public class Config {
     }
 
     /**
+     * Get vector collection config.
+     * If no configuration is found for the given name, returns null.
+     *
+     * @return vector collection config or {@code null}
+     * @since 5.5
+     */
+    public VectorCollectionConfig getVectorCollectionConfigOrNull(String name) {
+        return vectorCollectionConfigs.getOrDefault(name, null);
+    }
+
+    /**
+     * Retrieve configurations for all vector collections.
+     *
+     * @return a map where the key represents the name of the vector collection config
+     * and the value corresponds to the respective vector collection config.
+     * @since 5.5
+     */
+    public Map<String, VectorCollectionConfig> getVectorCollectionConfigs() {
+        return vectorCollectionConfigs;
+    }
+
+    /**
+     * Add vector collection config.
+     *
+     * @param vectorCollectionConfig the vector configuration to add
+     * @return this config instance
+     * @since 5.5
+     */
+    @Nonnull
+    public Config addVectorCollectionConfig(@Nonnull VectorCollectionConfig vectorCollectionConfig) {
+        Preconditions.checkNotNull(vectorCollectionConfig, "vectorCollectionConfig");
+        this.vectorCollectionConfigs.put(vectorCollectionConfig.getName(), vectorCollectionConfig);
+        return this;
+    }
+
+    /**
+     * Set the list of vector collection configurations.
+     *
+     * @param vectorConfigs the list of vector configuration to set
+     * @return this config instance
+     * @since 5.5
+     */
+    public Config setVectorCollectionConfigs(Map<String, VectorCollectionConfig> vectorConfigs) {
+        this.vectorCollectionConfigs.clear();
+        this.vectorCollectionConfigs.putAll(
+                vectorConfigs.values().stream().collect(Collectors.toMap(VectorCollectionConfig::getName, Function.identity()))
+        );
+        return this;
+    }
+
+    /**
      * Returns the configuration for tracking use of this Hazelcast instance.
      */
     @Nonnull
@@ -3141,9 +3208,9 @@ public class Config {
      * <pre>{@code
      *      Config config = new Config();
      *      Properties properties = new Properties();
-     *      properties.put("jdbcUrl", jdbcUrl);
-     *      properties.put("username", username);
-     *      properties.put("password", password);
+     *      properties.setProperty("jdbcUrl", jdbcUrl);
+     *      properties.setProperty("username", username);
+     *      properties.setProperty("password", password);
      *      DataConnectionConfig dataConnectionConfig = new DataConnectionConfig()
      *              .setName("my-jdbc-data-connection")
      *              .setType("Jdbc")
@@ -3226,6 +3293,26 @@ public class Config {
     }
 
     /**
+     * @return the namespaces configuration object
+     * @since 5.4.0
+     */
+    public UserCodeNamespacesConfig getNamespacesConfig() {
+        return userCodeNamespacesConfig;
+    }
+
+    /**
+     * Sets the namespaces configuration.
+     * Internal API used for Spring configuration.
+     *
+     * @since 5.4.0
+     */
+    @PrivateApi
+    public @Nonnull Config setNamespacesConfig(@Nonnull UserCodeNamespacesConfig userCodeNamespacesConfig) {
+        this.userCodeNamespacesConfig = checkNotNull(userCodeNamespacesConfig);
+        return this;
+    }
+
+    /**
      * Gets the TpcConfig. Can't return null.
      *
      * @return the TpcConfig.
@@ -3248,6 +3335,29 @@ public class Config {
     @Beta
     public @Nonnull Config setTpcConfig(@Nonnull TpcConfig tpcConfig) {
         this.tpcConfig = checkNotNull(tpcConfig);
+        return this;
+    }
+
+    /**
+     * Gets the configuration for the REST API server.
+     *
+     * @return the RestConfig.
+     */
+    @Beta
+    public RestConfig getRestConfig() {
+        return restConfig;
+    }
+
+    /**
+     * Sets the configuration for the REST API server.
+     *
+     * @param restConfig the RestConfig.
+     * @return this Config instance
+     * @throws NullPointerException if restConfig is null
+     */
+    @Beta
+    public @Nonnull Config setRestConfig(@Nonnull RestConfig restConfig) {
+        this.restConfig = checkNotNull(restConfig, "RestConfig cannot be null!");
         return this;
     }
 
@@ -3291,6 +3401,7 @@ public class Config {
                 + ", cardinalityEstimatorConfigs=" + cardinalityEstimatorConfigs
                 + ", flakeIdGeneratorConfigMap=" + flakeIdGeneratorConfigMap
                 + ", pnCounterConfigs=" + pnCounterConfigs
+                + ", namespacesConfig=" + userCodeNamespacesConfig
                 + ", advancedNetworkConfig=" + advancedNetworkConfig
                 + ", servicesConfig=" + servicesConfig
                 + ", securityConfig=" + securityConfig
@@ -3316,6 +3427,8 @@ public class Config {
                 + ", integrityCheckerConfig=" + integrityCheckerConfig
                 + ", dataConnectionConfigs=" + dataConnectionConfigs
                 + ", tpcConfig=" + tpcConfig
+                + ", namespacesConfig=" + userCodeNamespacesConfig
+                + ", restConfig=" + restConfig
                 + '}';
     }
 }

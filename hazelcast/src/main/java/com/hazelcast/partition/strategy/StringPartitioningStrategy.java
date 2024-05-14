@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,15 @@ import com.hazelcast.partition.PartitioningStrategy;
 import com.hazelcast.internal.serialization.SerializableByConvention;
 
 @SerializableByConvention
+@SuppressWarnings("JavadocVariable")
 public class StringPartitioningStrategy implements PartitioningStrategy {
 
     public static final StringPartitioningStrategy INSTANCE = new StringPartitioningStrategy();
 
     @Override
     public Object getPartitionKey(Object key) {
-        if (key instanceof String) {
-            return getPartitionKey((String) key);
+        if (key instanceof String string) {
+            return getPartitionKey(string);
         }
         return null;
     }

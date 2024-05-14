@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@
 
 package com.hazelcast.internal.ascii.memcache;
 
-import com.hazelcast.core.HazelcastException;
 import com.hazelcast.internal.ascii.TextCommandConstants;
 import com.hazelcast.internal.ascii.TextCommandService;
 import com.hazelcast.logging.ILogger;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import static com.hazelcast.internal.ascii.TextCommandConstants.TextCommandType.ADD;
 import static com.hazelcast.internal.ascii.TextCommandConstants.TextCommandType.APPEND;
@@ -61,12 +60,7 @@ public class SetCommandProcessor extends MemcacheCommandProcessor<SetCommand> {
      * item is in a delete queue (see the "delete" command below).
      */
     public void handle(SetCommand setCommand) {
-        String key = null;
-        try {
-            key = URLDecoder.decode(setCommand.getKey(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new HazelcastException(e);
-        }
+        String key = URLDecoder.decode(setCommand.getKey(), StandardCharsets.UTF_8);
         String mapName = DEFAULT_MAP_NAME;
         int index = key.indexOf(':');
         if (index != -1) {
@@ -132,16 +126,15 @@ public class SetCommandProcessor extends MemcacheCommandProcessor<SetCommand> {
         Object oldValue = textCommandService.get(mapName, key);
         MemcacheEntry entry = null;
         if (oldValue != null) {
-            if (oldValue instanceof MemcacheEntry) {
-                final MemcacheEntry oldEntry = (MemcacheEntry) oldValue;
+            if (oldValue instanceof MemcacheEntry oldEntry) {
                 entry = new MemcacheEntry(setCommand.getKey(),
                         concatenate(setCommand.getValue(), oldEntry.getValue()), oldEntry.getFlag());
-            } else if (oldValue instanceof byte[]) {
+            } else if (oldValue instanceof byte[] bytes) {
                 entry = new MemcacheEntry(setCommand.getKey(),
-                        concatenate(setCommand.getValue(), ((byte[]) oldValue)), 0);
-            } else if (oldValue instanceof String) {
+                        concatenate(setCommand.getValue(), bytes), 0);
+            } else if (oldValue instanceof String string) {
                 entry = new MemcacheEntry(setCommand.getKey(),
-                        concatenate(setCommand.getValue(), stringToBytes((String) oldValue)), 0);
+                        concatenate(setCommand.getValue(), stringToBytes(string)), 0);
             } else {
                 try {
                     entry = new MemcacheEntry(setCommand.getKey(),
@@ -171,16 +164,15 @@ public class SetCommandProcessor extends MemcacheCommandProcessor<SetCommand> {
         Object oldValue = textCommandService.get(mapName, key);
         MemcacheEntry entry = null;
         if (oldValue != null) {
-            if (oldValue instanceof MemcacheEntry) {
-                final MemcacheEntry oldEntry = (MemcacheEntry) oldValue;
+            if (oldValue instanceof MemcacheEntry oldEntry) {
                 entry = new MemcacheEntry(setCommand.getKey(),
                         concatenate(oldEntry.getValue(), setCommand.getValue()), 0);
-            } else if (oldValue instanceof byte[]) {
+            } else if (oldValue instanceof byte[] bytes) {
                 entry = new MemcacheEntry(setCommand.getKey(),
-                        concatenate(((byte[]) oldValue), setCommand.getValue()), 0);
-            } else if (oldValue instanceof String) {
+                        concatenate(bytes, setCommand.getValue()), 0);
+            } else if (oldValue instanceof String string) {
                 entry = new MemcacheEntry(setCommand.getKey(),
-                        concatenate(stringToBytes((String) oldValue), setCommand.getValue()), 0);
+                        concatenate(stringToBytes(string), setCommand.getValue()), 0);
             } else {
                 try {
                     entry = new MemcacheEntry(setCommand.getKey(),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class MapAggregatePerformanceTest extends HazelcastTestSupport {
 
         int elementCount = 10000000;
         double value = 0;
-        Map<Long, Double> values = new HashMap<Long, Double>(elementCount);
+        Map<Long, Double> values = new HashMap<>(elementCount);
         for (long i = 0L; i < elementCount; i++) {
             values.put(i, value++);
         }
@@ -80,7 +80,7 @@ public class MapAggregatePerformanceTest extends HazelcastTestSupport {
         for (int i = 0; i < 10; i++) {
             System.err.println("Executing aggregation");
             long start = System.currentTimeMillis();
-            Double avg = map.aggregate(new DoubleAverageAggregator<Map.Entry<Long, Double>>());
+            Double avg = map.aggregate(new DoubleAverageAggregator<>());
             long stop = System.currentTimeMillis();
             System.err.println("\nFinished avg in " + (stop - start) + " millis avg=" + avg);
             System.err.println("------------------------------------------");
@@ -97,7 +97,7 @@ public class MapAggregatePerformanceTest extends HazelcastTestSupport {
 
         int elementCount = 10000000;
         double value = 0;
-        Map<Long, Person> values = new HashMap<Long, Person>(elementCount);
+        Map<Long, Person> values = new HashMap<>(elementCount);
         for (long i = 0L; i < elementCount; i++) {
             values.put(i, new Person(value++));
         }
@@ -128,7 +128,7 @@ public class MapAggregatePerformanceTest extends HazelcastTestSupport {
         for (int i = 0; i < 10; i++) {
             System.err.println("Executing aggregation");
             long start = System.currentTimeMillis();
-            Double avg = map.aggregate(new DoubleAverageAggregator<Map.Entry<Long, Person>>("age"));
+            Double avg = map.aggregate(new DoubleAverageAggregator<>("age"));
             long stop = System.currentTimeMillis();
             System.err.println("\nFinished avg in " + (stop - start) + " millis avg=" + avg);
             System.err.println("------------------------------------------");

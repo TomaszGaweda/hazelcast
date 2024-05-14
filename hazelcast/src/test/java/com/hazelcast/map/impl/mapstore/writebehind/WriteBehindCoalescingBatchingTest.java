@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package com.hazelcast.map.impl.mapstore.writebehind;
 
-import static org.junit.Assert.assertEquals;
-
 import com.hazelcast.config.Config;
 import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.core.HazelcastInstance;
@@ -26,6 +24,10 @@ import com.hazelcast.map.MapStore;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.SlowTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,9 +36,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * A test to check batching in the write-behind processor when using
@@ -47,7 +48,7 @@ import org.junit.runner.RunWith;
 public class WriteBehindCoalescingBatchingTest extends HazelcastTestSupport {
 
     @Test
-    public void testWriteBehindQueues_flushed_onNodeShutdown() throws Exception {
+    public void testWriteBehindQueues_flushed_onNodeShutdown() {
 
         // create hazelcast config
         Config config = getConfig();
@@ -136,7 +137,7 @@ public class WriteBehindCoalescingBatchingTest extends HazelcastTestSupport {
 
         @Override
         public Set<String> loadAllKeys() {
-            return new HashSet<String>(inMemoryStore.keySet());
+            return new HashSet<>(inMemoryStore.keySet());
         }
 
         @Override

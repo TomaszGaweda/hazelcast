@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -178,12 +178,12 @@ public class MapStoreConfigTest extends HazelcastTestSupport {
     @Test
     public void setProperties() {
         Properties properties = new Properties();
-        properties.put("a", "b");
+        properties.setProperty("a", "b");
         MapStoreConfig cfg = new MapStoreConfig().setProperties(properties);
         assertEquals(properties, cfg.getProperties());
         assertEquals("b", cfg.getProperty("a"));
         Properties otherProperties = new Properties();
-        otherProperties.put("a", "b");
+        otherProperties.setProperty("a", "b");
         assertEquals(new MapStoreConfig().setProperties(otherProperties), cfg);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class EventServiceTest extends HazelcastTestSupport {
         Future<HazelcastInstance> future = spawn(() -> factory.newHazelcastInstance(newConfigWithDummyService()));
 
         EventService eventService = getEventService(hz2);
-        Set<UUID> registrationIds = new HashSet<UUID>();
+        Set<UUID> registrationIds = new HashSet<>();
         Object listener = new Object();
         while (getClusterService(hz2).getSize() < 3) {
             EventRegistration registration = eventService.registerListener(serviceName, topic, listener);
@@ -84,7 +84,7 @@ public class EventServiceTest extends HazelcastTestSupport {
         HazelcastInstance hz2 = factory.newHazelcastInstance(newConfigWithDummyService());
 
         EventService eventService = getEventService(hz2);
-        Set<UUID> registrationIds = new HashSet<UUID>();
+        Set<UUID> registrationIds = new HashSet<>();
         Object listener = new Object();
         for (int i = 0; i < 500; i++) {
             EventRegistration registration = eventService.registerListener(serviceName, topic, listener);

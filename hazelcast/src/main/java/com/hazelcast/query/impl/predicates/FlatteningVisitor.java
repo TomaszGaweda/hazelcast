@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class FlatteningVisitor extends AbstractVisitor {
         predicates[position] = subPredicates[0];
         for (int j = 1; j < subPredicates.length; j++) {
             if (store == null) {
-                store = new ArrayList<Predicate>();
+                store = new ArrayList<>();
             }
             store.add(subPredicates[j]);
         }

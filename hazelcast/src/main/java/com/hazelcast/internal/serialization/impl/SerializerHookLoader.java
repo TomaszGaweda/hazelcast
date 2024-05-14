@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ final class SerializerHookLoader {
     private final boolean useDefaultConstructorOnly =
             Boolean.getBoolean("hazelcast.compat.serializers.use.default.constructor.only");
 
-    private final Map<Class, Object> serializers = new HashMap<Class, Object>();
+    private final Map<Class, Object> serializers = new HashMap<>();
     private final Collection<SerializerConfig> serializerConfigs;
     private final ClassLoader classLoader;
 
@@ -125,7 +125,7 @@ final class SerializerHookLoader {
             if (current.equals(serializer)) {
                 Logger.getLogger(getClass()).warning("Serializer[" + serializationType.toString()
                         + "] is already registered! Skipping " + serializer);
-            } else if (current instanceof SerializerHook && ((SerializerHook) current).isOverwritable()) {
+            } else if (current instanceof SerializerHook hook && hook.isOverwritable()) {
                 serializers.put(serializationType, serializer);
             } else {
                 throw new IllegalArgumentException("Serializer[" + serializationType.toString()

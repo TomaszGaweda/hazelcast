@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,10 @@ public class JetObserverDataSerializerHook implements DataSerializerHook {
     private static class Factory implements DataSerializableFactory {
         @Override
         public IdentifiedDataSerializable create(int typeId) {
-            switch (typeId) {
-                case WRAPPED_THROWABLE:
-                    return new WrappedThrowable();
-                default:
-                    throw new IllegalArgumentException("Unknown type id " + typeId);
+            if (typeId == WRAPPED_THROWABLE) {
+                return new WrappedThrowable();
             }
+            throw new IllegalArgumentException("Unknown type id " + typeId);
         }
     }
 }

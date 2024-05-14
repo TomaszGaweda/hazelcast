@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +38,14 @@ public class MySQLReadJdbcPPropertiesTest extends ReadJdbcPPropertiesTest {
     public void testFetchSize() {
         int fetchSize = 2;
         Properties properties = new Properties();
-        properties.put(JdbcPropertyKeys.FETCH_SIZE, String.valueOf(fetchSize));
+        properties.setProperty(JdbcPropertyKeys.FETCH_SIZE, String.valueOf(fetchSize));
         runTestFetchSize(properties, fetchSize);
     }
 
     @Test
     public void testInvalidFetchSize() {
         Properties properties = new Properties();
-        properties.put(JdbcPropertyKeys.FETCH_SIZE, "aa");
+        properties.setProperty(JdbcPropertyKeys.FETCH_SIZE, "aa");
         assertThatThrownBy(() -> runTest(properties))
                 .hasRootCauseInstanceOf(NumberFormatException.class);
     }

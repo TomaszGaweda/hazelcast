@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import com.hazelcast.jet.core.ResettableSingletonTraverser;
 import com.hazelcast.jet.core.Watermark;
 import com.hazelcast.jet.datamodel.Tuple2;
 import com.hazelcast.jet.datamodel.Tuple3;
-import com.hazelcast.jet.impl.util.LoggingUtil;
 import com.hazelcast.jet.pipeline.ServiceFactory;
 
 import javax.annotation.CheckReturnValue;
@@ -50,13 +49,13 @@ import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import static com.hazelcast.internal.util.ExceptionUtil.withTryCatch;
 import static com.hazelcast.jet.Traversers.traverseIterable;
 import static com.hazelcast.jet.Util.entry;
 import static com.hazelcast.jet.core.BroadcastKey.broadcastKey;
 import static com.hazelcast.jet.datamodel.Tuple2.tuple2;
 import static com.hazelcast.jet.datamodel.Tuple3.tuple3;
 import static com.hazelcast.jet.impl.processor.ProcessorSupplierWithService.supplierWithService;
-import static com.hazelcast.internal.util.ExceptionUtil.withTryCatch;
 
 /**
  * Processor which, for each received item, emits all the items from the
@@ -317,7 +316,7 @@ public final class AsyncTransformUsingServiceUnorderedP<C, S, T, K, R> extends A
             for (int i = 0; i < lastReceivedWms.length; i++) {
                 lastReceivedWmsMap.put(wmKeys[i], lastReceivedWms[i]);
             }
-            LoggingUtil.logFinest(getLogger(), "Saving to snapshot: %s, lastReceivedWm=%s",
+            getLogger().finest("Saving to snapshot: %s, lastReceivedWm=%s",
                     inFlightItems, lastReceivedWmsMap);
             snapshotTraverser = traverseIterable(inFlightItems.entrySet())
                     .<Entry>map(en -> entry(
@@ -332,8 +331,8 @@ public final class AsyncTransformUsingServiceUnorderedP<C, S, T, K, R> extends A
     @Override
     @SuppressWarnings("unchecked")
     protected void restoreFromSnapshot(@Nonnull Object key, @Nonnull Object value) {
-        if (key instanceof BroadcastKey) {
-            assert ((BroadcastKey) key).key().equals(Keys.LAST_RECEIVED_WMS) : "Unexpected key: " + key;
+        if (key instanceof BroadcastKey broadcastKey) {
+            assert broadcastKey.key().equals(Keys.LAST_RECEIVED_WMS) : "Unexpected key: " + key;
             // we restart at the oldest WM any instance was at the time of snapshot
             for (Entry<Byte, Long> en : ((Map<Byte, Long>) value).entrySet()) {
                 int wmIndex = getWmIndex(en.getKey());
@@ -348,7 +347,7 @@ public final class AsyncTransformUsingServiceUnorderedP<C, S, T, K, R> extends A
         // replay each item appropriate number of times, order does not matter
         for (int i = 0; i < value1.f1(); i++) {
             restoredObjects.add(value1.f0());
-            LoggingUtil.logFinest(getLogger(), "Restored: %s", value1.f0());
+            getLogger().finest("Restored: %s", value1.f0());
         }
     }
 

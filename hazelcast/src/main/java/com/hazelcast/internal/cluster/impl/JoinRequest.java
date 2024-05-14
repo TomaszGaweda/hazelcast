@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,10 @@ import static com.hazelcast.internal.util.SetUtil.createHashSet;
 import static java.util.Collections.unmodifiableSet;
 
 public class JoinRequest extends JoinMessage {
+
+    // RU_COMPAT 5.2
+    private static final String VERSION_5_3_0 = "5.3.0";
+    private static final MemberVersion SUPPORTS_PREJOIN_VERSION = MemberVersion.of(VERSION_5_3_0);
 
     private Credentials credentials;
     private int tryCount;
@@ -126,7 +130,10 @@ public class JoinRequest extends JoinMessage {
         this.excludedMemberUuids = unmodifiableSet(excludedMemberUuids);
         this.addresses = readMap(in);
         cpMemberUUID = UUIDSerializationUtil.readUUID(in);
-        preJoinOperation = in.readObject();
+        // RU_COMPAT 5.2
+        if (MemberVersion.MAJOR_MINOR_VERSION_COMPARATOR.compare(this.memberVersion, SUPPORTS_PREJOIN_VERSION) >= 0) {
+            preJoinOperation = in.readObject();
+        }
     }
 
     @Override

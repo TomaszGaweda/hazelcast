@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,7 +151,7 @@ public class QueryNullIndexingTest extends HazelcastTestSupport {
             map.put(i, employee);
         }
 
-        List<Long> dates = new ArrayList<Long>();
+        List<Long> dates = new ArrayList<>();
         for (SampleTestObjects.Employee employee : map.values(pred)) {
             Timestamp date = employee.getDate();
             dates.add(date == null ? null : date.getTime());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 
 import static com.hazelcast.internal.nio.Bits.NULL_ARRAY_LENGTH;
 
+@SuppressWarnings("MethodCount")
 public class ObjectDataInputStream extends VersionedObjectDataInput
         implements Closeable, DataReader, SerializationServiceSupport {
 

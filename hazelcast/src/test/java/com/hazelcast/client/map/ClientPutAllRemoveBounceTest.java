@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public class ClientPutAllRemoveBounceTest extends HazelcastTestSupport {
             int min = random.nextInt(keyDomain - range);
             int max = min + range;
 
-            Map<Integer, Employee> m = new HashMap<Integer, Employee>();
+            Map<Integer, Employee> m = new HashMap<>();
             for (int i = min; i < max; i++) {
                 m.put(i, new Employee(i, "name" + i, i, true, i));
             }

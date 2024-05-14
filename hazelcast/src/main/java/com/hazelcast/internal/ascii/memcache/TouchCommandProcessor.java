@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@
 
 package com.hazelcast.internal.ascii.memcache;
 
-import com.hazelcast.core.HazelcastException;
 import com.hazelcast.internal.ascii.TextCommandServiceImpl;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import static com.hazelcast.internal.ascii.TextCommandConstants.NOT_STORED;
 import static com.hazelcast.internal.ascii.TextCommandConstants.TOUCHED;
@@ -34,11 +33,7 @@ public class TouchCommandProcessor extends MemcacheCommandProcessor<TouchCommand
     @Override
     public void handle(TouchCommand touchCommand) {
         String key;
-        try {
-            key = URLDecoder.decode(touchCommand.getKey(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new HazelcastException(e);
-        }
+        key = URLDecoder.decode(touchCommand.getKey(), StandardCharsets.UTF_8);
         String mapName = DEFAULT_MAP_NAME;
         int index = key.indexOf(':');
         if (index != -1) {

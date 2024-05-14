@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,6 @@ public class EventJournalCacheDataStructureAdapter<K, V>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public CompletionStage<EventJournalInitialSubscriberState> subscribeToEventJournal(int partitionId) {
         return ((EventJournalReader<?>) cache).subscribeToEventJournal(partitionId);
     }
@@ -120,7 +119,7 @@ public class EventJournalCacheDataStructureAdapter<K, V>
 
     private Set<Map.Entry<K, V>> getEntries(ICache<K, V> cache) {
         final Iterator<Cache.Entry<K, V>> it = cache.iterator();
-        final HashSet<Entry<K, V>> entries = new HashSet<Map.Entry<K, V>>(cache.size());
+        final HashSet<Entry<K, V>> entries = new HashSet<>(cache.size());
         while (it.hasNext()) {
             final Cache.Entry<K, V> e = it.next();
             entries.add(new SimpleImmutableEntry<K, V>(e.getKey(), e.getValue()));

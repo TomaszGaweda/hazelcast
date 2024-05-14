@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,8 +80,7 @@ public final class LockEvictionProcessor implements ScheduledEntryProcessor<Data
     private class UnlockResponseHandler implements OperationResponseHandler {
         @Override
         public void sendResponse(Operation op, Object obj) {
-            if (obj instanceof Throwable) {
-                Throwable t = (Throwable) obj;
+            if (obj instanceof Throwable t) {
                 if (t instanceof RetryableException) {
                     logger.finest("While unlocking... " + t.getMessage());
                 } else {

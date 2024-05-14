@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,10 +61,11 @@ public class GcpAuthenticatorTest {
     }
 
     private static String responseBody(String accessToken) {
-        return String.format("{\n"
-                + "  \"access_token\" : \"%s\",\n"
-                + "  \"token_type\" : \"Bearer\",\n"
-                + "  \"expires_in\" : 3600\n"
-                + "}", accessToken);
+        return String.format("""
+                {
+                  "access_token" : "%s",
+                  "token_type" : "Bearer",
+                  "expires_in" : 3600
+                }""", accessToken);
     }
 }

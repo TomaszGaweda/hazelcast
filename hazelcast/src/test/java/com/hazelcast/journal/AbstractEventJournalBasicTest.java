@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.ringbuffer.impl.RingbufferContainer;
 import com.hazelcast.ringbuffer.impl.RingbufferService;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastTestSupport;
 import org.junit.Before;
 import org.junit.Test;
@@ -130,9 +129,7 @@ public abstract class AbstractEventJournalBasicTest<EJ_TYPE> extends HazelcastTe
 
         final CountDownLatch latch = new CountDownLatch(1);
 
-        final Runnable ec = () -> {
-            latch.countDown();
-        };
+        final Runnable ec = latch::countDown;
 
         Thread consumer = new Thread(
                 () -> readFromEventJournal(context.dataAdapter, 0, 10, partitionId, TRUE_PREDICATE, IDENTITY_FUNCTION)
@@ -140,7 +137,7 @@ public abstract class AbstractEventJournalBasicTest<EJ_TYPE> extends HazelcastTe
 
         consumer.start();
 
-        Map<String, Integer> addMap = new HashMap<String, Integer>();
+        Map<String, Integer> addMap = new HashMap<>();
         for (int i = 0; i < 501; i++) {
             addMap.put(randomPartitionKey(), RANDOM.nextInt());
         }
@@ -164,7 +161,7 @@ public abstract class AbstractEventJournalBasicTest<EJ_TYPE> extends HazelcastTe
         final ReadResultSet<EJ_TYPE> events = getAllEvents(context.dataAdapter, null, null);
         assertEquals(count, events.size());
 
-        final HashMap<String, Integer> received = new HashMap<String, Integer>();
+        final HashMap<String, Integer> received = new HashMap<>();
         final EventJournalEventAdapter<String, Integer, EJ_TYPE> journalAdapter = context.eventJournalAdapter;
         for (EJ_TYPE e : events) {
             assertEquals(ADDED, journalAdapter.getType(e));
@@ -190,7 +187,7 @@ public abstract class AbstractEventJournalBasicTest<EJ_TYPE> extends HazelcastTe
         final ReadResultSet<EJ_TYPE> events = getAllEvents(context.dataAdapter, null, null);
         assertEquals(count, events.size());
 
-        final HashMap<String, String> received = new HashMap<String, String>();
+        final HashMap<String, String> received = new HashMap<>();
         final EventJournalEventAdapter<String, String, EJ_TYPE> journalAdapter = context.eventJournalAdapter;
         for (EJ_TYPE e : events) {
             assertEquals(LOADED, journalAdapter.getType(e));
@@ -218,7 +215,7 @@ public abstract class AbstractEventJournalBasicTest<EJ_TYPE> extends HazelcastTe
         final ReadResultSet<EJ_TYPE> events = getAllEvents(context.dataAdapter, null, null);
         assertEquals(count, events.size());
 
-        final HashMap<String, String> received = new HashMap<String, String>();
+        final HashMap<String, String> received = new HashMap<>();
         final EventJournalEventAdapter<String, String, EJ_TYPE> journalAdapter = context.eventJournalAdapter;
         for (EJ_TYPE e : events) {
             assertEquals(LOADED, journalAdapter.getType(e));
@@ -231,36 +228,21 @@ public abstract class AbstractEventJournalBasicTest<EJ_TYPE> extends HazelcastTe
 
     private void assertEventJournalSizeEventually(final EventJournalTestContext<String, String, EJ_TYPE> context,
                                                   final int count) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEventJournalSize(context.dataAdapter, count);
-            }
-        });
+        assertTrueEventually(() -> assertEventJournalSize(context.dataAdapter, count));
     }
 
     @Test
     public void receiveExpirationEventsWhenPutWithTtl() {
         final EventJournalTestContext<String, Integer, EJ_TYPE> context = createContext();
         final EventJournalDataStructureAdapter<String, Integer, EJ_TYPE> adapter = context.dataAdapter;
-        testExpiration(context, adapter, new BiConsumer<String, Integer>() {
-            @Override
-            public void accept(String k, Integer v) {
-                adapter.put(k, v, 1, TimeUnit.SECONDS);
-            }
-        });
+        testExpiration(context, adapter, (k, v) -> adapter.put(k, v, 1, TimeUnit.SECONDS));
     }
 
     @Test
     public void receiveExpirationEventsWhenPutOnExpiringStructure() {
         final EventJournalTestContext<String, Integer, EJ_TYPE> context = createContext();
         final EventJournalDataStructureAdapter<String, Integer, EJ_TYPE> adapter = context.dataAdapterWithExpiration;
-        testExpiration(context, adapter, new BiConsumer<String, Integer>() {
-            @Override
-            public void accept(String k, Integer i) {
-                adapter.put(k, i);
-            }
-        });
+        testExpiration(context, adapter, (k, i) -> adapter.put(k, i));
     }
 
     @Test
@@ -282,8 +264,8 @@ public abstract class AbstractEventJournalBasicTest<EJ_TYPE> extends HazelcastTe
             context.dataAdapter.remove(e.getKey());
         }
 
-        final HashMap<String, Integer> added = new HashMap<String, Integer>(count);
-        final HashMap<String, Integer> removed = new HashMap<String, Integer>(count);
+        final HashMap<String, Integer> added = new HashMap<>(count);
+        final HashMap<String, Integer> removed = new HashMap<>(count);
 
         final EventJournalEventAdapter<String, Integer, EJ_TYPE> journalAdapter = context.eventJournalAdapter;
         for (EJ_TYPE e : getAllEvents(context.dataAdapter, TRUE_PREDICATE, IDENTITY_FUNCTION)) {
@@ -357,8 +339,8 @@ public abstract class AbstractEventJournalBasicTest<EJ_TYPE> extends HazelcastTe
         final Map<String, Integer> evenMap = createHashMap(count / 2);
         final Map<String, Integer> oddMap = createHashMap(count / 2);
         final EventJournalEventAdapter<String, Integer, EJ_TYPE> journalAdapter = context.eventJournalAdapter;
-        final NewValueParityPredicate<EJ_TYPE> evenPredicate = new NewValueParityPredicate<EJ_TYPE>(0, journalAdapter);
-        final NewValueParityPredicate<EJ_TYPE> oddPredicate = new NewValueParityPredicate<EJ_TYPE>(1, journalAdapter);
+        final NewValueParityPredicate<EJ_TYPE> evenPredicate = new NewValueParityPredicate<>(0, journalAdapter);
+        final NewValueParityPredicate<EJ_TYPE> oddPredicate = new NewValueParityPredicate<>(1, journalAdapter);
 
         for (EJ_TYPE e : getAllEvents(context.dataAdapter, evenPredicate, IDENTITY_FUNCTION)) {
             assertEquals(ADDED, journalAdapter.getType(e));
@@ -398,7 +380,7 @@ public abstract class AbstractEventJournalBasicTest<EJ_TYPE> extends HazelcastTe
 
         final ReadResultSet<Integer> resultSet = getAllEvents(context.dataAdapter, TRUE_PREDICATE,
                 new NewValueIncrementingFunction<EJ_TYPE>(100, context.eventJournalAdapter));
-        final ArrayList<Integer> ints = new ArrayList<Integer>(count);
+        final ArrayList<Integer> ints = new ArrayList<>(count);
         for (Integer i : resultSet) {
             ints.add(i);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -246,7 +246,7 @@ public final class AggregateOperations {
                     }
                 })
                 .andCombine((a1, a2) -> {
-                    if (a1.isNull() || comparator.compare(a1.get(), a2.get()) < 0) {
+                    if (a1.isNull() || (!a2.isNull() && comparator.compare(a1.get(), a2.get()) < 0)) {
                         a1.set(a2.get());
                     }
                 })

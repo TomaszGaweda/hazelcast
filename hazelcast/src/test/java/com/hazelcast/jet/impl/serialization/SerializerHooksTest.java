@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,9 +103,9 @@ public class SerializerHooksTest {
         Object deserialized = serializationService.toObject(serialized);
 
         assertNotSame("serialization/deserialization didn't take place", instance, deserialized);
-        if (instance instanceof Object[]) {
+        if (instance instanceof Object[] objectArray) {
             assertArrayEquals("objects are not equal after serialize/deserialize",
-                    (Object[]) instance, (Object[]) deserialized);
+                    objectArray, (Object[]) deserialized);
         } else {
             assertEquals("objects are not equal after serialize/deserialize", instance, deserialized);
         }

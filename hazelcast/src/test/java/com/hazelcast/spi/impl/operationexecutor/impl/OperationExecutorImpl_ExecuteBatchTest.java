@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.spi.impl.operationexecutor.impl;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.impl.operationservice.PartitionTaskFactory;
 import com.hazelcast.spi.properties.HazelcastProperties;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -63,12 +62,7 @@ public class OperationExecutorImpl_ExecuteBatchTest extends OperationExecutorImp
         final DummyPartitionTaskFactory taskFactory = new DummyPartitionTaskFactory();
         executor.executeOnPartitions(taskFactory, partitions);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(partitions.length(), taskFactory.completed.get());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(partitions.length(), taskFactory.completed.get()));
     }
 
     @Test
@@ -82,12 +76,7 @@ public class OperationExecutorImpl_ExecuteBatchTest extends OperationExecutorImp
 
         final DummyOperation op = new DummyOperation();
         executor.execute(op);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertTrue(op.completed);
-            }
-        }, 5);
+        assertTrueEventually(() -> assertTrue(op.completed), 5);
     }
 
     private BitSet newPartitions() {

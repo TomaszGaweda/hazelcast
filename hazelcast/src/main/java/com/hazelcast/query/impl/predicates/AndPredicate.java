@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,13 +106,13 @@ public final class AndPredicate
     }
 
     private static boolean isIndexedPredicate(Predicate predicate, QueryContext queryContext) {
-        return predicate instanceof IndexAwarePredicate
-                && ((IndexAwarePredicate) predicate).isIndexed(queryContext);
+        return predicate instanceof IndexAwarePredicate awarePredicate
+                && awarePredicate.isIndexed(queryContext);
     }
 
     private static <T> List<T> initOrGetListOf(List<T> list) {
         if (list == null) {
-            list = new LinkedList<T>();
+            list = new LinkedList<>();
         }
         return list;
     }
@@ -120,9 +120,8 @@ public final class AndPredicate
     @Override
     public boolean isIndexed(QueryContext queryContext) {
         for (Predicate predicate : predicates) {
-            if (predicate instanceof IndexAwarePredicate) {
-                IndexAwarePredicate iap = (IndexAwarePredicate) predicate;
-                if (iap.isIndexed(queryContext)) {
+            if (predicate instanceof IndexAwarePredicate awarePredicate) {
+                if (awarePredicate.isIndexed(queryContext)) {
                     return true;
                 }
             }
@@ -179,8 +178,8 @@ public final class AndPredicate
         for (int i = 0; i < size; i++) {
             Predicate original = predicates[i];
             Predicate negated;
-            if (original instanceof NegatablePredicate) {
-                negated = ((NegatablePredicate) original).negate();
+            if (original instanceof NegatablePredicate predicate) {
+                negated = predicate.negate();
             } else {
                 negated = new NotPredicate(original);
             }

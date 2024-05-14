@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,9 @@ import static org.junit.Assert.assertTrue;
 public class WriteBehindStoreAllUpdatesTest extends HazelcastTestSupport {
 
     @Test
-    public void testAllUpdatesReflectedToMapStore() throws Exception {
+    public void testAllUpdatesReflectedToMapStore() {
         int nodeCount = 3;
-        final MapStoreWithCounter<Integer, String> mapStore = new MapStoreWithCounter<Integer, String>();
+        final MapStoreWithCounter<Integer, String> mapStore = new MapStoreWithCounter<>();
         TestMapUsingMapStoreBuilder<Integer, String> builder = TestMapUsingMapStoreBuilder.<Integer, String>create()
                 .withMapStore(mapStore)
                 .withNodeCount(nodeCount)

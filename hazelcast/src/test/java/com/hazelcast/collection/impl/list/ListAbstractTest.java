@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.collection.impl.list;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ListConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.cp.IAtomicLong;
 import com.hazelcast.collection.IList;
 import com.hazelcast.test.HazelcastTestSupport;
 import org.junit.Before;
@@ -40,7 +39,6 @@ import static org.junit.Assert.fail;
 public abstract class ListAbstractTest extends HazelcastTestSupport {
 
     protected HazelcastInstance[] instances;
-    protected IAtomicLong atomicLong;
 
     private IList<String> list;
 
@@ -148,7 +146,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
 
     @Test
     public void testAddAll() {
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add("item0");
         listTest.add("item1");
         listTest.add("item2");
@@ -159,7 +157,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
 
     @Test
     public void testAddAll_whenCollectionContainsNull() {
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add("item0");
         listTest.add("item1");
         listTest.add(null);
@@ -185,7 +183,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
     @Test
     public void testAddAll_whenDuplicateItems() {
         addItems(10);
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add("item4");
         list.addAll(listTest);
         assertEquals(11, list.size());
@@ -194,7 +192,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
     @Test
     public void testAddAllWithIndex() {
         addItems(10);
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add("test1");
         listTest.add("test2");
         listTest.add("test3");
@@ -211,7 +209,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
     @Test(expected = IndexOutOfBoundsException.class)
     public void testAddAllWithIndex_whenIndexNegative() {
         addItems(10);
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add("test1");
         list.addAll(-2, listTest);
     }
@@ -241,7 +239,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
     @Test
     public void testContainsAll() {
         addItems(10);
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add("item1");
         listTest.add("item4");
         listTest.add("item7");
@@ -252,7 +250,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
     @Test
     public void testContainsAll_whenListNotContains() {
         addItems(10);
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add("item1");
         listTest.add("item4");
         listTest.add("item14");
@@ -421,7 +419,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
     @Test
     public void testRemoveAll() {
         addItems(10);
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add("item0");
         listTest.add("item1");
         listTest.add("item2");
@@ -451,7 +449,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
     public void testRetainAll() {
         addItems(10);
 
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add("item0");
         listTest.add("item1");
         listTest.add("item2");
@@ -477,7 +475,7 @@ public abstract class ListAbstractTest extends HazelcastTestSupport {
 
     @Test(expected = NullPointerException.class)
     public void testRetainAll_whenCollectionContainsNull() {
-        List<String> listTest = new ArrayList<String>();
+        List<String> listTest = new ArrayList<>();
         listTest.add(null);
         list.retainAll(listTest);
     }

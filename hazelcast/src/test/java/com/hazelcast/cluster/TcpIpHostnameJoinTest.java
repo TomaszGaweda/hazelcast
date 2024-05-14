@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class TcpIpHostnameJoinTest extends AbstractJoinTest {
     }
 
     @Test
-    public void test_whenNoExplicitPortConfigured() throws Exception {
+    public void test_whenNoExplicitPortConfigured() {
         Config config = new Config();
 
         NetworkConfig networkConfig = config.getNetworkConfig();
@@ -88,7 +88,7 @@ public class TcpIpHostnameJoinTest extends AbstractJoinTest {
     }
 
     @Test
-    public void test_whenExplicitPortConfigured() throws Exception {
+    public void test_whenExplicitPortConfigured() {
         Config config = new Config();
 
         NetworkConfig networkConfig = config.getNetworkConfig();
@@ -102,7 +102,7 @@ public class TcpIpHostnameJoinTest extends AbstractJoinTest {
     }
 
     @Test
-    public void test_whenExplicitPortConfiguredMixedHostnames() throws Exception {
+    public void test_whenExplicitPortConfiguredMixedHostnames() {
         Config config = new Config();
 
         NetworkConfig networkConfig = config.getNetworkConfig();

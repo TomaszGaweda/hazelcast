@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.impl.operationservice.BackupAwareOperation;
 import com.hazelcast.spi.impl.operationservice.BackupOperation;
 import com.hazelcast.spi.impl.operationservice.Operation;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.ExpectedRuntimeException;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
@@ -44,7 +43,7 @@ import static org.junit.Assert.assertNotNull;
 public class OperationFailureTest extends HazelcastTestSupport {
 
     // static reference to store backup operation failure
-    private static final AtomicReference<Throwable> backupOperationFailure = new AtomicReference<Throwable>();
+    private static final AtomicReference<Throwable> backupOperationFailure = new AtomicReference<>();
 
     @Test
     public void onFailure_shouldBeCalled_whenOperationExecutionFails() {
@@ -84,12 +83,7 @@ public class OperationFailureTest extends HazelcastTestSupport {
 
         nodeEngine.getOperationService().invokeOnPartition(null, new EmptyBackupAwareOperation(), 0);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertNotNull(backupOperationFailure.get());
-            }
-        });
+        assertTrueEventually(() -> assertNotNull(backupOperationFailure.get()));
 
         Throwable failure = backupOperationFailure.getAndSet(null);
         assertInstanceOf(ExpectedRuntimeException.class, failure);
@@ -104,7 +98,7 @@ public class OperationFailureTest extends HazelcastTestSupport {
         }
 
         @Override
-        public void run() throws Exception {
+        public void run() {
             throw new ExpectedRuntimeException();
         }
 
@@ -118,7 +112,7 @@ public class OperationFailureTest extends HazelcastTestSupport {
     private static class EmptyBackupAwareOperation extends Operation implements BackupAwareOperation {
 
         @Override
-        public void run() throws Exception {
+        public void run() {
         }
 
         @Override
@@ -144,7 +138,7 @@ public class OperationFailureTest extends HazelcastTestSupport {
 
     private static class FailingBackupOperation extends Operation implements BackupOperation {
         @Override
-        public void run() throws Exception {
+        public void run() {
             throw new ExpectedRuntimeException();
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -257,7 +257,7 @@ public class MergeOperation extends Operation
         final long tailSequence = in.readLong();
         final long headSequence = in.readLong();
         final int capacity = in.readInt();
-        mergingRingbuffer = new ArrayRingbuffer<Object>(capacity);
+        mergingRingbuffer = new ArrayRingbuffer<>(capacity);
         mergingRingbuffer.setTailSequence(tailSequence);
         mergingRingbuffer.setHeadSequence(headSequence);
 

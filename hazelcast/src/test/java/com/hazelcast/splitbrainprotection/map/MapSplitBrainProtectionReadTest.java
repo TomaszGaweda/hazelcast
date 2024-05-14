@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,14 +88,14 @@ public class MapSplitBrainProtectionReadTest extends AbstractSplitBrainProtectio
 
     @Test
     public void getAll_successful_whenSplitBrainProtectionSize_met() {
-        HashSet<Object> keys = new HashSet<Object>();
+        HashSet<Object> keys = new HashSet<>();
         keys.add("foo");
         map(0).getAll(keys);
     }
 
     @Test(expected = SplitBrainProtectionException.class)
     public void getAll_failing_whenSplitBrainProtectionSize_notMet() {
-        HashSet<Object> keys = new HashSet<Object>();
+        HashSet<Object> keys = new HashSet<>();
         keys.add("foo");
         map(3).getAll(keys);
     }

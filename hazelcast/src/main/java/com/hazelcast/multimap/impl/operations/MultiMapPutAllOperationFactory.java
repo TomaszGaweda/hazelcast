@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class MultiMapPutAllOperationFactory extends PartitionAwareOperationFacto
         this.name = name;
         this.partitions = partitions;
         this.mapEntries = mapEntries;
-        //NB: general structure copied from c.hz.map.impl.operation.PutAllOperationPartitionAwareFactort
+        //NB: general structure copied from c.hz.map.impl.operation.PutAllPartitionAwareOperationFactory
         //May benefit from refactoring or default interfaces
     }
 

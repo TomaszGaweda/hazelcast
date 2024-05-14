@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public final class LockStoreContainer {
 
     private final ConcurrentMap<ObjectNamespace, LockStoreImpl> lockStores = new ConcurrentHashMap<>();
     private final ConstructorFunction<ObjectNamespace, LockStoreImpl> lockStoreConstructor =
-            new ConstructorFunction<ObjectNamespace, LockStoreImpl>() {
+            new ConstructorFunction<>() {
                 public LockStoreImpl createNew(ObjectNamespace namespace) {
                     final ConstructorFunction<ObjectNamespace, LockStoreInfo> ctor =
                             lockService.getConstructor(namespace.getServiceName());

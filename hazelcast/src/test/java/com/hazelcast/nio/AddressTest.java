@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,19 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 
 @RunWith(HazelcastSerialClassRunner.class)
 @Category(QuickTest.class)
 public class AddressTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void newAddress_InetSocketAddress_whenHostUnresolved() throws UnknownHostException {
+    public void newAddress_InetSocketAddress_whenHostUnresolved() {
         InetSocketAddress inetAddress = InetSocketAddress.createUnresolved("dontexist", 1);
         new Address(inetAddress);
     }
 
     @Test(expected = NullPointerException.class)
-    public void newAddress_InetSocketAddress_whenNull() throws UnknownHostException {
+    public void newAddress_InetSocketAddress_whenNull() {
         new Address((InetSocketAddress) null);
     }
 }

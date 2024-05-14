@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -246,8 +246,7 @@ public class QueryEngineImpl implements QueryEngine {
 
     private IterationType getRetrievalIterationType(Predicate predicate, IterationType iterationType) {
         IterationType retrievalIterationType = iterationType;
-        if (predicate instanceof PagingPredicate) {
-            PagingPredicate pagingPredicate = (PagingPredicate) predicate;
+        if (predicate instanceof PagingPredicate pagingPredicate) {
             if (pagingPredicate.getComparator() != null) {
                 // custom comparators may act on keys and values at the same time
                 retrievalIterationType = IterationType.ENTRY;

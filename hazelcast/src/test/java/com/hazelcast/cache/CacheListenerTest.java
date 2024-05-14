@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(counter)), null, true, true));
 
         final Cache<String, String> cache = cacheManager.createCache("test", config);
@@ -89,18 +89,16 @@ public class CacheListenerTest extends HazelcastTestSupport {
         final CountDownLatch latch = new CountDownLatch(threadCount);
         final AtomicBoolean shutdown = new AtomicBoolean(false);
         for (int i = 0; i < threadCount; i++) {
-            new Thread() {
-                public void run() {
-                    Random rand = new Random();
-                    for (int i = 0; i < putCount && !shutdown.get(); i++) {
-                        String key = String.valueOf(rand.nextInt(putCount));
-                        String value = UUID.randomUUID().toString();
-                        cache.put(key, value);
-                        actualPutCount.incrementAndGet();
-                    }
-                    latch.countDown();
+            new Thread(() -> {
+                Random rand = new Random();
+                for (int i1 = 0; i1 < putCount && !shutdown.get(); i1++) {
+                    String key = String.valueOf(rand.nextInt(putCount));
+                    String value = UUID.randomUUID().toString();
+                    cache.put(key, value);
+                    actualPutCount.incrementAndGet();
                 }
-            }.start();
+                latch.countDown();
+            }).start();
         }
 
         if (!latch.await(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS)) {
@@ -121,7 +119,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true, true));
 
         Cache<String, String> cache = cacheManager.createCache(randomString(), config);
@@ -138,7 +136,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true, true));
 
         Cache<String, String> cache = cacheManager.createCache(randomString(), config);
@@ -153,7 +151,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true, true));
 
         Cache<String, String> cache = cacheManager.createCache(randomString(), config);
@@ -168,7 +166,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true, true));
 
         Cache<String, String> cache = cacheManager.createCache(randomString(), config);
@@ -185,7 +183,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true, true));
 
         Cache<String, String> cache = cacheManager.createCache(randomString(), config);
@@ -200,7 +198,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true, true));
 
         Cache<String, String> cache = cacheManager.createCache(randomString(), config);
@@ -215,7 +213,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true, true));
 
         Cache<String, String> cache = cacheManager.createCache(randomString(), config);
@@ -232,7 +230,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true, true));
 
         Cache<String, String> cache = cacheManager.createCache(randomString(), config);
@@ -247,7 +245,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
                 .setTypes(String.class, String.class).addCacheEntryListenerConfiguration(
-                        new MutableCacheEntryListenerConfiguration<String, String>(
+                        new MutableCacheEntryListenerConfiguration<>(
                                 FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true, true));
 
         Cache<String, String> cache = cacheManager.createCache(randomString(), config);
@@ -258,12 +256,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
     @Test
     public void testSyncListener_shouldNotHang_whenHazelcastInstanceShutdown() {
         CachingProvider provider = getCachingProvider();
-        testSyncListener_shouldNotHang_AfterAction(randomMapName(), provider, new Runnable() {
-            @Override
-            public void run() {
-                hazelcastInstance.shutdown();
-            }
-        });
+        testSyncListener_shouldNotHang_AfterAction(randomMapName(), provider, () -> hazelcastInstance.shutdown());
     }
 
     @Test
@@ -271,12 +264,9 @@ public class CacheListenerTest extends HazelcastTestSupport {
         final CachingProvider provider = getCachingProvider();
         final String cacheName = randomMapName();
 
-        testSyncListener_shouldNotHang_AfterAction(cacheName, provider, new Runnable() {
-            @Override
-            public void run() {
-                Cache cache = provider.getCacheManager().getCache(cacheName);
-                cache.close();
-            }
+        testSyncListener_shouldNotHang_AfterAction(cacheName, provider, () -> {
+            Cache cache = provider.getCacheManager().getCache(cacheName);
+            cache.close();
         });
     }
 
@@ -285,19 +275,14 @@ public class CacheListenerTest extends HazelcastTestSupport {
         final CachingProvider provider = getCachingProvider();
         final String cacheName = randomMapName();
 
-        testSyncListener_shouldNotHang_AfterAction(cacheName, provider, new Runnable() {
-            @Override
-            public void run() {
-                provider.getCacheManager().destroyCache(cacheName);
-            }
-        });
+        testSyncListener_shouldNotHang_AfterAction(cacheName, provider, () -> provider.getCacheManager().destroyCache(cacheName));
     }
 
     private void testSyncListener_shouldNotHang_AfterAction(String cacheName, CachingProvider provider, Runnable action) {
         CacheManager cacheManager = provider.getCacheManager();
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
-                .addCacheEntryListenerConfiguration(new MutableCacheEntryListenerConfiguration<String, String>(
+                .addCacheEntryListenerConfiguration(new MutableCacheEntryListenerConfiguration<>(
                         FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true,
                         true));
 
@@ -306,19 +291,17 @@ public class CacheListenerTest extends HazelcastTestSupport {
         int threads = 4;
         final CountDownLatch latch = new CountDownLatch(threads);
         for (int i = 0; i < threads; i++) {
-            new Thread() {
-                public void run() {
-                    Random rand = new Random();
-                    while (true) {
-                        try {
-                            cache.put(String.valueOf(rand.nextInt(100)), "value");
-                        } catch (Throwable e) {
-                            break;
-                        }
+            new Thread(() -> {
+                Random rand = new Random();
+                while (true) {
+                    try {
+                        cache.put(String.valueOf(rand.nextInt(100)), "value");
+                    } catch (Throwable e) {
+                        break;
                     }
-                    latch.countDown();
                 }
-            }.start();
+                latch.countDown();
+            }).start();
         }
 
         // wait a little for putting threads to start
@@ -369,7 +352,7 @@ public class CacheListenerTest extends HazelcastTestSupport {
         CacheManager cacheManager = provider.getCacheManager();
 
         CompleteConfiguration<String, String> config = new MutableConfiguration<String, String>()
-                .addCacheEntryListenerConfiguration(new MutableCacheEntryListenerConfiguration<String, String>(
+                .addCacheEntryListenerConfiguration(new MutableCacheEntryListenerConfiguration<>(
                         FactoryBuilder.factoryOf(new TestListener(new AtomicInteger())), null, true,
                         true));
 

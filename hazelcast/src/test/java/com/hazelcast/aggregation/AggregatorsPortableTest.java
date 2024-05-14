@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ public class AggregatorsPortableTest extends HazelcastTestSupport {
     }
 
     private static class TestAggregator extends AbstractAggregator<Map.Entry<Integer, Car>, String, List<String>> {
-        private List<String> accumulated = new ArrayList<String>();
+        private List<String> accumulated = new ArrayList<>();
 
         TestAggregator(String attribute) {
             super(attribute);

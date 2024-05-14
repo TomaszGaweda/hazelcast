@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ public final class DistinctValuesAggregator<I, R>
     public void readData(ObjectDataInput in) throws IOException {
         this.attributePath = in.readString();
         int count = in.readInt();
-        this.values = new CanonicalizingHashSet<R>(MapUtil.calculateInitialCapacity(count));
+        this.values = new CanonicalizingHashSet<>(MapUtil.calculateInitialCapacity(count));
         for (int i = 0; i < count; i++) {
             R value = in.readObject();
             values.addInternal(value);

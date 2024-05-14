@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -324,7 +324,7 @@ public class QueueTestsFrom2X extends HazelcastTestSupport {
 
         try {
             CountDownLatch latch = new CountDownLatch(3);
-            ItemListener<VersionedObject<Integer>> listener = new ItemListener<VersionedObject<Integer>>() {
+            ItemListener<VersionedObject<Integer>> listener = new ItemListener<>() {
                 public void itemAdded(ItemEvent<VersionedObject<Integer>> itemEvent) {
                     latch.countDown();
                 }

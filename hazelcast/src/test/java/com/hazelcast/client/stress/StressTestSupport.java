@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public abstract class StressTestSupport extends HazelcastTestSupport {
     //todo: should be system property
     public static final int KILL_DELAY_SECONDS = 10;
 
-    private final List<HazelcastInstance> instances = new CopyOnWriteArrayList<HazelcastInstance>();
+    private final List<HazelcastInstance> instances = new CopyOnWriteArrayList<>();
     private CountDownLatch startLatch;
     private KillMemberThread killMemberThread;
     private volatile boolean stopOnError = true;

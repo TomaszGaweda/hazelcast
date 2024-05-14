@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,8 @@ public class BulkGetCommandProcessor extends MemcacheCommandProcessor<BulkGetCom
     public void handle(BulkGetCommand request) {
         List<String> memcacheKeys = request.getKeys();
 
-        InternalSetMultimap<String, String> keysPerMap = new InternalSetMultimap<String, String>();
-        ComposedKeyMap<String, String, String> mapNameAndKey2memcacheKey = new ComposedKeyMap<String, String, String>();
+        InternalSetMultimap<String, String> keysPerMap = new InternalSetMultimap<>();
+        ComposedKeyMap<String, String, String> mapNameAndKey2memcacheKey = new ComposedKeyMap<>();
         for (String memcacheKey : memcacheKeys) {
             MapNameAndKeyPair mapNameAndKeyPair = parseMemcacheKey(memcacheKey);
             String mapName = mapNameAndKeyPair.getMapName();
@@ -51,7 +51,7 @@ public class BulkGetCommandProcessor extends MemcacheCommandProcessor<BulkGetCom
             mapNameAndKey2memcacheKey.put(mapName, hzKey, memcacheKey);
         }
 
-        Collection<MemcacheEntry> allResults = new ArrayList<MemcacheEntry>();
+        Collection<MemcacheEntry> allResults = new ArrayList<>();
         for (Map.Entry<String, Set<String>> mapKeys : keysPerMap.entrySet()) {
             String mapName = mapKeys.getKey();
             Set<String> keys = mapKeys.getValue();
@@ -70,7 +70,7 @@ public class BulkGetCommandProcessor extends MemcacheCommandProcessor<BulkGetCom
     private Collection<MemcacheEntry> getAll(String mapName, Set<String> keys,
                                              ComposedKeyMap<String, String, String> mapNameAndKey2memcacheKey) {
         Map<String, Object> entries = textCommandService.getAll(mapName, keys);
-        Collection<MemcacheEntry> result = new ArrayList<MemcacheEntry>(entries.size());
+        Collection<MemcacheEntry> result = new ArrayList<>(entries.size());
         for (Map.Entry<String, Object> entry : entries.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();

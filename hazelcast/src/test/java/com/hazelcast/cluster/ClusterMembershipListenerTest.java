@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.config.ListenerConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.util.UuidUtil;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -79,12 +78,9 @@ public class ClusterMembershipListenerTest extends HazelcastTestSupport {
         // an now we make sure that if a member joins the cluster, the same interface gets invoked twice.
         HazelcastInstance hz2 = factory.newHazelcastInstance();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                //now we verify that the memberAdded method is called twice.
-                verify(membershipListener, times(2)).memberAdded(any(MembershipEvent.class));
-            }
+        assertTrueEventually(() -> {
+            //now we verify that the memberAdded method is called twice.
+            verify(membershipListener, times(2)).memberAdded(any(MembershipEvent.class));
         });
     }
 
@@ -159,7 +155,7 @@ public class ClusterMembershipListenerTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testMembershipListenerSequentialInvocation() throws Exception {
+    public void testMembershipListenerSequentialInvocation() {
 
         final int nodeCount = 10;
         final TestHazelcastInstanceFactory factory = createHazelcastInstanceFactory(nodeCount);
@@ -175,11 +171,9 @@ public class ClusterMembershipListenerTest extends HazelcastTestSupport {
         factory.newHazelcastInstance(config);
 
         for (int i = 1; i < nodeCount; i++) {
-            spawn(new Runnable() {
-                public void run() {
-                    factory.newHazelcastInstance(new Config());
-                    nodeLatch.countDown();
-                }
+            spawn((Runnable) () -> {
+                factory.newHazelcastInstance(new Config());
+                nodeLatch.countDown();
             });
         }
 

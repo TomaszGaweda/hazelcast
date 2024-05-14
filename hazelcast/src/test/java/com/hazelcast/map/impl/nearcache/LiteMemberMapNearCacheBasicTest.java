@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ public class LiteMemberMapNearCacheBasicTest extends AbstractNearCacheBasicTest<
 
         HazelcastInstance member = hazelcastFactory.newHazelcastInstance(config);
         IMap<K, V> memberMap = member.getMap(DEFAULT_NEAR_CACHE_NAME);
-        IMapDataStructureAdapter<K, V> dataAdapter = new IMapDataStructureAdapter<K, V>(memberMap);
+        IMapDataStructureAdapter<K, V> dataAdapter = new IMapDataStructureAdapter<>(memberMap);
 
         // wait until the initial load is done
         dataAdapter.waitUntilLoaded();
@@ -127,7 +127,7 @@ public class LiteMemberMapNearCacheBasicTest extends AbstractNearCacheBasicTest<
 
         return new NearCacheTestContextBuilder<K, V, Data, String>(nearCacheConfig, getSerializationService(liteMember))
                 .setNearCacheInstance(liteMember)
-                .setNearCacheAdapter(new IMapDataStructureAdapter<K, V>(liteMemberMap))
+                .setNearCacheAdapter(new IMapDataStructureAdapter<>(liteMemberMap))
                 .setNearCache(nearCache)
                 .setNearCacheManager(nearCacheManager)
                 .setLoader(mapStore);

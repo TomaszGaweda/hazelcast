@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,7 @@ public class CompoundPredicateTest {
     public Class<? extends CompoundPredicate> klass;
 
     @Parameters(name = "{0}")
-    public static Collection<Class<? extends CompoundPredicate>> getCompoundPredicateImplementations()
-            throws ClassNotFoundException {
+    public static Collection<Class<? extends CompoundPredicate>> getCompoundPredicateImplementations() {
         // locate all classes which implement CompoundPredicate and exercise them
         return REFLECTIONS.getSubTypesOf(CompoundPredicate.class);
     }

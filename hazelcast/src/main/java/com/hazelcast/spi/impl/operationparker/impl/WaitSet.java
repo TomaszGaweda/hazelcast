@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class WaitSet implements LiveOperationsTracker, Iterable<WaitSetEntry> {
 
     private static final long TIMEOUT_UPPER_BOUND = 1500;
 
-    private final Queue<WaitSetEntry> queue = new ConcurrentLinkedQueue<WaitSetEntry>();
+    private final Queue<WaitSetEntry> queue = new ConcurrentLinkedQueue<>();
     private final ILogger logger;
     private final NodeEngine nodeEngine;
     private final Map<WaitNotifyKey, WaitSet> waitSetMap;

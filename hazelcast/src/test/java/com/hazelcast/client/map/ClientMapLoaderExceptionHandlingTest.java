@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.map.MapStore;
 import com.hazelcast.map.MapStoreAdapter;
 import com.hazelcast.map.impl.mapstore.AbstractMapStoreTest;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -70,26 +69,23 @@ public class ClientMapLoaderExceptionHandlingTest extends AbstractMapStoreTest {
     }
 
     @Test
-    public void test_initial_map_load_propagates_exception_to_client() throws Exception {
+    public void test_initial_map_load_propagates_exception_to_client() {
         final IMap<Integer, Integer> map = client.getMap(mapName);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                Exception exception = null;
-                try {
-                    map.get(1);
-                } catch (Exception e) {
-                    exception = e;
-                }
-                assertNotNull("Exception not propagated to client", exception);
-                assertEquals(ClassCastException.class, exception.getClass());
+        assertTrueEventually(() -> {
+            Exception exception = null;
+            try {
+                map.get(1);
+            } catch (Exception e) {
+                exception = e;
             }
+            assertNotNull("Exception not propagated to client", exception);
+            assertEquals(ClassCastException.class, exception.getClass());
         });
     }
 
     @Test
-    public void testClientGetsException_whenLoadAllKeysThrowsOne() throws Exception {
+    public void testClientGetsException_whenLoadAllKeysThrowsOne() {
         mapStore.setLoadAllKeysThrows(true);
 
         IMap<Integer, Integer> map = client.getMap(mapName);
@@ -117,7 +113,7 @@ public class ClientMapLoaderExceptionHandlingTest extends AbstractMapStoreTest {
         public Set loadAllKeys() {
             checkState(!loadAllKeysThrows, getClass().getName());
 
-            final HashSet<Integer> integers = new HashSet<Integer>();
+            final HashSet<Integer> integers = new HashSet<>();
             for (int i = 0; i < 1000; i++) {
                 integers.add(i);
             }

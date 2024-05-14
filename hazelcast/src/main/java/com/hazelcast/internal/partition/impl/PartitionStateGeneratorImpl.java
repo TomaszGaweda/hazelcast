@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -497,7 +497,7 @@ final class PartitionStateGeneratorImpl implements PartitionStateGenerator {
         @Override
         public Iterator<Integer> getPartitionsIterator(final int index) {
             final Iterator<Integer> iterator = groupPartitionTable.getPartitions(index).iterator();
-            return new Iterator<Integer>() {
+            return new Iterator<>() {
                 Integer current;
 
                 @Override

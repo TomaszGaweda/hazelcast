@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ final class InvokeOnPartitions {
         for (List<Integer> mp : memberPartitions.values()) {
             actualPartitionCount += mp.size();
         }
-        this.partitionResults = new AtomicReferenceArray<Object>(partitionCount);
+        this.partitionResults = new AtomicReferenceArray<>(partitionCount);
         this.latch = new AtomicInteger(actualPartitionCount);
         this.future = new CompletableFuture();
         this.internalAsyncExecutor = operationService.nodeEngine.getExecutionService()
@@ -158,8 +158,8 @@ final class InvokeOnPartitions {
         Map<Integer, Object> result = createHashMap(partitionResults.length());
         for (int partitionId = 0; partitionId < partitionResults.length(); partitionId++) {
             Object partitionResult = partitionResults.get(partitionId);
-            if (partitionResult instanceof Throwable) {
-                future.completeExceptionally((Throwable) partitionResult);
+            if (partitionResult instanceof Throwable throwable) {
+                future.completeExceptionally(throwable);
                 return;
             }
 

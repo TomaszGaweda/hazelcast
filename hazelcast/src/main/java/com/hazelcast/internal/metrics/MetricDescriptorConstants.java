@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +90,7 @@ public final class MetricDescriptorConstants {
     // ===[/CLUSTER]====================================================
 
     // ===[CP SUBSYSTEM]================================================
+    // TODO should be removed, because moved to CPMetricDescriptorConstants. Left here for MC compatibility
     public static final String CP_PREFIX_RAFT = "raft";
     public static final String CP_PREFIX_RAFT_GROUP = "raft.group";
     public static final String CP_PREFIX_RAFT_METADATA = "raft.metadata";
@@ -583,17 +584,34 @@ public final class MetricDescriptorConstants {
 
     // ===[TSTORE]======================================================
     public static final String TSTORE_DEVICE_DISCRIMINATOR_NAME = "name";
-    public static final String TSTORE_DEVICE_USED_SPACE = "tstore.device.usedSpace";
-    public static final String TSTORE_DEVICE_FREE_SPACE = "tstore.device.freeSpace";
-    public static final String TSTORE_DEVICE_MAX_SPACE = "tstore.device.maxSpace";
-    public static final String TSTORE_DEVICE_USAGE = "tstore.device.usage";
-    public static final String TSTORE_HLOG_LENGTH = "tstore.hlog.length";
+    // system-wide device metrics
+    public static final String TSTORE_DEVICE_SYS_USED = "tstore.device.sys.used";
+    public static final String TSTORE_DEVICE_SYS_FREE = "tstore.device.sys.free";
+    public static final String TSTORE_DEVICE_SYS_CAPACITY = "tstore.device.sys.capacity";
+
+    // tstore-wide device metrics
+    public static final String TSTORE_DEVICE_TS_USED = "tstore.device.ts.used";
+    public static final String TSTORE_DEVICE_TS_FREE = "tstore.device.ts.free";
+    public static final String TSTORE_DEVICE_TS_CAPACITY = "tstore.device.ts.capacity";
+
+    // per-data-source (e.g. IMap) device metrics
+    public static final String TSTORE_DEVICE_DS_USED = "tstore.device.ds.used";
+
+    // per node device metrics
+    public static final String TSTORE_DEVICE_NODE_USED = "tstore.device.node.used";
+
+    public static final String TSTORE_HLOG_DS_LENGTH = "tstore.hlog.ds.length";
+    public static final String TSTORE_HLOG_TS_LENGTH = "tstore.hlog.ts.length";
+
+    public static final String TSTORE_HLOG_AGGREGATED_COUNT = "tstore.hlog.aggregated.count";
     public static final String TSTORE_HLOG_PAGE_WRITE_DURATION_AVG = "tstore.hlog.pageWriteDuration.avg";
     public static final String TSTORE_HLOG_PAGE_WRITE_DURATION_MIN = "tstore.hlog.pageWriteDuration.min";
     public static final String TSTORE_HLOG_PAGE_WRITE_DURATION_MAX = "tstore.hlog.pageWriteDuration.max";
+    public static final String TSTORE_HLOG_PAGE_WRITE_DURATION_TOTAL = "tstore.hlog.pageWriteDuration.total";
     public static final String TSTORE_HLOG_READ_RECORD_DURATION_AVG = "tstore.hlog.readRecordDuration.avg";
     public static final String TSTORE_HLOG_READ_RECORD_DURATION_MIN = "tstore.hlog.readRecordDuration.min";
     public static final String TSTORE_HLOG_READ_RECORD_DURATION_MAX = "tstore.hlog.readRecordDuration.max";
+    public static final String TSTORE_HLOG_READ_RECORD_DURATION_TOTAL = "tstore.hlog.readRecordDuration.total";
     public static final String TSTORE_HLOG_READ_RECORD_HITS = "tstore.hlog.readRecord.hits";
     public static final String TSTORE_HLOG_READ_RECORD_MISSES = "tstore.hlog.readRecord.misses";
     public static final String TSTORE_HLOG_READ_RECORD_HIT_PERCENT = "tstore.hlog.readRecord.hit.percent";
@@ -702,6 +720,7 @@ public final class MetricDescriptorConstants {
     public static final String WAN_METRIC_ACK_DELAY_LAST_START = "ackDelayLastStart";
     public static final String WAN_METRIC_ACK_DELAY_LAST_END = "ackDelayLastEnd";
     public static final String WAN_METRIC_CONNECTION_HEALTH = "connectionHealth";
+    public static final String WAN_METRIC_FAILED_TRANSMIT_COUNT = "failedTransmitCount";
     public static final String WAN_DISCRIMINATOR_CONNECTION_ADDRESS = "address";
     public static final String WAN_TAG_DISCOVERY_STRATEGY = "discoveryStrategy";
     public static final String WAN_QUEUE_FILL_PERCENT = "queueFillPercent";
@@ -713,6 +732,17 @@ public final class MetricDescriptorConstants {
     public static final String KAFKA_CONNECT_SOURCE_RECORD_POLL_TOTAL = "sourceRecordPollTotal";
     public static final String KAFKA_CONNECT_SOURCE_RECORD_POLL_AVG_TIME = "sourceRecordPollTotalAvgTime";
     // ===[/KAFKA-CONNECT]=======================================================
+
+    // ===[USER-CODE-NAMESPACES]=======================================================
+    public static final String USER_CODE_NAMESPACE_PREFIX = "ucn";
+    public static final String USER_CODE_NAMESPACE_RESOURCE_PREFIX = "ucn.resource";
+    public static final String USER_CODE_NAMESPACE_RESOURCE_ID_TAG = "resourceId";
+    public static final String USER_CODE_NAMESPACE_DISCRIMINATOR_NAME = "name";
+    public static final String USER_CODE_NAMESPACE_UPDATE_TIME = "updateTime";
+    public static final String USER_CODE_NAMESPACE_RESOURCE_COUNT = "resourceCount";
+    public static final String USER_CODE_NAMESPACE_RESOURCE_SIZE_BYTES = "resourceSizeBytes";
+    public static final String USER_CODE_NAMESPACE_RESOURCE_TYPE = "resourceType";
+    // ===[/USER-CODE-NAMESPACES]=======================================================
 
     public static final String GENERAL_DISCRIMINATOR_NAME = "name";
 

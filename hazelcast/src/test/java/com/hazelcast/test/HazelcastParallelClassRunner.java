@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
 package com.hazelcast.test;
 
 import com.hazelcast.internal.util.RuntimeAvailableProcessors;
+import com.hazelcast.internal.util.collection.ArrayUtils;
 import com.hazelcast.test.annotation.ConfigureParallelRunnerWith;
+import com.hazelcast.test.annotation.QuickTest;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -127,7 +130,10 @@ public class HazelcastParallelClassRunner extends AbstractHazelcastClassRunner {
                 // save the current system properties
                 Properties currentSystemProperties = System.getProperties();
                 try {
-                    // use thread-local based system properties so parallel tests don't effect each other
+                    // use thread-local based system properties so parallel tests don't affect each other
+                    // Note that proper isolation requires that no other element of the test framework accesses
+                    // system properties too early, between creation of ThreadLocalProperties and starting test
+                    // thread. Otherwise, many threads will inherit shared Properties instance.
                     System.setProperties(new ThreadLocalProperties(currentSystemProperties));
                     HazelcastParallelClassRunner.super.childrenInvoker(notifier).evaluate();
                     // wait for all child threads (tests) to complete
@@ -161,8 +167,14 @@ public class HazelcastParallelClassRunner extends AbstractHazelcastClassRunner {
                 System.out.println("Started Running Test: " + testName);
                 HazelcastParallelClassRunner.super.runChild(method, notifier);
                 numThreads.decrementAndGet();
-                float took = (float) (System.currentTimeMillis() - start) / 1000;
-                System.out.println(format("Finished Running Test: %s in %.3f seconds.", testName, took));
+                float tookSeconds = (float) (System.currentTimeMillis() - start) / 1000;
+                System.out.println(format("Finished Running Test: %s in %.3f seconds.", testName, tookSeconds));
+
+                Category classAnnotations = method.getDeclaringClass().getAnnotation(Category.class);
+
+                if (classAnnotations != null && ArrayUtils.contains(classAnnotations.value(), QuickTest.class)) {
+                    QuickTest.logMessageIfTestOverran(method, tookSeconds);
+                }
             } finally {
                 removeThreadLocalTestMethodName();
             }
@@ -174,7 +186,7 @@ public class HazelcastParallelClassRunner extends AbstractHazelcastClassRunner {
 
         private final Properties globalProperties;
 
-        private final ThreadLocal<Properties> localProperties = new InheritableThreadLocal<Properties>();
+        private final ThreadLocal<Properties> localProperties = new InheritableThreadLocal<>();
 
         private ThreadLocalProperties(Properties properties) {
             this.globalProperties = properties;

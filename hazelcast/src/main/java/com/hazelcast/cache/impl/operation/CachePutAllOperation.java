@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ public class CachePutAllOperation extends CacheOperation
         expiryPolicy = in.readObject();
         completionId = in.readInt();
         int size = in.readInt();
-        entries = new ArrayList<Map.Entry<Data, Data>>(size);
+        entries = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             Data key = IOUtil.readData(in);
             Data value = IOUtil.readData(in);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 
 package com.hazelcast.sql.impl;
 
+import com.hazelcast.internal.serialization.ReflectionClassNameFilter;
 import com.hazelcast.internal.util.Preconditions;
 import com.hazelcast.internal.util.counters.Counter;
 import com.hazelcast.internal.util.counters.MwCounter;
 import com.hazelcast.jet.impl.util.Util;
 import com.hazelcast.jet.sql.impl.CalciteSqlOptimizer;
+import com.hazelcast.jet.sql.impl.CalciteSqlOptimizerImpl;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.sql.SqlExpectedResultType;
@@ -48,6 +50,7 @@ import static com.hazelcast.sql.SqlExpectedResultType.ROWS;
 import static com.hazelcast.sql.SqlExpectedResultType.UPDATE_COUNT;
 import static com.hazelcast.sql.impl.QueryUtils.CATALOG;
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
 
 /**
  * Base SQL service implementation that bridges optimizer implementation, public and private APIs.
@@ -77,6 +80,8 @@ public class SqlServiceImpl implements InternalSqlService {
     private final Counter sqlQueriesSubmitted = MwCounter.newMwCounter();
     private final Counter sqlStreamingQueriesExecuted = MwCounter.newMwCounter();
 
+    private final ReflectionClassNameFilter reflectionClassNameFilter;
+
     public SqlServiceImpl(NodeEngineImpl nodeEngine) {
         this.logger = nodeEngine.getLogger(getClass());
         this.nodeEngine = nodeEngine;
@@ -85,14 +90,17 @@ public class SqlServiceImpl implements InternalSqlService {
         long queryTimeout = nodeEngine.getConfig().getSqlConfig().getStatementTimeoutMillis();
         assert queryTimeout >= 0L;
         this.queryTimeout = queryTimeout;
+        var reflectionConfig = nodeEngine.getConfig().getSqlConfig().getJavaReflectionFilterConfig();
+        this.reflectionClassNameFilter = isNull(reflectionConfig) ? null : new ReflectionClassNameFilter(reflectionConfig);
     }
 
+    @Override
     public void start() {
         if (!Util.isJetEnabled(nodeEngine)) {
             return;
         }
         QueryResultRegistry resultRegistry = new QueryResultRegistry();
-        optimizer = new CalciteSqlOptimizer(nodeEngine, resultRegistry);
+        optimizer = new CalciteSqlOptimizerImpl(nodeEngine, resultRegistry);
 
         String instanceName = nodeEngine.getHazelcastInstance().getName();
         PlanCacheChecker planCacheChecker = new PlanCacheChecker(
@@ -115,6 +123,7 @@ public class SqlServiceImpl implements InternalSqlService {
         internalService.start();
     }
 
+    @Override
     public void reset() {
         if (!Util.isJetEnabled(nodeEngine)) {
             return;
@@ -122,6 +131,7 @@ public class SqlServiceImpl implements InternalSqlService {
         planCache.clear();
     }
 
+    @Override
     public void shutdown() {
         if (!Util.isJetEnabled(nodeEngine)) {
             return;
@@ -132,21 +142,26 @@ public class SqlServiceImpl implements InternalSqlService {
         }
     }
 
+    @Override
+    public ReflectionClassNameFilter getReflectionClassNameFilter() {
+        return reflectionClassNameFilter;
+    }
+
     public SqlInternalService getInternalService() {
         return internalService;
     }
 
+    @Override
     public long getSqlQueriesSubmittedCount() {
         return sqlQueriesSubmitted.get();
     }
 
+    @Override
     public long getSqlStreamingQueriesExecutedCount() {
         return sqlStreamingQueriesExecuted.get();
     }
 
-    /**
-     * For testing only.
-     */
+    @Override
     public CalciteSqlOptimizer getOptimizer() {
         return optimizer;
     }
@@ -320,6 +335,7 @@ public class SqlServiceImpl implements InternalSqlService {
         return QueryUtils.prepareSearchPaths(currentSearchPaths, optimizer.tableResolvers());
     }
 
+    @Override
     public String mappingDdl(String name) {
         return optimizer.mappingDdl(name);
     }

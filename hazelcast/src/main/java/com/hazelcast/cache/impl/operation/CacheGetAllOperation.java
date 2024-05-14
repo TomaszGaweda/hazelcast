@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class CacheGetAllOperation
     }
 
     public CacheGetAllOperation() {
-        keys = new HashSet<Data>();
+        keys = new HashSet<>();
     }
 
     public void run() {
@@ -60,7 +60,7 @@ public class CacheGetAllOperation
         ICacheRecordStore cache = service.getOrCreateRecordStore(name, getPartitionId());
 
         int partitionId = getPartitionId();
-        Set<Data> partitionKeySet = new HashSet<Data>();
+        Set<Data> partitionKeySet = new HashSet<>();
         for (Data key : keys) {
             if (partitionId == getNodeEngine().getPartitionService().getPartitionId(key)) {
                 partitionKeySet.add(key);

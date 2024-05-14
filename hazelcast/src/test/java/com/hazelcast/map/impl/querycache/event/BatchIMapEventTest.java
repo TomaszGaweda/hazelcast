@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class BatchIMapEventTest {
 
     @Before
     public void setUp() throws Exception {
-        batchEventData = new BatchEventData(Collections.<QueryCacheEventData>emptyList(), "source", 1);
+        batchEventData = new BatchEventData(Collections.emptyList(), "source", 1);
 
         batchIMapEvent = new BatchIMapEvent(batchEventData);
     }

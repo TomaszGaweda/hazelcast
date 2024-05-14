@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.impl.operationservice.OperationService;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -55,7 +54,7 @@ public class Invocation_DetectHeartbeatTimeoutTest extends HazelcastTestSupport 
 
         OperationService opService = getOperationService(local);
         Operation operation = new VoidOperation();
-        InvocationFuture future = (InvocationFuture) opService.createInvocationBuilder(
+        InvocationFuture future = opService.createInvocationBuilder(
                 null, operation, getPartitionId(remote))
                 .setCallTimeout(Long.MAX_VALUE)
                 .invoke();
@@ -76,7 +75,7 @@ public class Invocation_DetectHeartbeatTimeoutTest extends HazelcastTestSupport 
 
         OperationService opService = getOperationService(local);
         Operation operation = new SlowOperation(SECONDS.toMillis(60));
-        InvocationFuture future = (InvocationFuture) opService.invokeOnPartition(null, operation, getPartitionId(remote));
+        InvocationFuture future = opService.invokeOnPartition(null, operation, getPartitionId(remote));
 
         Invocation invocation = future.invocation;
         invocation.pendingResponse = "foo";
@@ -94,7 +93,7 @@ public class Invocation_DetectHeartbeatTimeoutTest extends HazelcastTestSupport 
 
         OperationService opService = getOperationService(local);
         Operation operation = new SlowOperation(SECONDS.toMillis(60));
-        InvocationFuture future = (InvocationFuture) opService.invokeOnPartition(null, operation, getPartitionId(remote));
+        InvocationFuture future = opService.invokeOnPartition(null, operation, getPartitionId(remote));
 
         Invocation invocation = future.invocation;
 
@@ -112,7 +111,7 @@ public class Invocation_DetectHeartbeatTimeoutTest extends HazelcastTestSupport 
         HazelcastInstance remote = factory.newHazelcastInstance(config);
 
         OperationService opService = getOperationService(local);
-        InvocationFuture future = (InvocationFuture) opService.invokeOnPartition(new SlowOperation(SECONDS.toMillis(60))
+        InvocationFuture future = opService.invokeOnPartition(new SlowOperation(SECONDS.toMillis(60))
                 .setPartitionId(getPartitionId(remote)));
 
         assertDetectHeartbeatTimeoutEventually(future.invocation, NO_TIMEOUT__HEARTBEAT_TIMEOUT_NOT_EXPIRED);
@@ -136,7 +135,7 @@ public class Invocation_DetectHeartbeatTimeoutTest extends HazelcastTestSupport 
 
         OperationService opService = getOperationService(local);
         Operation operation = new VoidOperation(SECONDS.toMillis(20));
-        InvocationFuture future = (InvocationFuture) opService.invokeOnPartition(null, operation, getPartitionId(remote));
+        InvocationFuture future = opService.invokeOnPartition(null, operation, getPartitionId(remote));
         Invocation invocation = future.invocation;
 
         assertDetectHeartbeatTimeoutEventually(invocation, NO_TIMEOUT__CALL_TIMEOUT_NOT_EXPIRED);
@@ -145,11 +144,6 @@ public class Invocation_DetectHeartbeatTimeoutTest extends HazelcastTestSupport 
     }
 
     private void assertDetectHeartbeatTimeoutEventually(final Invocation invocation, final Invocation.HeartbeatTimeout yes) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(yes, invocation.detectTimeout(SECONDS.toMillis(1)));
-            }
-        });
+        assertTrueEventually(() -> assertEquals(yes, invocation.detectTimeout(SECONDS.toMillis(1))));
     }
 }

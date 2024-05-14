@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package com.hazelcast.test;
 
+import com.hazelcast.internal.util.collection.ArrayUtils;
+import com.hazelcast.test.annotation.QuickTest;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -43,13 +46,19 @@ public class HazelcastSerialClassRunner extends AbstractHazelcastClassRunner {
         String testName = testName(method);
         setThreadLocalTestMethodName(testName);
         try {
-            // use local system properties so se tests don't effect each other
+            // use local system properties so serial tests don't affect each other
             System.setProperties(new LocalProperties(currentSystemProperties));
             long start = System.currentTimeMillis();
             System.out.println("Started Running Test: " + testName);
             super.runChild(method, notifier);
-            float took = (float) (System.currentTimeMillis() - start) / 1000;
-            System.out.println(String.format("Finished Running Test: %s in %.3f seconds.", testName, took));
+            float tookSeconds = (float) (System.currentTimeMillis() - start) / 1000;
+            System.out.println(String.format("Finished Running Test: %s in %.3f seconds.", testName, tookSeconds));
+
+            Category classAnnotations = method.getDeclaringClass().getAnnotation(Category.class);
+
+            if (classAnnotations != null && ArrayUtils.contains(classAnnotations.value(), QuickTest.class)) {
+                QuickTest.logMessageIfTestOverran(method, tookSeconds);
+            }
         } finally {
             removeThreadLocalTestMethodName();
             // restore the system properties

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ class ReplicatedVectorClocks {
      * which CRDT state has not yet been replicated and to which replicas.
      */
     private ConcurrentMap<ReplicatedVectorClockId, Map<String, VectorClock>> replicatedVectorClocks
-            = new ConcurrentHashMap<ReplicatedVectorClockId, Map<String, VectorClock>>();
+            = new ConcurrentHashMap<>();
 
     /**
      * Returns the vector clocks for the given {@code serviceName} and
@@ -135,8 +135,8 @@ class ReplicatedVectorClocks {
         @SuppressWarnings("checkstyle:innerassignment")
         public boolean equals(Object o) {
             final ReplicatedVectorClockId that;
-            return this == o || o instanceof ReplicatedVectorClockId
-                    && this.serviceName.equals((that = (ReplicatedVectorClockId) o).serviceName)
+            return this == o || o instanceof ReplicatedVectorClockId rvci
+                    && this.serviceName.equals((that = rvci).serviceName)
                     && this.memberUUID.equals(that.memberUUID);
         }
 

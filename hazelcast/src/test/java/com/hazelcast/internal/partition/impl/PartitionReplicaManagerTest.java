@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,13 +70,13 @@ public class PartitionReplicaManagerTest extends HazelcastTestSupport {
 
     @Test(expected = AssertionError.class)
     public void testTriggerPartitionReplicaSync_whenReplicaIndexNegative_thenThrowException() {
-        Set<ServiceNamespace> namespaces = Collections.<ServiceNamespace>singleton(INSTANCE);
+        Set<ServiceNamespace> namespaces = Collections.singleton(INSTANCE);
         manager.triggerPartitionReplicaSync(PARTITION_ID, namespaces, -1);
     }
 
     @Test(expected = AssertionError.class)
     public void testTriggerPartitionReplicaSync_whenReplicaIndexTooLarge_thenThrowException() {
-        Set<ServiceNamespace> namespaces = Collections.<ServiceNamespace>singleton(INSTANCE);
+        Set<ServiceNamespace> namespaces = Collections.singleton(INSTANCE);
         manager.triggerPartitionReplicaSync(PARTITION_ID, namespaces, InternalPartition.MAX_REPLICA_COUNT + 1);
     }
 

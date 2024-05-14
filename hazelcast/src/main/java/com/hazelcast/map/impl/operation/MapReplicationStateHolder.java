@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,7 @@ public class MapReplicationStateHolder implements IdentifiedDataSerializable, Ve
                             .getLocalMapStatsImpl(mapName).getReplicationStats());
 
             Set<IndexConfig> indexConfigs = new HashSet<>();
-            if (mapContainer.isGlobalIndexEnabled()) {
+            if (mapContainer.shouldUseGlobalIndex()) {
                 // global-index
                 final IndexRegistry indexRegistry = mapContainer.getGlobalIndexRegistry();
                 for (Index index : indexRegistry.getIndexes()) {
@@ -305,7 +305,8 @@ public class MapReplicationStateHolder implements IdentifiedDataSerializable, Ve
         }
         RecordStore recordStore = operation.getRecordStore(mapName);
         MapContainer mapContainer = recordStore.getMapContainer();
-        if (mapContainer.isGlobalIndexEnabled()) {
+        MapServiceContext mapServiceContext = mapContainer.getMapServiceContext();
+        if (mapContainer.shouldUseGlobalIndex()) {
             // creating global indexes on partition thread in case they do not exist
             for (IndexConfig indexConfig : indexConfigs) {
                 IndexRegistry indexRegistry = mapContainer.getGlobalIndexRegistry();
@@ -314,12 +315,14 @@ public class MapReplicationStateHolder implements IdentifiedDataSerializable, Ve
                 if (indexRegistry.getIndex(indexConfig.getName()) == null) {
                     indexRegistry.addOrGetIndex(indexConfig);
                 }
+                mapServiceContext.registerIndex(mapName, indexConfig);
             }
         } else {
             IndexRegistry indexRegistry = mapContainer.getOrCreateIndexRegistry(operation.getPartitionId());
             indexRegistry.createIndexesFromRecordedDefinitions();
             for (IndexConfig indexConfig : indexConfigs) {
                 indexRegistry.addOrGetIndex(indexConfig);
+                mapServiceContext.registerIndex(mapName, indexConfig);
             }
         }
     }

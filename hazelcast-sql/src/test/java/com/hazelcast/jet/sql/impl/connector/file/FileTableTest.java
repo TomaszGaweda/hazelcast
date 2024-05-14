@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package com.hazelcast.jet.sql.impl.connector.file;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.hazelcast.jet.pipeline.file.FileFormat;
 import com.hazelcast.jet.sql.impl.connector.file.FileTable.FilePlanObjectKey;
 import com.hazelcast.sql.impl.schema.TableField;
@@ -26,6 +24,9 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -56,8 +57,8 @@ public class FileTableTest {
         FilePlanObjectKey k1 = new FilePlanObjectKey(
                 schema1,
                 name1,
-                ImmutableList.of(new TableField(field1, QueryDataType.INT, false)),
-                new ProcessorMetaSupplierProvider(ImmutableMap.of("key", "value"), format1)
+                List.of(new TableField(field1, QueryDataType.INT, false)),
+                new ProcessorMetaSupplierProvider(Map.of("key", "value"), format1)
         );
         FilePlanObjectKey k2 = new FilePlanObjectKey(
                 schema2,

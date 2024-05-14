@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -322,6 +322,11 @@ class MockServer implements Server {
 
         private boolean send(Packet packet, Address targetAddress, SendTask sendTask) {
             UUID targetUuid = server.nodeRegistry.uuidOf(targetAddress);
+            if (targetUuid == serverContext.getThisUuid()) {
+                logger.warning("Packet send task is rejected. Target is this node! Target[uuid=" + targetUuid
+                        + ", address=" + targetAddress + "]");
+                return false;
+            }
             MockServerConnection connection = null;
             if (targetUuid != null) {
                 connection = get(targetUuid);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import com.hazelcast.internal.util.ConstructorFunction;
 import com.hazelcast.internal.util.ContextMutexFactory;
 import com.hazelcast.internal.util.MapUtil;
 import com.hazelcast.spi.impl.NodeEngine;
-import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.properties.ClusterProperty;
 import com.hazelcast.transaction.impl.Transaction;
@@ -57,11 +56,11 @@ public class ListService extends CollectionService implements DynamicMetricsProv
 
     private static final Object NULL_OBJECT = new Object();
 
-    private final ConcurrentMap<String, ListContainer> containerMap = new ConcurrentHashMap<String, ListContainer>();
-    private final ConcurrentMap<String, Object> splitBrainProtectionConfigCache = new ConcurrentHashMap<String, Object>();
+    private final ConcurrentMap<String, ListContainer> containerMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Object> splitBrainProtectionConfigCache = new ConcurrentHashMap<>();
     private final ContextMutexFactory splitBrainProtectionConfigCacheMutexFactory = new ContextMutexFactory();
     private final ConstructorFunction<String, Object> splitBrainProtectionConfigConstructor =
-            new ConstructorFunction<String, Object>() {
+            new ConstructorFunction<>() {
         @Override
         public Object createNew(String name) {
                 ListConfig lockConfig = nodeEngine.getConfig().findListConfig(name);
@@ -81,7 +80,7 @@ public class ListService extends CollectionService implements DynamicMetricsProv
     public void init(NodeEngine nodeEngine, Properties properties) {
         boolean dsMetricsEnabled = nodeEngine.getProperties().getBoolean(ClusterProperty.METRICS_DATASTRUCTURES);
         if (dsMetricsEnabled) {
-            ((NodeEngineImpl) nodeEngine).getMetricsRegistry().registerDynamicMetricsProvider(this);
+            nodeEngine.getMetricsRegistry().registerDynamicMetricsProvider(this);
         }
         super.init(nodeEngine, properties);
     }
@@ -162,5 +161,38 @@ public class ListService extends CollectionService implements DynamicMetricsProv
     @Override
     public LocalListStatsImpl getLocalCollectionStats(String name) {
         return ConcurrencyUtil.getOrPutIfAbsent(statsMap, name, localCollectionStatsConstructorFunction);
+    }
+
+    /**
+     * Looks up the User Code Namespace name associated with the specified set name. This starts
+     * by looking for an existing {@link ListContainer} and checking its defined
+     * {@link ListConfig}. If the {@link ListContainer} does not exist (containers are
+     * created lazily), then fallback to checking the Node's config tree directly.
+     *
+     * @param engine  {@link NodeEngine} implementation of this member for service and config lookups
+     * @param listName The name of the {@link com.hazelcast.collection.IList} to lookup for
+     * @return the Namespace Name if found, or {@code null} otherwise.
+     */
+    public static String lookupNamespace(NodeEngine engine, String listName) {
+        if (engine.getNamespaceService().isEnabled()) {
+            ListService service = engine.getService(SERVICE_NAME);
+            return service.lookupNamespace(listName);
+        }
+        return null;
+    }
+
+    @Override
+    protected String lookupNamespace(String listName) {
+        if (nodeEngine.getNamespaceService().isEnabled()) {
+            ListContainer container = containerMap.get(listName);
+            if (container != null) {
+                return container.getConfig().getUserCodeNamespace();
+            }
+            ListConfig config = nodeEngine.getConfig().findListConfig(listName);
+            if (config != null) {
+                return config.getUserCodeNamespace();
+            }
+        }
+        return null;
     }
 }

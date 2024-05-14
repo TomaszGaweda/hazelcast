@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,7 +180,7 @@ public class SlowOperationDetectorBasicTest extends SlowOperationDetectorAbstrac
                 .setProperty(PARTITION_OPERATION_THREAD_COUNT.getName(), valueOf(partitionThreads));
         instance = createHazelcastInstance(config);
 
-        List<SlowRecursiveOperation> operations = new ArrayList<SlowRecursiveOperation>(numberOfOperations);
+        List<SlowRecursiveOperation> operations = new ArrayList<>(numberOfOperations);
         int partitionCount = getPartitionService(instance).getPartitionCount();
 
         int partitionIndex = 1;

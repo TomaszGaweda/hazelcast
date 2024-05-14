@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -750,7 +750,7 @@ public class ExternalMemberConfigurationOverrideEnvTest extends HazelcastTestSup
         Map<String, String> envVariables = new HashMap<>();
         envVariables.put("HZ_CLUSTERNAME", "test");
         Properties systemProperties = new Properties();
-        systemProperties.put("hz.cluster-name", "test2");
+        systemProperties.setProperty("hz.cluster-name", "test2");
         Config config = new Config();
         assertThatExceptionOfType(InvalidConfigurationException.class)
                 .isThrownBy(() ->

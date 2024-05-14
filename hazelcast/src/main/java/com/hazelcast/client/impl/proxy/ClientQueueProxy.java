@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -313,7 +313,7 @@ public final class ClientQueueProxy<E> extends PartitionSpecificClientProxy impl
         ClientMessage request = QueueIteratorCodec.encodeRequest(name);
         ClientMessage response = invokeOnPartition(request);
         Collection<Data> resultCollection = QueueIteratorCodec.decodeResponse(response);
-        return new QueueIterator<E>(resultCollection.iterator(), getSerializationService(), false);
+        return new QueueIterator<>(resultCollection.iterator(), getSerializationService(), false);
     }
 
     @Override

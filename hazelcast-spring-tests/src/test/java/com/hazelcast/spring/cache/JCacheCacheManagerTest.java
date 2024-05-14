@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.test.context.ContextConfiguration;
 
-import javax.annotation.Resource;
 import javax.cache.CacheManager;
 
 import static org.junit.Assert.assertEquals;
@@ -44,16 +43,16 @@ import static org.junit.Assert.fail;
 @Category(QuickTest.class)
 public class JCacheCacheManagerTest {
 
-    @Resource(name = "instance")
+    @Autowired
     private HazelcastInstance instance;
 
     @Autowired
     private IJCacheDummyBean bean;
 
-    @Resource(name = "cacheManager")
+    @Autowired
     private JCacheCacheManager springCacheManager;
 
-    @Resource(name = "cacheManager2")
+    @Autowired
     private CacheManager cacheManager2;
 
     @BeforeClass

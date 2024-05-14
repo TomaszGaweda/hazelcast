@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -198,7 +198,7 @@ public class ClientTxnMapProxy<K, V> extends ClientTxnProxy implements Transacti
         ClientMessage response = invoke(request);
         Collection<Data> dataKeySet = TransactionalMapKeySetCodec.decodeResponse(response);
 
-        HashSet<K> keySet = new HashSet<K>(dataKeySet.size());
+        HashSet<K> keySet = new HashSet<>(dataKeySet.size());
         for (Data data : dataKeySet) {
             keySet.add((K) toObject(data));
         }
@@ -215,7 +215,7 @@ public class ClientTxnMapProxy<K, V> extends ClientTxnProxy implements Transacti
         ClientMessage response = invoke(request);
         Collection<Data> dataKeySet = TransactionalMapKeySetWithPredicateCodec.decodeResponse(response);
 
-        HashSet<K> keySet = new HashSet<K>(dataKeySet.size());
+        HashSet<K> keySet = new HashSet<>(dataKeySet.size());
         for (Data data : dataKeySet) {
             keySet.add((K) toObject(data));
         }
@@ -241,7 +241,7 @@ public class ClientTxnMapProxy<K, V> extends ClientTxnProxy implements Transacti
         ClientMessage response = invoke(request);
         Collection<Data> dataValues = TransactionalMapValuesWithPredicateCodec.decodeResponse(response);
 
-        List<V> values = new ArrayList<V>(dataValues.size());
+        List<V> values = new ArrayList<>(dataValues.size());
         for (Data value : dataValues) {
             values.add((V) toObject(value));
         }

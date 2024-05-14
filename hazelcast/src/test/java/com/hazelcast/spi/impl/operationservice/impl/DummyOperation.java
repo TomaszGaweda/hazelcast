@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,11 +46,11 @@ public class DummyOperation extends Operation {
             Thread.sleep(delayMillis);
         }
 
-        if (value instanceof Runnable) {
-            ((Runnable) value).run();
+        if (value instanceof Runnable runnable) {
+            runnable.run();
             result = value;
-        } else if (value instanceof Callable) {
-            result = ((Callable) value).call();
+        } else if (value instanceof Callable callable) {
+            result = callable.call();
         } else {
             result = value;
         }

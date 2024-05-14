@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,12 +79,9 @@ public class ClientQueryCacheSimpleStressTest extends HazelcastTestSupport {
     public void testStress() throws Exception {
         final IMap<Integer, Integer> map = instance.getMap(mapName);
 
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < numberOfElementsToPut; i++) {
-                    map.put(i, i);
-                }
+        Runnable runnable = () -> {
+            for (int i = 0; i < numberOfElementsToPut; i++) {
+                map.put(i, i);
             }
         };
 
@@ -99,12 +96,7 @@ public class ClientQueryCacheSimpleStressTest extends HazelcastTestSupport {
     }
 
     private void assertQueryCacheSizeEventually(final int expected, final QueryCache queryCache) {
-        AssertTask task = new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(expected, queryCache.size());
-            }
-        };
+        AssertTask task = () -> assertEquals(expected, queryCache.size());
 
         assertTrueEventually(task);
     }

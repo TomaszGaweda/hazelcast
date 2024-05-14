@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,8 @@ import com.hazelcast.spi.impl.operationservice.OperationAccessor;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.net.UnknownHostException;
@@ -35,6 +33,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 
@@ -42,21 +41,19 @@ import static org.mockito.Mockito.spy;
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class LiveOperationRegistryTest {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private LiveOperationRegistry r = new LiveOperationRegistry();
 
     @Test
     public void when_registerDuplicateCallId_then_exception() throws UnknownHostException {
-        r.register(createOperation("1.2.3.4", 1234, 2222L));
+        AsyncJobOperation operation = createOperation("1.2.3.4", 1234, 2222L);
+        r.register(operation);
 
         // this should not fail
         r.register(createOperation("1.2.3.4", 1234, 2223L));
 
         // adding a duplicate, expecting failure
-        exception.expect(IllegalStateException.class);
-        r.register(createOperation("1.2.3.4", 1234, 2222L));
+        assertThrows(IllegalStateException.class, () -> r.register(operation));
     }
 
     @Test
@@ -73,15 +70,14 @@ public class LiveOperationRegistryTest {
     @Test
     public void when_deregisterNotExistingAddress_then_fail() throws UnknownHostException {
         AsyncJobOperation op1 = createOperation("1.2.3.4", 1234, 2222L);
-        exception.expect(IllegalStateException.class);
-        r.deregister(op1);
+        assertThrows(IllegalStateException.class, () -> r.deregister(op1));
     }
 
     @Test
     public void when_deregisterNotExistingCallId_then_fail() throws UnknownHostException {
         r.register(createOperation("1.2.3.4", 1234, 2222L));
-        exception.expect(IllegalStateException.class);
-        r.deregister(createOperation("1.2.3.4", 1234, 2223L));
+        AsyncJobOperation operation = createOperation("1.2.3.4", 1234, 2223L);
+        assertThrows(IllegalStateException.class, () -> r.deregister(operation));
     }
 
     @Test

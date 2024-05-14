@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,8 +63,7 @@ public class CompositeIndexVisitor extends AbstractVisitor {
         Map<String, RangePredicate> comparisons = null;
         Output output = null;
         for (Predicate predicate : andPredicate.predicates) {
-            if (predicate instanceof EqualPredicate) {
-                EqualPredicate equalPredicate = (EqualPredicate) predicate;
+            if (predicate instanceof EqualPredicate equalPredicate) {
                 prefixes = obtainHashMap(prefixes, originalSize);
 
                 EqualPredicate replaced = prefixes.put(equalPredicate.attributeName, equalPredicate);
@@ -84,8 +83,7 @@ public class CompositeIndexVisitor extends AbstractVisitor {
                 continue;
             }
 
-            if (predicate instanceof RangePredicate) {
-                RangePredicate rangePredicate = (RangePredicate) predicate;
+            if (predicate instanceof RangePredicate rangePredicate) {
                 comparisons = obtainHashMap(comparisons, originalSize);
 
                 RangePredicate replaced = comparisons.put(rangePredicate.getAttribute(), rangePredicate);

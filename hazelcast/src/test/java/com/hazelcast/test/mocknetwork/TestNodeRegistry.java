@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@
 
 package com.hazelcast.test.mocknetwork;
 
+import com.hazelcast.cluster.Address;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.LifecycleService;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.instance.impl.NodeContext;
 import com.hazelcast.instance.impl.NodeState;
-import com.hazelcast.cluster.Address;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.internal.util.AddressUtil;
 
 import java.net.UnknownHostException;
@@ -39,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.hazelcast.test.HazelcastTestSupport.assertTrueEventually;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 
 public final class TestNodeRegistry {
@@ -54,19 +53,15 @@ public final class TestNodeRegistry {
     }
 
     public NodeContext createNodeContext(Address address) {
-        return createNodeContext(address, Collections.<Address>emptySet());
+        return createNodeContext(address, Collections.emptySet());
     }
 
     public NodeContext createNodeContext(final Address address, Set<Address> initiallyBlockedAddresses) {
         final Node node = nodes.get(address);
         if (node != null) {
             assertFalse(address + " is already registered", node.isRunning());
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() {
-                    assertEquals(address + " should be SHUT_DOWN", NodeState.SHUT_DOWN, node.getState());
-                }
-            });
+            assertTrueEventually(address + " should be SHUT_DOWN",
+                    () -> assertThat(node.getState()).isEqualTo(NodeState.SHUT_DOWN));
             nodes.remove(address, node);
         }
         return new MockNodeContext(this, address, initiallyBlockedAddresses, nodeExtensionPriorityList);
@@ -98,7 +93,7 @@ public final class TestNodeRegistry {
     }
 
     public Collection<HazelcastInstance> getAllHazelcastInstances() {
-        Collection<HazelcastInstance> all = new LinkedList<HazelcastInstance>();
+        Collection<HazelcastInstance> all = new LinkedList<>();
         for (Node node : nodes.values()) {
             if (node.isRunning()) {
                 all.add(node.hazelcastInstance);

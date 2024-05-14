@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -322,7 +322,7 @@ public final class MerkleTreeUtil {
      * @return the order of the leaves found to be different
      */
     public static Collection<Integer> compareTrees(MerkleTreeView local, MerkleTreeView remote) {
-        Collection<Integer> deltaOrders = new LinkedList<Integer>();
+        Collection<Integer> deltaOrders = new LinkedList<>();
         MerkleTreeView baseTree = local.depth() <= remote.depth() ? local : remote;
         MerkleTreeView otherTree = local.depth() <= remote.depth() ? remote : local;
         int leafLevel = baseTree.depth() - 1;

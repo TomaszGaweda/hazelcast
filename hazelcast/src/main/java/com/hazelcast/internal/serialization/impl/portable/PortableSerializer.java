@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,7 @@ public final class PortableSerializer implements StreamSerializer<Object> {
 
     @Override
     public void write(ObjectDataOutput out, Object o) throws IOException {
-        if (o instanceof Portable) {
-            Portable p = (Portable) o;
+        if (o instanceof Portable p) {
             if (!(out instanceof BufferObjectDataOutput)) {
                 throw new IllegalArgumentException("ObjectDataOutput must be instance of BufferObjectDataOutput!");
             }
@@ -67,8 +66,8 @@ public final class PortableSerializer implements StreamSerializer<Object> {
             writeInternal((BufferObjectDataOutput) out, p);
             return;
         }
-        if (o instanceof PortableGenericRecord) {
-            writePortableGenericRecord(out, (PortableGenericRecord) o);
+        if (o instanceof PortableGenericRecord portableGenericRecord) {
+            writePortableGenericRecord(out, portableGenericRecord);
             return;
         }
         throw new IllegalArgumentException("PortableSerializer can only write Portable and PortableGenericRecord");
@@ -108,7 +107,7 @@ public final class PortableSerializer implements StreamSerializer<Object> {
         return currentVersion;
     }
 
-    private Portable createNewPortableInstance(int factoryId, int classId) {
+    public Portable createNewPortableInstance(int factoryId, int classId) {
         final PortableFactory portableFactory = factories.get(factoryId);
         if (portableFactory == null) {
             return null;

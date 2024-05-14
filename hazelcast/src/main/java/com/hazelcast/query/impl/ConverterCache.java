@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public final class ConverterCache {
 
     private final IndexRegistry indexRegistry;
 
-    private final Map<String, TypeConverter> cache = new ConcurrentHashMap<String, TypeConverter>();
+    private final Map<String, TypeConverter> cache = new ConcurrentHashMap<>();
 
     /**
      * Constructs a new converters cache for the given indexes.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,9 +59,8 @@ public interface OffsetReader {
         return Short.toUnsignedInt(offset);
     };
 
-    OffsetReader INT_OFFSET_READER = (in, varSizedOffsetsOffset, index) -> {
-        return in.readInt(varSizedOffsetsOffset + index * Bits.INT_SIZE_IN_BYTES);
-    };
+    OffsetReader INT_OFFSET_READER = (in, varSizedOffsetsOffset, index) ->
+            in.readInt(varSizedOffsetsOffset + index * Bits.INT_SIZE_IN_BYTES);
 
     /**
      * Returns the offset reader to use for the given data length.

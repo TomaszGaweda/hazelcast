@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.hazelcast.config.cp.RaftAlgorithmConfig;
 import com.hazelcast.cp.internal.raft.impl.RaftEndpoint;
 import com.hazelcast.spi.exception.RetryableException;
 
+import java.io.Serial;
 import java.util.UUID;
 
 /**
@@ -36,6 +37,7 @@ import java.util.UUID;
  */
 public class CannotReplicateException extends CPSubsystemException implements RetryableException {
 
+    @Serial
     private static final long serialVersionUID = 4407025930140337716L;
 
     public CannotReplicateException(RaftEndpoint leader) {

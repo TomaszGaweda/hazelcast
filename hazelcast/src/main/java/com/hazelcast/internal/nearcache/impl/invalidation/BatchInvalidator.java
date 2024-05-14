@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ public class BatchInvalidator extends Invalidator {
     private List<Invalidation> pollInvalidations(InvalidationQueue<Invalidation> invalidationQueue) {
         final int size = invalidationQueue.size();
 
-        List<Invalidation> invalidations = new ArrayList<Invalidation>(size);
+        List<Invalidation> invalidations = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
             Invalidation invalidation = invalidationQueue.poll();

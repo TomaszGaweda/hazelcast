@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,6 @@ import java.util.Map;
 import java.util.Queue;
 
 import static com.hazelcast.internal.util.ExceptionUtil.sneakyThrow;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFine;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFinest;
 import static com.hazelcast.jet.impl.util.Util.checkSerializable;
 import static com.hazelcast.security.permission.ActionConstants.ACTION_READ;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -204,11 +202,11 @@ public class StreamFilesP<R> extends AbstractProcessor {
             final Path filePath = watchedDirectory.resolve(fileName);
             if (kind == ENTRY_CREATE || kind == ENTRY_MODIFY) {
                 if (glob.matches(fileName) && belongsToThisProcessor(fileName) && !Files.isDirectory(filePath)) {
-                    logFine(logger, "Will open file to read new content: %s", filePath);
+                    logger.fine("Will open file to read new content: %s", filePath);
                     eventQueue.add(filePath);
                 }
             } else if (kind == ENTRY_DELETE) {
-                logFinest(logger, "File was deleted: %s", filePath);
+                logger.finest("File was deleted: %s", filePath);
                 fileOffsets.remove(filePath);
             } else if (kind == OVERFLOW) {
                 logger.warning("Detected OVERFLOW in " + watchedDirectory);
@@ -260,7 +258,7 @@ public class StreamFilesP<R> extends AbstractProcessor {
             return true;
         }
         FileOffset offset = fileOffsets.getOrDefault(currentFile, FileOffset.ZERO);
-        logFine(getLogger(), "Processing file %s, previous offset: %s", currentFile, offset);
+        getLogger().fine("Processing file %s, previous offset: %s", currentFile, offset);
         try {
             FileInputStream fis = new FileInputStream(currentFile.toFile());
             fis.getChannel().position(offset.positiveOffset());
@@ -377,8 +375,8 @@ public class StreamFilesP<R> extends AbstractProcessor {
         // It's JVM-specific and hence it's just a best-effort.
         // I believe this is useful on platforms without native watch service (or where Java does not use it) e.g. MacOSX
         Object modifier = ReflectionUtils.readStaticFieldOrNull(SENSITIVITY_MODIFIER_CLASS_NAME, "HIGH");
-        if (modifier instanceof WatchEvent.Modifier) {
-            return new WatchEvent.Modifier[]{(WatchEvent.Modifier) modifier};
+        if (modifier instanceof WatchEvent.Modifier eventModifier) {
+            return new WatchEvent.Modifier[]{eventModifier};
         }
         //bad luck, we did not find the modifier
         return new WatchEvent.Modifier[0];

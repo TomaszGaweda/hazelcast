@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.hazelcast.config;
 
-import com.hazelcast.internal.nio.IOUtil;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.SlowTest;
@@ -90,12 +89,8 @@ public class XmlConfigSchemaLocationTest extends HazelcastTestSupport {
                 continue;
             }
 
-            InputStream stream = null;
-            try {
-                stream = classLoader.getResourceAsStream(resource);
+            try (InputStream stream = classLoader.getResourceAsStream(resource)) {
                 validateSchemaLocationUrl(stream, resource);
-            } finally {
-                IOUtil.closeResource(stream);
             }
         }
     }

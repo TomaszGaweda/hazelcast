@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class CollectionTransactionLogRecord implements TransactionLogRecord {
         this.transactionId = transactionId;
         this.name = name;
         this.partitionId = partitionId;
-        this.operationList = new ArrayList<Operation>();
+        this.operationList = new ArrayList<>();
     }
 
     @Override

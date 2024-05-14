@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.map.QueryCache;
 import com.hazelcast.query.Predicates;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -85,12 +84,7 @@ public class QueryCacheGuaranteesTest extends HazelcastTestSupport {
             map3.put(i, i);
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(36, queryCache.size());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(36, queryCache.size()));
     }
 
     @Test
@@ -108,7 +102,7 @@ public class QueryCacheGuaranteesTest extends HazelcastTestSupport {
         mapConfig.addQueryCacheConfig(queryCacheConfig);
 
         HazelcastInstance node = instanceFactory.newHazelcastInstance(config);
-        IMap<Integer, Integer> map = (IMap<Integer, Integer>) node.<Integer, Integer>getMap(mapName);
+        IMap<Integer, Integer> map = node.getMap(mapName);
 
         final QueryCache<Integer, Integer> queryCache = map.getQueryCache(queryCacheName, Predicates.sql("this > 20"), true);
 
@@ -136,11 +130,6 @@ public class QueryCacheGuaranteesTest extends HazelcastTestSupport {
             map2.put(i, i);
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(43, queryCache.size());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(43, queryCache.size()));
     }
 }

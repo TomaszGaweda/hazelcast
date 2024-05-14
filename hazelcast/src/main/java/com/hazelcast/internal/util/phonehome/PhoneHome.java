@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@
 package com.hazelcast.internal.util.phonehome;
 
 import com.hazelcast.instance.impl.Node;
+import com.hazelcast.internal.util.Preconditions;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.spi.properties.ClusterProperty;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -77,14 +80,25 @@ public class PhoneHome {
         hazelcastNode = node;
         logger = hazelcastNode.getLogger(PhoneHome.class);
         this.basePhoneHomeUrl = basePhoneHomeUrl;
-        metricsCollectorList = new ArrayList<>(additionalCollectors.length + 8);
+        metricsCollectorList = new ArrayList<>(additionalCollectors.length + 14);
         Collections.addAll(metricsCollectorList,
                 new RestApiMetricsCollector(),
                 new BuildInfoCollector(new HashMap<>(envVars)), new ClusterInfoCollector(), new ClientInfoCollector(),
                 new MapInfoCollector(), new OSInfoCollector(), new DistributedObjectCounterCollector(),
-                new CacheInfoCollector(), new JetInfoCollector(), new CPSubsystemInfoCollector(),
-                new SqlInfoCollector(), new StorageInfoCollector(), new DynamicConfigInfoCollector());
+                new CacheInfoCollector(), new JetInfoCollector(),
+                new SqlInfoCollector(), new StorageInfoCollector(), new DynamicConfigInfoCollector(),
+                new UserCodeNamespacesInfoCollector(), new VMMetricsCollector());
         Collections.addAll(metricsCollectorList, additionalCollectors);
+    }
+
+    /**
+     * Registers a metric collector. It is useful for modules that are loaded dynamically.
+     *
+     * @param metricsCollector if null do nothing.
+     */
+    protected void registerMetricsCollector(@Nonnull MetricsCollector metricsCollector) {
+        Preconditions.checkNotNull(metricsCollector, "MetricsCollector cannot be null.");
+        metricsCollectorList.add(metricsCollector);
     }
 
     public void check() {
@@ -93,8 +107,8 @@ public class PhoneHome {
         }
         try {
             phoneHomeFuture = hazelcastNode.nodeEngine.getExecutionService()
-                                                      .scheduleWithRepetition("PhoneHome",
-                                                              () -> phoneHome(false), 0, 1, TimeUnit.DAYS);
+                    .scheduleWithRepetition("PhoneHome",
+                            () -> phoneHome(false), 0, 1, TimeUnit.DAYS);
         } catch (RejectedExecutionException e) {
             logger.warning("Could not schedule phone home task! Most probably Hazelcast failed to start.");
         }
@@ -110,7 +124,7 @@ public class PhoneHome {
         HttpURLConnection conn = null;
         OutputStreamWriter writer = null;
         try {
-            URL url = new URL(basePhoneHomeUrl);
+            URL url = URI.create(basePhoneHomeUrl).toURL();
             conn = (HttpURLConnection) url.openConnection();
             conn.setConnectTimeout(TIMEOUT);
             conn.setReadTimeout(TIMEOUT);
@@ -157,8 +171,7 @@ public class PhoneHome {
         PhoneHomeParameterCreator parameterCreator = new PhoneHomeParameterCreator();
         for (MetricsCollector metricsCollector : metricsCollectorList) {
             try {
-                metricsCollector.forEachMetric(hazelcastNode,
-                        (type, value) -> parameterCreator.addParam(type.getRequestParameterName(), value));
+                metricsCollector.forEachMetric(hazelcastNode, parameterCreator::addParam);
             } catch (Exception e) {
                 logger.warning("Some metrics were not recorded ", e);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,14 +117,11 @@ public class ClientXAStressTest extends HazelcastTestSupport {
                 TransactionalMap<Object, Object> map = context.getMap(name);
                 map.put(i, i);
                 xaResource.end(xid, XAResource.TMSUCCESS);
-                executorServiceForCommit.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            xaResource.commit(xid, true);
-                        } catch (XAException e) {
-                            e.printStackTrace();
-                        }
+                executorServiceForCommit.execute(() -> {
+                    try {
+                        xaResource.commit(xid, true);
+                    } catch (XAException e) {
+                        e.printStackTrace();
                     }
                 });
             } catch (Exception e) {

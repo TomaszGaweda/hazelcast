@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import static org.junit.Assert.assertNull;
 public class PropertiesToNodeConverterTest {
 
     @Test(expected = InvalidConfigurationException.class)
-    public void shouldThrowWhenParsingEmptyMap() throws Exception {
+    public void shouldThrowWhenParsingEmptyMap() {
         ConfigNode configNode = PropertiesToNodeConverter.propsToNode(Collections.emptyMap());
     }
 

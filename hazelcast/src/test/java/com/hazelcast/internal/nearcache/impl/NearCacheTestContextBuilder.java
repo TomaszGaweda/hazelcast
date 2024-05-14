@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class NearCacheTestContextBuilder<K, V, NK, NV> extends HazelcastTestSupp
         assertNotEquals("nearCacheInstance and dataInstance have to be different instances", nearCacheInstance, dataInstance);
         assertNotEquals("nearCacheAdapter and dataAdapter have to be different instances", nearCacheAdapter, dataAdapter);
 
-        NearCacheTestContext<K, V, NK, NV> context = new NearCacheTestContext<K, V, NK, NV>(
+        NearCacheTestContext<K, V, NK, NV> context = new NearCacheTestContext<>(
                 nearCacheConfig,
                 serializationService,
                 nearCacheInstance,

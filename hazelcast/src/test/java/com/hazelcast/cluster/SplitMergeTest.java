@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,7 +192,7 @@ public class SplitMergeTest extends HazelcastTestSupport {
     }
 
     private static class MergeLifecycleListener implements LifecycleListener {
-        final BlockingQueue<LifecycleState> eventQ = new ArrayBlockingQueue<LifecycleState>(10);
+        final BlockingQueue<LifecycleState> eventQ = new ArrayBlockingQueue<>(10);
 
         @Override
         public void stateChanged(LifecycleEvent event) {

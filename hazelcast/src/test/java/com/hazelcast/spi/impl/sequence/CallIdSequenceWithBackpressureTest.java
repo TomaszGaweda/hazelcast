@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,16 +74,13 @@ public class CallIdSequenceWithBackpressureTest extends HazelcastTestSupport {
         final long oldLastCallId = sequence.getLastCallId();
 
         final CountDownLatch nextCalledLatch = new CountDownLatch(1);
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                DummyBackupAwareOperation op = new DummyBackupAwareOperation();
-                long callId = nextCallId(sequence, op.isUrgent());
-                setCallId(op, callId);
-                nextCalledLatch.countDown();
-                sleepSeconds(3);
-                sequence.complete();
-            }
+        spawn((Runnable) () -> {
+            DummyBackupAwareOperation op = new DummyBackupAwareOperation();
+            long callId = nextCallId(sequence, op.isUrgent());
+            setCallId(op, callId);
+            nextCalledLatch.countDown();
+            sleepSeconds(3);
+            sequence.complete();
         });
 
         nextCalledLatch.await();

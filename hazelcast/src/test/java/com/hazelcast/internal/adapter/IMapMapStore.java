@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class IMapMapStore implements DataStructureLoader, MapStore<Integer, Stri
 
     @Override
     public Map<Integer, String> loadAll(Collection<Integer> keys) {
-        Map<Integer, String> map = new HashMap<Integer, String>(keys.size());
+        Map<Integer, String> map = new HashMap<>(keys.size());
         for (Integer key : keys) {
             map.put(key, "newValue-" + key);
         }

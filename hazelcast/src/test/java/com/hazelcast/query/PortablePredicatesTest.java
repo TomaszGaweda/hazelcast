@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class PortablePredicatesTest {
 
         public static final int CLASS_ID = 1;
 
-        private final Map<String, Object> data = new HashMap<String, Object>();
+        private final Map<String, Object> data = new HashMap<>();
 
         @Override
         public int getClassId() {
@@ -135,14 +135,14 @@ public class PortablePredicatesTest {
         public void writePortable(PortableWriter writer) throws IOException {
             for (String key : data.keySet()) {
                 Object object = data.get(key);
-                if (object instanceof String) {
-                    writer.writeString(key, (String) object);
-                } else if (object instanceof Long) {
-                    writer.writeLong(key, (Long) object);
-                } else if (object instanceof Date) {
-                    writer.writeLong(key, ((Date) object).getTime());
-                } else if (object instanceof Boolean) {
-                    writer.writeBoolean(key, (Boolean) object);
+                if (object instanceof String stringObject) {
+                    writer.writeString(key, stringObject);
+                } else if (object instanceof Long longObject) {
+                    writer.writeLong(key, longObject);
+                } else if (object instanceof Date dateObject) {
+                    writer.writeLong(key, dateObject.getTime());
+                } else if (object instanceof Boolean booleanObject) {
+                    writer.writeBoolean(key, booleanObject);
                 } else {
                     throw new IOException("Unsupported field type " + object.getClass());
                 }

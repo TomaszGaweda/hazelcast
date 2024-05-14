@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -197,11 +197,11 @@ public class WatermarkCoalescer_IntegrationTest extends JetTestSupport {
 
             while (pos < list.size()) {
                 Object item = list.get(pos);
-                if (item instanceof SerializableWm) {
-                    item = new Watermark(((SerializableWm) item).timestamp);
-                } else if (item instanceof Delay) {
-                    getLogger().info("will wait " + ((Delay) item).millis + " ms");
-                    nextItemAt = System.nanoTime() + MILLISECONDS.toNanos(((Delay) item).millis);
+                if (item instanceof SerializableWm serializableWm) {
+                    item = new Watermark(serializableWm.timestamp);
+                } else if (item instanceof Delay delay) {
+                    getLogger().info("will wait " + delay.millis + " ms");
+                    nextItemAt = System.nanoTime() + MILLISECONDS.toNanos(delay.millis);
                     pos++;
                     return false;
                 } else if (item.equals(DONE_ITEM_STR)) {
@@ -244,7 +244,7 @@ public class WatermarkCoalescer_IntegrationTest extends JetTestSupport {
         private static List<Object> replaceWatermarks(List<Object> list) {
             List<Object> result = new ArrayList<>();
             for (Object o : list) {
-                result.add(o instanceof Watermark ? new SerializableWm(((Watermark) o).timestamp()) : o);
+                result.add(o instanceof Watermark waterMark ? new SerializableWm(waterMark.timestamp()) : o);
             }
             return result;
         }

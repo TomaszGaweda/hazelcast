@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.hazelcast.client.impl.protocol.task.dynamicconfig.NearCacheConfigHold
 import com.hazelcast.client.impl.protocol.task.dynamicconfig.PredicateConfigHolder;
 import com.hazelcast.client.impl.protocol.task.dynamicconfig.QueryCacheConfigHolder;
 import com.hazelcast.client.impl.protocol.task.dynamicconfig.QueueStoreConfigHolder;
+import com.hazelcast.client.impl.protocol.task.dynamicconfig.ResourceDefinitionHolder;
 import com.hazelcast.client.impl.protocol.task.dynamicconfig.RingbufferStoreConfigHolder;
 import com.hazelcast.cluster.Address;
 import com.hazelcast.config.AttributeConfig;
@@ -62,7 +63,10 @@ import com.hazelcast.config.NearCachePreloaderConfig;
 import com.hazelcast.config.PartitioningAttributeConfig;
 import com.hazelcast.config.TieredStoreConfig;
 import com.hazelcast.config.WanReplicationRef;
+import com.hazelcast.config.vector.Metric;
+import com.hazelcast.config.vector.VectorIndexConfig;
 import com.hazelcast.core.HazelcastJsonValue;
+import com.hazelcast.cp.CPGroupId;
 import com.hazelcast.cp.CPMember;
 import com.hazelcast.cp.internal.CPMemberInfo;
 import com.hazelcast.cp.internal.RaftGroupId;
@@ -84,6 +88,7 @@ import com.hazelcast.map.impl.querycache.event.QueryCacheEventData;
 import com.hazelcast.memory.Capacity;
 import com.hazelcast.memory.MemoryUnit;
 import com.hazelcast.partition.MigrationState;
+import com.hazelcast.replicatedmap.impl.record.ReplicatedMapEntryViewHolder;
 import com.hazelcast.scheduledexecutor.ScheduledTaskHandler;
 import com.hazelcast.scheduledexecutor.impl.ScheduledTaskHandlerImpl;
 import com.hazelcast.sql.SqlColumnMetadata;
@@ -92,6 +97,11 @@ import com.hazelcast.sql.impl.QueryId;
 import com.hazelcast.sql.impl.client.SqlError;
 import com.hazelcast.sql.impl.client.SqlPage;
 import com.hazelcast.transaction.impl.xa.SerializableXID;
+import com.hazelcast.vector.SearchOptions;
+import com.hazelcast.vector.SearchOptionsBuilder;
+import com.hazelcast.vector.VectorValues;
+import com.hazelcast.vector.impl.DataSearchResult;
+import com.hazelcast.vector.impl.DataVectorDocument;
 import com.hazelcast.version.MemberVersion;
 
 import javax.transaction.xa.Xid;
@@ -175,6 +185,9 @@ public class ReferenceObjects {
         }
         if (a instanceof CacheSimpleEntryListenerConfig && b instanceof CacheSimpleEntryListenerConfig) {
             return isEqual((CacheSimpleEntryListenerConfig) a, (CacheSimpleEntryListenerConfig) b);
+        }
+        if (a instanceof DefaultQueryCacheEventData && b instanceof DefaultQueryCacheEventData) {
+            return isEqual((DefaultQueryCacheEventData) a, (DefaultQueryCacheEventData) b);
         }
         return a.equals(b);
     }
@@ -673,6 +686,33 @@ public class ReferenceObjects {
         return Objects.equals(a.getDiskTierConfig(), b.getDiskTierConfig());
     }
 
+    public static boolean isEqual(DefaultQueryCacheEventData a, DefaultQueryCacheEventData that) {
+        if (a == that) {
+            return true;
+        }
+        if (that == null) {
+            return false;
+        }
+
+        if (a.getSequence() != that.getSequence()) {
+            return false;
+        }
+        if (a.getEventType() != that.getEventType()) {
+            return false;
+        }
+        if (a.getPartitionId() != that.getPartitionId()) {
+            return false;
+        }
+        if (!Objects.equals(a.getDataKey(), that.getDataKey())) {
+            return false;
+        }
+        if (!Objects.equals(a.getDataNewValue(), that.getDataNewValue())) {
+            return false;
+        }
+
+        return Objects.equals(a.getDataOldValue(), that.getDataOldValue());
+    }
+
     private static boolean isEqualStackTrace(StackTraceElement stackTraceElement1, StackTraceElement stackTraceElement2) {
         //Not using stackTraceElement.equals
         //because in IBM JDK stacktraceElements with null method name are not equal
@@ -695,10 +735,12 @@ public class ReferenceObjects {
     public static int anInt = 25;
     public static int anEnum = 1;
     public static long aLong = -50992225L;
+    public static float aFloat = 3.14f;
     public static long aPositiveLong = 50992225L;
     public static UUID aUUID = new UUID(123456789, 987654321);
     public static byte[] aByteArray = new byte[]{aByte};
     public static long[] aLongArray = new long[]{aLong};
+    public static float[] aFloatArray = new float[]{aFloat};
     public static String aString = "localhost";
     public static Data aData = new HeapData("111313123131313131".getBytes());
     public static List<Map.Entry<Integer, UUID>> aListOfIntegerToUUID
@@ -714,9 +756,11 @@ public class ReferenceObjects {
     public static List<Integer> aListOfIntegers = Collections.singletonList(anInt);
     public static List<Long> aListOfLongs = Collections.singletonList(aLong);
     public static List<UUID> aListOfUUIDs = Collections.singletonList(aUUID);
+    public static Collection<Collection<UUID>> aListOfListOfUUIDs = Collections.singletonList(aListOfUUIDs);
     public static Address anAddress;
     public static CPMember aCpMember;
     public static List<CPMember> aListOfCpMembers;
+    public static List<CPGroupId> aListOfCpGroupIds;
     public static MigrationState aMigrationState = new MigrationStateImpl(aLong, anInt, anInt, aLong);
     public static FieldDescriptor aFieldDescriptor = CustomTypeFactory.createFieldDescriptor(aString, anInt);
     public static List<FieldDescriptor> aListOfFieldDescriptors = Collections.singletonList(aFieldDescriptor);
@@ -753,11 +797,16 @@ public class ReferenceObjects {
         aQueryCacheEventData.setSequence(aLong);
         aQueryCacheEventData.setEventType(anInt);
         aQueryCacheEventData.setPartitionId(anInt);
+        aQueryCacheEventData.setMapName(aString);
     }
 
     public static RaftGroupId aRaftGroupId = new RaftGroupId(aString, aLong, aLong);
+    public static List<RaftGroupId> aListOfRaftGroupIds = Collections.singletonList(aRaftGroupId);
     public static ScheduledTaskHandler aScheduledTaskHandler = new ScheduledTaskHandlerImpl(aUUID, anInt, aString, aString);
     public static SimpleEntryView<Data, Data> aSimpleEntryView = new SimpleEntryView<>(aData, aData);
+    public static ReplicatedMapEntryViewHolder aReplicatedMapEntryViewHolder = new ReplicatedMapEntryViewHolder(
+            aData, aData, aLong, aLong, aLong, aLong, aLong
+    );
 
     static {
         aSimpleEntryView.setCost(aLong);
@@ -921,7 +970,7 @@ public class ReferenceObjects {
             aString, anEvictionConfigHolder, aWanReplicationRef, aString, aString, aData, aData, aData, aBoolean,
             aBoolean, aBoolean, aBoolean, aBoolean, aHotRestartConfig, anEventJournalConfig, aString, aListOfData,
             aMergePolicyConfig, aBoolean, aListOfListenerConfigHolders, aBoolean, aMerkleTreeConfig, true,
-            aDataPersistenceConfig);
+            aDataPersistenceConfig, aBoolean, aString);
     private static MemberVersion aMemberVersion = new MemberVersion(aByte, aByte, aByte);
     public static Collection<MemberInfo> aListOfMemberInfos = Collections.singletonList(new MemberInfo(anAddress, aUUID, aMapOfStringToString, aBoolean, aMemberVersion,
             ImmutableMap.of(EndpointQualifier.resolve(ProtocolType.WAN, "localhost"), anAddress)));
@@ -945,6 +994,10 @@ public class ReferenceObjects {
 
     public static List<SimpleEntryView<Data, Data>> aListOfSimpleEntryViews = Collections.singletonList(
             aSimpleEntryView
+    );
+
+    public static List<ReplicatedMapEntryViewHolder> aListOfReplicatedMapEntryViewHolders = Collections.singletonList(
+            aReplicatedMapEntryViewHolder
     );
 
     public static WanConsumerConfigHolder aWanConsumerConfigHolder =
@@ -989,4 +1042,23 @@ public class ReferenceObjects {
                             aString
                     )
             );
+
+    public static List<ResourceDefinitionHolder> aListOfResourceDefinitionHolders =
+            Collections.singletonList(new ResourceDefinitionHolder(aString, anInt, aByteArray, aString));
+
+    public static VectorIndexConfig aVectorIndexConfig = new VectorIndexConfig(aString, Metric.EUCLIDEAN, 1000, 200, 300, false);
+    public static List<VectorIndexConfig> aList_VectorIndexConfig = List.of(aVectorIndexConfig);
+
+    public static final VectorValues aVectorValues = VectorValues.of(aString, aFloatArray);
+    public static DataVectorDocument aVectorDocument = new DataVectorDocument(aData, aVectorValues);
+    public static List<Map.Entry<Data, DataVectorDocument>> aEntryList_Data_VectorDocument =
+            List.of(Map.entry(aData, aVectorDocument));
+    public static SearchOptions aVectorSearchOptions = new SearchOptionsBuilder()
+            .setIncludePayload(false)
+            .setIncludeVectors(false)
+            .limit(100)
+            .vectors(aVectorValues)
+            .hint(aString, aString)
+            .build();
+    public static List<DataSearchResult> aList_VectorSearchResult = List.of(new DataSearchResult(aData, aData, aFloat, aVectorValues));
 }

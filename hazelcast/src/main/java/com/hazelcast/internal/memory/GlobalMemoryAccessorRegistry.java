@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public final class GlobalMemoryAccessorRegistry {
     public static final boolean AMEM_AVAILABLE;
 
     private static final Map<GlobalMemoryAccessorType, GlobalMemoryAccessor> STORAGE =
-            new EnumMap<GlobalMemoryAccessorType, GlobalMemoryAccessor>(GlobalMemoryAccessorType.class);
+            new EnumMap<>(GlobalMemoryAccessorType.class);
 
     static {
         final boolean unalignedAccessAllowed = AlignmentUtil.isUnalignedAccessAllowed();

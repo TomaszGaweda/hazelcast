@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,6 @@ import com.hazelcast.transaction.TransactionalMap;
 import com.hazelcast.transaction.TransactionalMultiMap;
 import com.hazelcast.transaction.TransactionalObject;
 import com.hazelcast.transaction.TransactionalQueue;
-import com.hazelcast.transaction.TransactionalTask;
-import com.hazelcast.transaction.TransactionalTaskContext;
 import com.hazelcast.transaction.impl.Transaction;
 import com.hazelcast.transaction.impl.TransactionLogRecord;
 import org.junit.Assert;
@@ -227,7 +225,7 @@ public class MapTransactionStressTest extends HazelcastTestSupport {
         new Thread(new TxnIncrementor(count1, h1, latch)).start();
         new Thread(new TxnIncrementor(count2, h2, latch)).start();
         latch.await(600, TimeUnit.SECONDS);
-        assertEquals(new Integer(count1 + count2), map.get(key));
+        assertEquals(Integer.valueOf(count1 + count2), map.get(key));
     }
 
     public static class ProducerThread extends Thread {
@@ -352,7 +350,7 @@ public class MapTransactionStressTest extends HazelcastTestSupport {
                 }
 
                 @Override
-                public void run() throws Exception {
+                public void run() {
                     LockSupport.parkNanos(10000);
                 }
             };
@@ -370,7 +368,7 @@ public class MapTransactionStressTest extends HazelcastTestSupport {
                 }
 
                 @Override
-                public void run() throws Exception {
+                public void run() {
                 }
             };
         }
@@ -402,7 +400,7 @@ public class MapTransactionStressTest extends HazelcastTestSupport {
     static class TxnIncrementor implements Runnable {
         final String key = "count";
         final CountDownLatch latch;
-        int count = 0;
+        int count;
         HazelcastInstance instance;
 
 
@@ -415,13 +413,11 @@ public class MapTransactionStressTest extends HazelcastTestSupport {
         @Override
         public void run() {
             for (int i = 0; i < count; i++) {
-                instance.executeTransaction(new TransactionalTask<Boolean>() {
-                    public Boolean execute(TransactionalTaskContext context) throws TransactionException {
-                        final TransactionalMap<String, Integer> txMap = context.getMap("default");
-                        Integer value = txMap.getForUpdate(key);
-                        txMap.put(key, value + 1);
-                        return true;
-                    }
+                instance.executeTransaction(context -> {
+                    final TransactionalMap<String, Integer> txMap = context.getMap("default");
+                    Integer value = txMap.getForUpdate(key);
+                    txMap.put(key, value + 1);
+                    return true;
                 });
                 latch.countDown();
             }

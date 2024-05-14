@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public final class LeakingApplication {
          * Never override {@link ThreadLocal#initialValue()} in production code!
          */
         private static final ThreadLocal<ThreadLocalRandom> LOCAL_RANDOM =
-                new ThreadLocal<ThreadLocalRandom>() {
+                new ThreadLocal<>() {
                     protected ThreadLocalRandom initialValue() {
                         return new ThreadLocalRandom();
                     }

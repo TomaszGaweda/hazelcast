@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,8 +143,8 @@ public class JsonMetadataMutationObserver implements MutationObserver<Record> {
         try {
             Object keyMetadata = metadataInitializer.createFromData(key);
             Object valueMetadata;
-            if (value instanceof Data) {
-                valueMetadata = metadataInitializer.createFromData((Data) value);
+            if (value instanceof Data data) {
+                valueMetadata = metadataInitializer.createFromData(data);
             } else {
                 valueMetadata = metadataInitializer.createFromObject(value);
             }

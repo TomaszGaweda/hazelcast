@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,13 +79,13 @@ public class ClusterListTest extends HazelcastTestSupport {
         HazelcastInstance instance2 = factory.newHazelcastInstance();
         IList<String> list1 = instance1.getList(name);
         IList<String> list2 = instance2.getList(name);
-        List<String> listTest1 = new ArrayList<String>();
+        List<String> listTest1 = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
             listTest1.add("item" + i);
         }
         assertTrue(list1.addAll(listTest1));
         assertSizeEventually(100, list2);
-        List<String> listTest2 = new ArrayList<String>();
+        List<String> listTest2 = new ArrayList<>();
         for (int i = 30; i < 40; i++) {
             listTest2.add("item" + i);
         }

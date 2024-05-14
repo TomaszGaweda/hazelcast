@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ public class ClientOutOfMemoryHandler extends DefaultOutOfMemoryHandler {
     @Override
     public void onOutOfMemory(OutOfMemoryError oome, HazelcastInstance[] hazelcastInstances) {
         for (HazelcastInstance instance : hazelcastInstances) {
-            if (instance instanceof HazelcastClientInstanceImpl) {
-                ClientHelper.cleanResources((HazelcastClientInstanceImpl) instance);
+            if (instance instanceof HazelcastClientInstanceImpl impl) {
+                ClientHelper.cleanResources(impl);
             }
         }
         try {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,17 +37,12 @@ import static com.hazelcast.internal.util.ConcurrencyUtil.getOrPutIfAbsent;
 public class QueryCacheToListenerMapper {
 
     private static final ConstructorFunction<String, Collection<ListenerInfo>> LISTENER_SET_CONSTRUCTOR
-            = new ConstructorFunction<String, Collection<ListenerInfo>>() {
-        @Override
-        public Collection<ListenerInfo> createNew(String arg) {
-            return Collections.newSetFromMap(new ConcurrentHashMap<ListenerInfo, Boolean>());
-        }
-    };
+            = arg -> Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private final ConcurrentMap<String, Collection<ListenerInfo>> registrations;
 
     QueryCacheToListenerMapper() {
-        this.registrations = new ConcurrentHashMap<String, Collection<ListenerInfo>>();
+        this.registrations = new ConcurrentHashMap<>();
     }
 
     public UUID addListener(String cacheId, ListenerAdapter listenerAdapter, EventFilter filter) {
@@ -95,9 +90,8 @@ public class QueryCacheToListenerMapper {
         return !registrations.isEmpty();
     }
 
-    @SuppressWarnings("unchecked")
     Collection<ListenerInfo> getListenerInfos(String cacheId) {
         Collection<ListenerInfo> infos = registrations.get(cacheId);
-        return isEmpty(infos) ? Collections.<ListenerInfo>emptySet() : infos;
+        return isEmpty(infos) ? Collections.emptySet() : infos;
     }
 }

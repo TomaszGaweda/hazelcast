@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,8 @@ public interface ClusterService extends CoreService, Cluster {
      * Gets the local member instance.
      * <p>
      * The returned value will never be null, but it may change when local lite member is promoted to a data member
-     * via {@link #promoteLocalLiteMember()}
+     * via {@link #promoteLocalLiteMember()} or when local data member is demoted to a lite member via
+     * {@link #demoteLocalDataMember()}
      * or when this member merges to a new cluster after split-brain detected. Returned value should not be
      * cached but instead this method should be called each time when local member is needed.
      *
@@ -203,4 +204,15 @@ public interface ClusterService extends CoreService, Cluster {
      * @return the member list join version of the local member instance
      */
     int getMemberListJoinVersion();
+
+
+    /**
+     * Returns whether member with given identity (either {@code UUID} or {@code Address}
+     * depending on Persistence is enabled or not) is a known missing member or not.
+     *
+     * @param address Address of the missing member
+     * @param uuid    Uuid of the missing member
+     * @return true if it's a known missing member, false otherwise
+     */
+    boolean isMissingMember(Address address, UUID uuid);
 }

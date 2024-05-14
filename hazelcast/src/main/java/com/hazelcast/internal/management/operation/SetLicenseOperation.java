@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.internal.dynamicconfig.ConfigurationService;
 import com.hazelcast.internal.management.ManagementDataSerializerHook;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.spi.impl.NodeEngineImpl;
 
 import java.io.IOException;
 
@@ -44,7 +43,7 @@ public class SetLicenseOperation extends AbstractManagementOperation {
     @Override
     public void run() throws Exception {
         DefaultNodeExtension nodeExtension
-                = (DefaultNodeExtension) ((NodeEngineImpl) getNodeEngine()).getNode().getNodeExtension();
+                = (DefaultNodeExtension) getNodeEngine().getNode().getNodeExtension();
         nodeExtension.setLicenseKey(licenseKey);
 
         LicenseKey licenseKeyObject = new LicenseKey(licenseKey);

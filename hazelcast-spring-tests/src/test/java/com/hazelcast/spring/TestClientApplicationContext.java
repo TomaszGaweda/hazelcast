@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.hazelcast.spring;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.LoadBalancer;
-import com.hazelcast.client.config.ClientTpcConfig;
 import com.hazelcast.client.config.ClientCloudConfig;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientConnectionStrategyConfig;
@@ -30,6 +29,7 @@ import com.hazelcast.client.config.ClientNetworkConfig;
 import com.hazelcast.client.config.ClientReliableTopicConfig;
 import com.hazelcast.client.config.ClientSqlConfig;
 import com.hazelcast.client.config.ClientSqlResubmissionMode;
+import com.hazelcast.client.config.ClientTpcConfig;
 import com.hazelcast.client.config.ClientUserCodeDeploymentConfig;
 import com.hazelcast.client.config.ConnectionRetryConfig;
 import com.hazelcast.client.config.ProxyFactoryConfig;
@@ -61,10 +61,6 @@ import com.hazelcast.config.security.JaasAuthenticationConfig;
 import com.hazelcast.config.security.RealmConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.cp.IAtomicLong;
-import com.hazelcast.cp.IAtomicReference;
-import com.hazelcast.cp.ICountDownLatch;
-import com.hazelcast.cp.ISemaphore;
 import com.hazelcast.map.IMap;
 import com.hazelcast.memory.MemoryUnit;
 import com.hazelcast.multimap.MultiMap;
@@ -80,9 +76,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 
-import javax.annotation.Resource;
 import java.nio.ByteOrder;
 import java.util.Collection;
 import java.util.List;
@@ -106,118 +102,140 @@ import static org.junit.Assert.assertTrue;
 @Category(QuickTest.class)
 public class TestClientApplicationContext {
 
-    @Resource(name = "client")
+    @Autowired
+    @Qualifier(value = "client")
     private HazelcastClientProxy client;
 
-    @Resource(name = "client2")
+    @Autowired
+    @Qualifier(value = "client2")
     private HazelcastClientProxy client2;
 
-    @Resource(name = "client3")
+    @Autowired
+    @Qualifier(value = "client3")
     private HazelcastClientProxy client3;
 
-    @Resource(name = "client4")
+    @Autowired
+    @Qualifier(value = "client4")
     private HazelcastClientProxy client4;
 
-    @Resource(name = "client5")
+    @Autowired
+    @Qualifier(value = "client5")
     private HazelcastClientProxy client5;
 
-    @Resource(name = "client6")
+    @Autowired
+    @Qualifier(value = "client6")
     private HazelcastClientProxy client6;
 
-    @Resource(name = "client7-empty-serialization-config")
+    @Autowired
+    @Qualifier(value = "client7-empty-serialization-config")
     private HazelcastClientProxy client7;
 
-    @Resource(name = "client8")
+    @Autowired
+    @Qualifier(value = "client8")
     private HazelcastClientProxy client8;
 
-    @Resource(name = "client9-user-code-deployment-test")
+    @Autowired
+    @Qualifier(value = "client9-user-code-deployment-test")
     private HazelcastClientProxy userCodeDeploymentTestClient;
 
-    @Resource(name = "client10-flakeIdGenerator")
+    @Autowired
+    @Qualifier(value = "client10-flakeIdGenerator")
     private HazelcastClientProxy client10;
 
-    @Resource(name = "client11-icmp-ping")
+    @Autowired
+    @Qualifier(value = "client11-icmp-ping")
     private HazelcastClientProxy icmpPingTestClient;
 
-    @Resource(name = "client12-hazelcast-cloud")
+    @Autowired
+    @Qualifier(value = "client12-hazelcast-cloud")
     private HazelcastClientProxy hazelcastCloudClient;
 
-    @Resource(name = "client13-exponential-connection-retry")
+    @Autowired
+    @Qualifier(value = "client13-exponential-connection-retry")
     private HazelcastClientProxy connectionRetryClient;
 
-    @Resource(name = "client14-reliable-topic")
+    @Autowired
+    @Qualifier(value = "client14-reliable-topic")
     private HazelcastClientProxy hazelcastReliableTopic;
 
-    @Resource(name = "client16-name-and-labels")
+    @Autowired
+    @Qualifier(value = "client16-name-and-labels")
     private HazelcastClientProxy namedClient;
 
-    @Resource(name = "client17-backupAckToClient")
+    @Autowired
+    @Qualifier(value = "client17-backupAckToClient")
     private HazelcastClientProxy backupAckToClient;
 
-    @Resource(name = "client18-metrics")
+    @Autowired
+    @Qualifier(value = "client18-metrics")
     private HazelcastClientProxy metricsClient;
 
-    @Resource(name = "client19-instance-tracking")
+    @Autowired
+    @Qualifier(value = "client19-instance-tracking")
     private HazelcastClientProxy instanceTrackingClient;
 
-    @Resource(name = "client20-native-memory")
+    @Autowired
+    @Qualifier(value = "client20-native-memory")
     private HazelcastClientProxy nativeMemoryClient;
 
-    @Resource(name = "client21-persistent-memory-system-memory")
+    @Autowired
+    @Qualifier(value = "client21-persistent-memory-system-memory")
     private HazelcastClientProxy pmemSystemMemoryClient;
 
-    @Resource(name = "client22-with-overridden-default-serializers")
+    @Autowired
+    @Qualifier(value = "client22-with-overridden-default-serializers")
     private HazelcastClientProxy clientWithOverriddenDefaultSerializers;
 
-    @Resource(name = "client23-with-compact-serialization")
+    @Autowired
+    @Qualifier(value = "client23-with-compact-serialization")
     private HazelcastClientProxy clientWithCompactSerialization;
 
-    @Resource(name = "client24-with-sql")
+    @Autowired
+    @Qualifier(value = "client24-with-sql")
     private HazelcastClientProxy clientWithSql;
 
-    @Resource(name = "client25-with-tpc")
+    @Autowired
+    @Qualifier(value = "client25-with-tpc")
     private HazelcastClientProxy clientWithTpc;
 
-    @Resource(name = "instance")
+    @Autowired
+    @Qualifier(value = "instance")
     private HazelcastInstance instance;
 
-    @Resource(name = "map1")
+    @Autowired
+    @Qualifier(value = "map1")
     private IMap<Object, Object> map1;
 
-    @Resource(name = "map2")
+    @Autowired
+    @Qualifier(value = "map2")
     private IMap<Object, Object> map2;
 
-    @Resource(name = "multiMap")
+    @Autowired
+    @Qualifier(value = "multiMap")
     private MultiMap multiMap;
 
-    @Resource(name = "queue")
+    @Autowired
+    @Qualifier(value = "queue")
     private IQueue queue;
 
-    @Resource(name = "topic")
+    @Autowired
+    @Qualifier(value = "topic")
     private ITopic topic;
 
-    @Resource(name = "set")
+    @Autowired
+    @Qualifier(value = "set")
     private ISet set;
 
-    @Resource(name = "list")
+    @Autowired
+    @Qualifier(value = "list")
     private IList list;
 
-    @Resource(name = "executorService")
+    @Autowired
+    @Qualifier(value = "executorService")
     private ExecutorService executorService;
 
-    @Resource(name = "atomicLong")
-    private IAtomicLong atomicLong;
-
-    @Resource(name = "atomicReference")
-    private IAtomicReference atomicReference;
-
-    @Resource(name = "countDownLatch")
-    private ICountDownLatch countDownLatch;
-
-    @Resource(name = "semaphore")
-    private ISemaphore semaphore;
-
-    @Resource(name = "reliableTopic")
+    @Autowired
+    @Qualifier(value = "reliableTopic")
     private ITopic reliableTopic;
 
     @Autowired
@@ -350,10 +368,6 @@ public class TestClientApplicationContext {
         assertNotNull(set);
         assertNotNull(list);
         assertNotNull(executorService);
-        assertNotNull(atomicLong);
-        assertNotNull(atomicReference);
-        assertNotNull(countDownLatch);
-        assertNotNull(semaphore);
         assertNotNull(reliableTopic);
         assertEquals("map1", map1.getName());
         assertEquals("map2", map2.getName());
@@ -362,10 +376,6 @@ public class TestClientApplicationContext {
         assertEquals("topic", topic.getName());
         assertEquals("set", set.getName());
         assertEquals("list", list.getName());
-        assertEquals("atomicLong", atomicLong.getName());
-        assertEquals("atomicReference", atomicReference.getName());
-        assertEquals("countDownLatch", countDownLatch.getName());
-        assertEquals("semaphore", semaphore.getName());
         assertEquals("reliableTopic", reliableTopic.getName());
     }
 
@@ -455,7 +465,7 @@ public class TestClientApplicationContext {
     }
 
     @Test
-    public void testFullQueryCacheConfig() throws Exception {
+    public void testFullQueryCacheConfig() {
         ClientConfig config = client6.getClientConfig();
 
         QueryCacheConfig queryCacheConfig = getQueryCacheConfig(config);
@@ -516,19 +526,19 @@ public class TestClientApplicationContext {
     public void testClientIcmpConfig() {
         ClientIcmpPingConfig icmpPingConfig = icmpPingTestClient.getClientConfig()
                 .getNetworkConfig().getClientIcmpPingConfig();
-        assertEquals(false, icmpPingConfig.isEnabled());
+        assertFalse(icmpPingConfig.isEnabled());
         assertEquals(2000, icmpPingConfig.getTimeoutMilliseconds());
         assertEquals(3000, icmpPingConfig.getIntervalMilliseconds());
         assertEquals(50, icmpPingConfig.getTtl());
         assertEquals(5, icmpPingConfig.getMaxAttempts());
-        assertEquals(false, icmpPingConfig.isEchoFailFastOnStartup());
+        assertFalse(icmpPingConfig.isEchoFailFastOnStartup());
     }
 
     @Test
     public void testCloudConfig() {
         ClientCloudConfig cloudConfig = hazelcastCloudClient.getClientConfig()
                 .getNetworkConfig().getCloudConfig();
-        assertEquals(false, cloudConfig.isEnabled());
+        assertFalse(cloudConfig.isEnabled());
         assertEquals("EXAMPLE_TOKEN", cloudConfig.getDiscoveryToken());
     }
 

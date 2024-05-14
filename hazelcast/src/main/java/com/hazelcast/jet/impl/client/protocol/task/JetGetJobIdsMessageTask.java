@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,10 +84,10 @@ public class JetGetJobIdsMessageTask extends AbstractMultiTargetMessageTask<JetG
                             || response instanceof TargetDisconnectedException) {
                         return GetJobIdsResult.EMPTY;
                     }
-                    if (response instanceof Exception) {
+                    if (response instanceof Exception exception) {
                         // ignore exceptions from non-master, but not from master
                         if (en.getKey().getAddress().equals(masterAddress)) {
-                            throw new RuntimeException((Throwable) response);
+                            throw new RuntimeException(exception);
                         }
                         return GetJobIdsResult.EMPTY;
                     }

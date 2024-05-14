@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.spi.impl.operationparker.impl.OperationParkerImpl;
 import com.hazelcast.spi.impl.operationservice.impl.InvocationRegistry;
 import com.hazelcast.spi.impl.operationservice.impl.OperationServiceImpl;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -84,17 +83,14 @@ public class ClientDisconnectTest extends HazelcastTestSupport {
                 }
             }
         });
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                IQueue<Integer> queue = clientInstance.getQueue(queueName);
-                try {
-                    queue.take();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (HazelcastInstanceNotActiveException e) {
-                    ignore(e);
-                }
+        new Thread(() -> {
+            IQueue<Integer> queue = clientInstance.getQueue(queueName);
+            try {
+                queue.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (HazelcastInstanceNotActiveException e) {
+                ignore(e);
             }
         }).start();
 
@@ -106,12 +102,7 @@ public class ClientDisconnectTest extends HazelcastTestSupport {
         final IQueue<Integer> queue = hazelcastInstance.getQueue(queueName);
         queue.add(1);
         //dead client should not be able to consume item from queue
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(1, queue.size());
-            }
-        }, 3);
+        assertTrueAllTheTime(() -> assertEquals(1, queue.size()), 3);
     }
 
     @Test
@@ -141,17 +132,14 @@ public class ClientDisconnectTest extends HazelcastTestSupport {
                 }
             }
         });
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                IMap<Object, Object> clientMap = clientInstance.getMap(name);
-                try {
-                    clientMap.lock(key);
-                } catch (Exception e) {
-                    ignore(e);
-                }
-
+        new Thread(() -> {
+            IMap<Object, Object> clientMap = clientInstance.getMap(name);
+            try {
+                clientMap.lock(key);
+            } catch (Exception e) {
+                ignore(e);
             }
+
         }).start();
 
         SECONDS.sleep(2);
@@ -161,12 +149,7 @@ public class ClientDisconnectTest extends HazelcastTestSupport {
 
         map.unlock(key);
         //dead client should not be able to acquire the lock.
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertFalse(map.isLocked(key));
-            }
-        }, 3);
+        assertTrueAllTheTime(() -> assertFalse(map.isLocked(key)), 3);
     }
 
     @Test
@@ -177,13 +160,10 @@ public class ClientDisconnectTest extends HazelcastTestSupport {
 
         final HazelcastInstance client = hazelcastFactory.newHazelcastClient();
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    client.getQueue(name).take();
-                } catch (Throwable ignored) {
-                }
+        spawn((Runnable) () -> {
+            try {
+                client.getQueue(name).take();
+            } catch (Throwable ignored) {
             }
         });
 
@@ -212,44 +192,24 @@ public class ClientDisconnectTest extends HazelcastTestSupport {
 
     private void assertNonEmptyPendingInvocationAndWaitSet(HazelcastInstance server) {
         NodeEngineImpl nodeEngine = getNodeEngineImpl(server);
-        OperationServiceImpl operationService = (OperationServiceImpl) nodeEngine.getOperationService();
+        OperationServiceImpl operationService = nodeEngine.getOperationService();
         final InvocationRegistry invocationRegistry = operationService.getInvocationRegistry();
         final OperationParkerImpl operationParker = (OperationParkerImpl) nodeEngine.getOperationParker();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertFalse(invocationRegistry.entrySet().isEmpty());
-            }
-        });
+        assertTrueEventually(() -> assertFalse(invocationRegistry.entrySet().isEmpty()));
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertTrue(operationParker.getTotalParkedOperationCount() > 0);
-            }
-        });
+        assertTrueEventually(() -> assertTrue(operationParker.getTotalParkedOperationCount() > 0));
     }
 
     private void assertEmptyPendingInvocationAndWaitSet(HazelcastInstance server) {
         NodeEngineImpl nodeEngine = getNodeEngineImpl(server);
-        OperationServiceImpl operationService = (OperationServiceImpl) nodeEngine.getOperationService();
+        OperationServiceImpl operationService = nodeEngine.getOperationService();
         final InvocationRegistry invocationRegistry = operationService.getInvocationRegistry();
         final OperationParkerImpl operationParker = (OperationParkerImpl) nodeEngine.getOperationParker();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertTrue(invocationRegistry.entrySet().isEmpty());
-            }
-        });
+        assertTrueEventually(() -> assertTrue(invocationRegistry.entrySet().isEmpty()));
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(0, operationParker.getTotalParkedOperationCount());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(0, operationParker.getTotalParkedOperationCount()));
     }
 
     private static class NopReliableMessageListener implements ReliableMessageListener<Object> {
@@ -283,7 +243,7 @@ public class ClientDisconnectTest extends HazelcastTestSupport {
 
         CountDownLatch clientConnected = new CountDownLatch(1);
         CountDownLatch clientDisconnected = new CountDownLatch(1);
-        getNodeEngineImpl(server).getNode().getServer().addConnectionListener(new ConnectionListener<ServerConnection>() {
+        getNodeEngineImpl(server).getNode().getServer().addConnectionListener(new ConnectionListener<>() {
             @Override
             public void connectionAdded(ServerConnection connection) {
                 if (connection.isClient()) {

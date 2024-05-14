@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ public class Invocation_TimeoutTest extends HazelcastTestSupport {
                 new SlowOperation(callTimeout * 3, RESPONSE),
                 getPartitionId(remote));
 
-        List<Future> futures = new LinkedList<Future>();
+        List<Future> futures = new LinkedList<>();
         for (int k = 0; k < 10; k++) {
             futures.add(spawn(() -> future.get()));
         }

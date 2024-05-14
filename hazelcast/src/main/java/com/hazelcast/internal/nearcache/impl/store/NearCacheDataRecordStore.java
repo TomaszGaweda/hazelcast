@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,12 +46,12 @@ public class NearCacheDataRecordStore<K, V> extends BaseHeapNearCacheRecordStore
 
     @Override
     protected long getKeyStorageMemoryCost(K key) {
-        if (key instanceof Data) {
+        if (key instanceof Data data) {
             return
                     // reference to this key data inside map ("store" field)
                     REFERENCE_COST_IN_BYTES
                             // heap cost of this key data
-                            + ((Data) key).getHeapCost();
+                            + data.getHeapCost();
         } else {
             // memory cost for non-data typed instance is not supported
             return 0L;

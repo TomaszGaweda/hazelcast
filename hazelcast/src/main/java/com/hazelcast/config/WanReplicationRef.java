@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,6 +153,7 @@ public class WanReplicationRef implements IdentifiedDataSerializable, Serializab
     /**
      * Returns {@code true} if incoming WAN events to this member should be
      * republished (forwarded) to this WAN replication reference.
+     * The default state for republishing is {@code true} (enabled).
      */
     public boolean isRepublishingEnabled() {
         return republishingEnabled;
@@ -161,6 +162,7 @@ public class WanReplicationRef implements IdentifiedDataSerializable, Serializab
     /**
      * Sets if incoming WAN events to this member should be republished
      * (forwarded) to this WAN replication reference.
+     * The default state for republishing is {@code true} (enabled).
      *
      * @param republishEnabled whether WAN event republishing is enabled
      * @return this config

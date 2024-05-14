@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class DelegateAndSkipOnConcurrentExecutionDecoratorTest
         final ResumableCountingRunnable task = new ResumableCountingRunnable();
 
         final AtomicInteger counter = new AtomicInteger();
-        SynchronousQueue<Runnable> queue = new SynchronousQueue<Runnable>() {
+        SynchronousQueue<Runnable> queue = new SynchronousQueue<>() {
             @Override
             public boolean offer(Runnable runnable) {
                 counter.incrementAndGet();

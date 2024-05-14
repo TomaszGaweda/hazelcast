@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,9 +72,9 @@ class SimpleRecord<V> implements Record<V> {
 
     @Override
     public long getCost() {
-        if (value instanceof Data) {
+        if (value instanceof Data data) {
             return OBJECT_HEADER_SIZE
-                    + REFERENCE_COST_IN_BYTES + ((Data) value).getHeapCost();
+                    + REFERENCE_COST_IN_BYTES + data.getHeapCost();
         } else {
             // For OBJECT in-memory-format we
             // don't calculate cost for now.

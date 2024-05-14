@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class ClientTxnTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testTxnRollback() throws Exception {
+    public void testTxnRollback() {
         final String queueName = randomString();
         final TransactionContext context = client.newTransactionContext();
         CountDownLatch txnRollbackLatch = new CountDownLatch(1);
@@ -131,7 +131,7 @@ public class ClientTxnTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testTxnRollbackOnServerCrash() throws Exception {
+    public void testTxnRollbackOnServerCrash() {
         final String queueName = randomString();
         final TransactionContext context = client.newTransactionContext();
         CountDownLatch txnRollbackLatch = new CountDownLatch(1);

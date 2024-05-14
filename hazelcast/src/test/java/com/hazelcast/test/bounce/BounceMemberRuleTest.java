@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,22 +73,14 @@ public class BounceMemberRuleTest {
     @Test(expected = AssertionError.class)
     public void fails_fromRunnable() {
         bounceMemberRule.test(new Runnable[]{
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        assertFalse(getMapFromTestDriver().containsKey("1"));
-                    }
-                },
+                () -> assertFalse(getMapFromTestDriver().containsKey("1")),
         });
     }
 
     @Test(expected = AssertionError.class)
     public void test_cannotSubmit_afterTasksAlreadySubmitted() {
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                // do nothing
-            }
+        Runnable task = () -> {
+            // do nothing
         };
         bounceMemberRule.test(new Runnable[]{
                 task,
@@ -102,12 +94,7 @@ public class BounceMemberRuleTest {
     @Test(expected = AssertionError.class)
     public void fails_whenRanRepeatedly() {
         bounceMemberRule.testRepeatedly(new Runnable[]{
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        assertFalse(getMapFromTestDriver().containsKey("1"));
-                    }
-                },
+                () -> assertFalse(getMapFromTestDriver().containsKey("1")),
         }, 10);
     }
 

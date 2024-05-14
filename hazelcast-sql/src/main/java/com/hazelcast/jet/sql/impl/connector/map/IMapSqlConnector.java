@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import com.hazelcast.jet.core.ProcessorSupplier;
 import com.hazelcast.jet.core.Vertex;
 import com.hazelcast.jet.datamodel.Tuple2;
 import com.hazelcast.jet.impl.JetServiceBackend;
-import com.hazelcast.jet.sql.impl.CalciteSqlOptimizer;
+import com.hazelcast.jet.sql.impl.CalciteSqlOptimizerImpl;
 import com.hazelcast.jet.sql.impl.JetJoinInfo;
 import com.hazelcast.jet.sql.impl.connector.HazelcastRexNode;
 import com.hazelcast.jet.sql.impl.connector.SqlConnector;
@@ -61,6 +61,7 @@ import com.hazelcast.sql.impl.expression.Expression;
 import com.hazelcast.sql.impl.expression.ExpressionEvalContext;
 import com.hazelcast.sql.impl.extract.QueryPath;
 import com.hazelcast.sql.impl.row.JetSqlRow;
+import com.hazelcast.sql.impl.schema.BadTable;
 import com.hazelcast.sql.impl.schema.ConstantTableStatistics;
 import com.hazelcast.sql.impl.schema.MappingField;
 import com.hazelcast.sql.impl.schema.Table;
@@ -75,7 +76,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.hazelcast.internal.util.UuidUtil.newUnsecureUuidString;
 import static com.hazelcast.jet.core.Edge.between;
 import static com.hazelcast.jet.core.processor.Processors.mapP;
 import static com.hazelcast.jet.core.processor.SinkProcessors.updateMapP;
@@ -87,6 +87,7 @@ import static com.hazelcast.jet.sql.impl.connector.map.MapIndexScanP.readMapInde
 import static com.hazelcast.jet.sql.impl.connector.map.RowProjectorProcessorSupplier.rowProjector;
 import static com.hazelcast.jet.sql.impl.connector.map.SpecificPartitionsImapReaderPms.mapReader;
 import static com.hazelcast.query.QueryConstants.KEY_ATTRIBUTE_NAME;
+import static com.hazelcast.spi.properties.ClusterProperty.SQL_TSTORE_ENABLED;
 import static com.hazelcast.sql.impl.QueryUtils.getMapContainer;
 import static com.hazelcast.sql.impl.QueryUtils.quoteCompoundIdentifier;
 import static com.hazelcast.sql.impl.schema.map.MapTableUtils.estimatePartitionedMapRowCount;
@@ -149,7 +150,8 @@ public class IMapSqlConnector implements SqlConnector {
         KvMetadata keyMetadata = METADATA_RESOLVERS_WITH_COMPACT.resolveMetadata(
                 true,
                 resolvedFields,
-                externalResource.options(), ss
+                externalResource.options(),
+                ss
         );
         KvMetadata valueMetadata = METADATA_RESOLVERS_WITH_COMPACT.resolveMetadata(
                 false,
@@ -164,6 +166,12 @@ public class IMapSqlConnector implements SqlConnector {
         MapServiceContext context = service.getMapServiceContext();
         String mapName = externalResource.externalName()[0];
         MapContainer container = context.getExistingMapContainer(mapName);
+
+        if ((container != null && container.getMapConfig().getTieredStoreConfig().isEnabled()) &&
+                !nodeEngine.getProperties().getBoolean(SQL_TSTORE_ENABLED)) {
+            return new BadTable(schemaName, mappingName, TYPE_NAME,
+                    new HazelcastException("Querying Tiered Storage via SQL is not supported."));
+        }
 
         long estimatedRowCount = estimatePartitionedMapRowCount(nodeEngine, context, mapName);
         boolean hd = container != null && container.getMapConfig().getInMemoryFormat() == InMemoryFormat.NATIVE;
@@ -254,7 +262,7 @@ public class IMapSqlConnector implements SqlConnector {
 
             // We need some low-level data which are not passed to SqlConnector, this code should be refactored.
             DagBuildContextImpl contextImpl = (DagBuildContextImpl) context;
-            var relPrunability = CalciteSqlOptimizer.partitionStrategyCandidates(contextImpl.getRel(),
+            var relPrunability = CalciteSqlOptimizerImpl.partitionStrategyCandidates(contextImpl.getRel(),
                     contextImpl.getParameterMetadata(),
                     // expect only single map in the rel
                     Map.of(table.getSqlName(), table));
@@ -336,7 +344,7 @@ public class IMapSqlConnector implements SqlConnector {
             context.getDag().edge(between(scanner, sorter)
                     .ordered(comparator)
                     .distributeTo(localMemberAddress)
-                    .allToOne("")
+                    .allToOne()
             );
             return sorter;
         }
@@ -383,7 +391,7 @@ public class IMapSqlConnector implements SqlConnector {
                         )
                 )
         ).localParallelism(1);
-        return new VertexWithInputConfig(vertex, edge -> edge.distributed().allToOne(newUnsecureUuidString()));
+        return new VertexWithInputConfig(vertex, edge -> edge.distributed().allToOne());
     }
 
     @Nonnull

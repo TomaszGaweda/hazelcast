@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import com.hazelcast.cluster.memberselector.MemberSelectors;
 import com.hazelcast.config.InvalidConfigurationException;
 import com.hazelcast.config.SplitBrainProtectionConfig;
 import com.hazelcast.config.SplitBrainProtectionListenerConfig;
+import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.internal.cluster.ClusterService;
+import com.hazelcast.internal.namespace.NamespaceUtil;
 import com.hazelcast.internal.nio.ClassLoaderUtil;
 import com.hazelcast.internal.services.MembershipAwareService;
 import com.hazelcast.internal.services.MembershipServiceEvent;
@@ -78,6 +80,7 @@ public class SplitBrainProtectionServiceImpl implements EventPublishingService<S
 
     private final NodeEngineImpl nodeEngine;
     private final EventService eventService;
+    private final ClassLoader classLoader;
     private volatile Map<String, SplitBrainProtectionImpl> splitBrainProtections;
     // true when at least one configured split brain protection implementation is HeartbeatAware
     private volatile boolean heartbeatAware;
@@ -87,6 +90,8 @@ public class SplitBrainProtectionServiceImpl implements EventPublishingService<S
     public SplitBrainProtectionServiceImpl(NodeEngineImpl nodeEngine) {
         this.nodeEngine = nodeEngine;
         this.eventService = nodeEngine.getEventService();
+        // Fetch the default Namespace-aware class loader for use with listeners
+        this.classLoader = NamespaceUtil.getClassLoaderForNamespace(nodeEngine, null);
     }
 
     public void start() {
@@ -131,14 +136,14 @@ public class SplitBrainProtectionServiceImpl implements EventPublishingService<S
 
         SplitBrainProtectionFunction splitBrainProtectionFunction =
                 splitBrainProtectionConfig.getFunctionImplementation();
-        if (splitBrainProtectionFunction instanceof ProbabilisticSplitBrainProtectionFunction) {
+        if (splitBrainProtectionFunction instanceof ProbabilisticSplitBrainProtectionFunction function) {
             validateSplitBrainProtectionParameters(splitBrainProtectionConfig.getName(),
-                    ((ProbabilisticSplitBrainProtectionFunction) splitBrainProtectionFunction).
+                    function.
                             getAcceptableHeartbeatPauseMillis(),
                     "acceptable heartbeat pause");
-        } else if (splitBrainProtectionFunction instanceof RecentlyActiveSplitBrainProtectionFunction) {
+        } else if (splitBrainProtectionFunction instanceof RecentlyActiveSplitBrainProtectionFunction function) {
             validateSplitBrainProtectionParameters(splitBrainProtectionConfig.getName(),
-                    ((RecentlyActiveSplitBrainProtectionFunction) splitBrainProtectionFunction).
+                    function.
                             getHeartbeatToleranceMillis(),
                     "heartbeat tolerance");
         }
@@ -179,13 +184,16 @@ public class SplitBrainProtectionServiceImpl implements EventPublishingService<S
             listener = listenerConfig.getImplementation();
         } else if (listenerConfig.getClassName() != null) {
             try {
-                listener = ClassLoaderUtil
-                        .newInstance(nodeEngine.getConfigClassLoader(), listenerConfig.getClassName());
+                listener = ClassLoaderUtil.newInstance(classLoader, listenerConfig.getClassName());
             } catch (Exception e) {
                 throw ExceptionUtil.rethrow(e);
             }
         }
         if (listener != null) {
+            // Provide context to the listener
+            if (listener instanceof HazelcastInstanceAware aware) {
+                aware.setHazelcastInstance(nodeEngine.getHazelcastInstance());
+            }
             addSplitBrainProtectionListener(instanceName, listener);
         }
     }
@@ -293,14 +301,14 @@ public class SplitBrainProtectionServiceImpl implements EventPublishingService<S
 
     private SplitBrainProtectionAwareService getSplitBrainProtectionAwareService(Operation op) {
         Object service;
-        if (op instanceof ServiceNamespaceAware) {
-            ServiceNamespace serviceNamespace = ((ServiceNamespaceAware) op).getServiceNamespace();
+        if (op instanceof ServiceNamespaceAware aware) {
+            ServiceNamespace serviceNamespace = aware.getServiceNamespace();
             service = nodeEngine.getService(serviceNamespace.getServiceName());
         } else {
             service = op.getService();
         }
-        if (service instanceof SplitBrainProtectionAwareService) {
-            return (SplitBrainProtectionAwareService) service;
+        if (service instanceof SplitBrainProtectionAwareService awareService) {
+            return awareService;
         }
         return null;
     }
@@ -311,7 +319,7 @@ public class SplitBrainProtectionServiceImpl implements EventPublishingService<S
 
     @Override
     public void dispatchEvent(SplitBrainProtectionEvent event, SplitBrainProtectionListener listener) {
-        listener.onChange(event);
+        NamespaceUtil.runWithClassLoader(classLoader, () -> listener.onChange(event));
     }
 
     @Override

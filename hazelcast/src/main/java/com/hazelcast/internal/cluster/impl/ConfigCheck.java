@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,13 +45,13 @@ public final class ConfigCheck implements IdentifiedDataSerializable {
 
     private PartitionGroupConfig.MemberGroupType memberGroupType;
 
-    private Map<String, String> properties = new HashMap<String, String>();
+    private Map<String, String> properties = new HashMap<>();
 
     // TODO: The actual map/queue configuration needs to be added
 
-    private final Map<String, Object> maps = new HashMap<String, Object>();
+    private final Map<String, Object> maps = new HashMap<>();
 
-    private final Map<String, Object> queues = new HashMap<String, Object>();
+    private final Map<String, Object> queues = new HashMap<>();
 
     public ConfigCheck() {
     }

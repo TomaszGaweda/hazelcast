@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class DrainOperation extends QueueBackupAwareOperation implements Notifie
     public void run() throws Exception {
         QueueContainer queueContainer = getContainer();
         dataMap = queueContainer.drain(maxSize);
-        response = new SerializableList(new ArrayList<Data>(dataMap.values()));
+        response = new SerializableList(new ArrayList<>(dataMap.values()));
     }
 
     @Override

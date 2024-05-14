@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 class CompletableFutureTask implements Runnable {
-    private final List<CompletableFutureEntry> entries = new ArrayList<CompletableFutureEntry>();
+    private final List<CompletableFutureEntry> entries = new ArrayList<>();
     private final Lock entriesLock = new ReentrantLock();
 
     <V> void registerCompletableFutureEntry(CompletableFutureEntry<V> entry) {
@@ -57,11 +57,11 @@ class CompletableFutureTask implements Runnable {
     private List<CompletableFutureEntry> removableEntries() {
         CompletableFutureEntry[] entries = copyEntries();
 
-        List<CompletableFutureEntry> removableEntries = Collections.EMPTY_LIST;
+        List<CompletableFutureEntry> removableEntries = Collections.emptyList();
         for (CompletableFutureEntry entry : entries) {
             if (entry.processState()) {
                 if (removableEntries.isEmpty()) {
-                    removableEntries = new ArrayList<CompletableFutureEntry>(entries.length / 2);
+                    removableEntries = new ArrayList<>(entries.length / 2);
                 }
 
                 removableEntries.add(entry);

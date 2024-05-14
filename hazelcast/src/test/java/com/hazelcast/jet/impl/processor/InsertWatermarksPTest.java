@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -283,8 +283,8 @@ public class InsertWatermarksPTest {
         }
 
         for (Object inputItem : input) {
-            if (inputItem instanceof Tick) {
-                clock.set(((Tick) inputItem).timestamp);
+            if (inputItem instanceof Tick tick) {
+                clock.set(tick.timestamp);
                 resultToCheck.add(tick(clock.now));
                 doAndDrain(p::tryProcess);
             } else {
@@ -307,8 +307,8 @@ public class InsertWatermarksPTest {
     }
 
     private String myToString(Object o) {
-        return o instanceof Watermark
-                ? "Watermark{timestamp=" + ((Watermark) o).timestamp() + '}'
+        return o instanceof Watermark w
+                ? "Watermark{timestamp=" + w.timestamp() + '}'
                 : o.toString();
     }
 
@@ -355,7 +355,7 @@ public class InsertWatermarksPTest {
 
         @Override
         public boolean equals(Object o) {
-            return this == o || o instanceof Item && this.timestamp == ((Item) o).timestamp;
+            return this == o || o instanceof Item item && this.timestamp == item.timestamp;
         }
 
         @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class MergeOperation
     public void run()
             throws Exception {
         ScheduledExecutorContainer container = getContainer();
-        mergedTasks = new ArrayList<ScheduledTaskDescriptor>();
+        mergedTasks = new ArrayList<>();
 
         for (ScheduledExecutorMergeTypes mergingEntry : mergingEntries) {
             ScheduledTaskDescriptor merged = container.merge(mergingEntry, mergePolicy);
@@ -98,7 +98,7 @@ public class MergeOperation
         super.readInternal(in);
         mergePolicy = in.readObject();
         int size = in.readInt();
-        mergingEntries = new ArrayList<ScheduledExecutorMergeTypes>(size);
+        mergingEntries = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             ScheduledExecutorMergeTypes mergingEntry = in.readObject();
             mergingEntries.add(mergingEntry);

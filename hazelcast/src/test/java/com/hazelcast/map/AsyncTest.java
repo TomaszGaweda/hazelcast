@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,11 +162,9 @@ public class AsyncTest extends HazelcastTestSupport {
         // populate map
         map.put(key, value1);
         final CountDownLatch latch = new CountDownLatch(1);
-        new Thread(new Runnable() {
-            public void run() {
-                map.lock(key);
-                latch.countDown();
-            }
+        new Thread(() -> {
+            map.lock(key);
+            latch.countDown();
         }).start();
         assertTrue(latch.await(20, TimeUnit.SECONDS));
         Future<String> f1 = map.removeAsync(key).toCompletableFuture();
@@ -201,11 +199,9 @@ public class AsyncTest extends HazelcastTestSupport {
         // populate map
         map.put(key, value1);
         final CountDownLatch latch = new CountDownLatch(1);
-        new Thread(new Runnable() {
-            public void run() {
-                map.lock(key);
-                latch.countDown();
-            }
+        new Thread(() -> {
+            map.lock(key);
+            latch.countDown();
         }).start();
         assertTrue(latch.await(20, TimeUnit.SECONDS));
         Future<Boolean> f1 = map.deleteAsync(key).toCompletableFuture();

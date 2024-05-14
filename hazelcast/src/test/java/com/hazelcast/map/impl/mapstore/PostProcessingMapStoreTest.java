@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,7 +158,7 @@ public class PostProcessingMapStoreTest extends HazelcastTestSupport {
         }, true);
         for (int i = 0; i < count; i++) {
             map.put(i, new SampleObject(i));
-            map.executeOnKey(i, new EntryProcessor<Integer, SampleObject, Object>() {
+            map.executeOnKey(i, new EntryProcessor<>() {
                 @Override
                 public Object process(Map.Entry<Integer, SampleObject> entry) {
                     SampleObject value = entry.getValue();
@@ -190,7 +190,7 @@ public class PostProcessingMapStoreTest extends HazelcastTestSupport {
 
     public static class SamplePPMapStore implements MapStore<Integer, SampleObject>, PostProcessingMapStore {
 
-        Map<Integer, SampleObject> map = new ConcurrentHashMap<Integer, SampleObject>();
+        Map<Integer, SampleObject> map = new ConcurrentHashMap<>();
 
         @Override
         public void store(Integer key, SampleObject value) {
@@ -224,7 +224,7 @@ public class PostProcessingMapStoreTest extends HazelcastTestSupport {
 
         @Override
         public Map<Integer, SampleObject> loadAll(Collection<Integer> keys) {
-            HashMap<Integer, SampleObject> temp = new HashMap<Integer, SampleObject>();
+            HashMap<Integer, SampleObject> temp = new HashMap<>();
             for (Integer key : keys) {
                 temp.put(key, map.get(key));
             }

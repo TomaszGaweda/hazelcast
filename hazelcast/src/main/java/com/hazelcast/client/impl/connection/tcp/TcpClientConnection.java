@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.hazelcast.client.impl.connection.tcp;
 
+import com.hazelcast.client.impl.clientside.HazelcastClientInstance;
 import com.hazelcast.client.impl.clientside.HazelcastClientInstanceImpl;
 import com.hazelcast.client.impl.connection.ClientConnection;
 import com.hazelcast.client.impl.protocol.ClientMessage;
@@ -63,7 +64,7 @@ public class TcpClientConnection implements ClientConnection {
     private final Channel channel;
     private final TcpClientConnectionManager connectionManager;
     private final LifecycleService lifecycleService;
-    private final HazelcastClientInstanceImpl client;
+    private final HazelcastClientInstance client;
     private final long startTime = System.currentTimeMillis();
     private final Consumer<ClientMessage> responseHandler;
     private final ConcurrentMap attributeMap;
@@ -80,7 +81,7 @@ public class TcpClientConnection implements ClientConnection {
     private volatile UUID clusterUuid;
     private volatile Channel[] tpcChannels;
 
-    public TcpClientConnection(HazelcastClientInstanceImpl client, int connectionId, Channel channel) {
+    public TcpClientConnection(HazelcastClientInstance client, int connectionId, Channel channel) {
         this.client = client;
         this.responseHandler = client.getInvocationService().getResponseHandler();
         this.connectionManager = (TcpClientConnectionManager) client.getConnectionManager();
@@ -294,6 +295,8 @@ public class TcpClientConnection implements ClientConnection {
                 + ", connectionId=" + connectionId
                 + ", channel=" + channel
                 + ", remoteAddress=" + remoteAddress
+                + ", remoteUuid=" + remoteUuid
+                + ", clusterUuid=" + clusterUuid
                 + ", lastReadTime=" + timeToStringFriendly(lastReadTimeMillis())
                 + ", lastWriteTime=" + timeToStringFriendly(lastWriteTimeMillis())
                 + ", closedTime=" + timeToStringFriendly(closedTime.get())

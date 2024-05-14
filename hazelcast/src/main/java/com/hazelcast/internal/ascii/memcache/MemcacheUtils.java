@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 
 package com.hazelcast.internal.ascii.memcache;
 
-import com.hazelcast.core.HazelcastException;
-
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import static com.hazelcast.internal.ascii.memcache.MemcacheCommandProcessor.DEFAULT_MAP_NAME;
 import static com.hazelcast.internal.ascii.memcache.MemcacheCommandProcessor.MAP_NAME_PREFIX;
@@ -33,7 +31,7 @@ public final class MemcacheUtils {
      * Parse Memcache key into (MapName, Key) pair.
      */
     public static MapNameAndKeyPair parseMemcacheKey(String key) {
-        key = decodeKey(key, "UTF-8");
+        key = URLDecoder.decode(key, StandardCharsets.UTF_8);
         String mapName = DEFAULT_MAP_NAME;
         int index = key.indexOf(':');
         if (index != -1) {
@@ -41,13 +39,5 @@ public final class MemcacheUtils {
             key = key.substring(index + 1);
         }
         return new MapNameAndKeyPair(mapName, key);
-    }
-
-    static String decodeKey(String key, String encoding) {
-        try {
-            return URLDecoder.decode(key, encoding);
-        } catch (UnsupportedEncodingException e) {
-            throw new HazelcastException(e);
-        }
     }
 }

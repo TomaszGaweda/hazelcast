@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -302,7 +302,7 @@ public class InvalidConfigurationTest {
     @Test
     public void testWhenInvalid_BothOfEvictionPolicyAndComparatorClassNameConfigured() {
         expectInvalid();
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         props.put("cache-eviction-policy", "LFU");
         props.put("cache-eviction-policy-comparator-class-name", "my-comparator");
 

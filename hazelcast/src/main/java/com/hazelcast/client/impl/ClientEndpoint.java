@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,8 @@ public interface ClientEndpoint extends Client, DynamicMetricsProvider {
 
     ServerConnection getConnection();
 
+    long getConnectionStartTime();
+
     void setLoginContext(LoginContext lc);
 
     void authenticated(UUID clientUuid, Credentials credentials, String clientVersion,
@@ -101,6 +103,16 @@ public interface ClientEndpoint extends Client, DynamicMetricsProvider {
      * @param version the version string as obtained from the environment
      */
     void setClientVersion(String version);
+
+    /**
+     * @return true if the client uses the enterprise build of Hazelcast
+     */
+    boolean isEnterprise();
+
+    /**
+     * @param enterprise indicates whether the client uses the enterprise build or not
+     */
+    void setEnterprise(Boolean enterprise);
 
     /**
      * Updates to the latest client statistics.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public class IndexingMutationObserver<R extends Record> implements MutationObser
 
     @Override
     public void onReset() {
-        clearGlobalIndexes(false);
+        clearGlobalIndexes();
         // Partitioned indexes are cleared in MapReplicationStateHolder
     }
 
@@ -102,25 +102,20 @@ public class IndexingMutationObserver<R extends Record> implements MutationObser
 
     @Override
     public void onDestroy(boolean isDuringShutdown, boolean internal) {
-        boolean destroyGlobalIndexes = isDuringShutdown || mapContainer.isDestroyed();
-        clearGlobalIndexes(destroyGlobalIndexes);
+        // global indexes are destroyed on map-container
+        // destroy(see MapServiceContextImpl#destroyMap)
+        clearGlobalIndexes();
         clearPartitionedIndexes(true);
     }
 
     /**
      * Only indexed data will be removed, index info will stay.
      */
-    private void clearGlobalIndexes(boolean destroy) {
-        IndexRegistry indexRegistry = mapContainer.getOrCreateIndexRegistry(partitionId);
-        if (!indexRegistry.isGlobal()) {
+    private void clearGlobalIndexes() {
+        if (!mapContainer.shouldUseGlobalIndex()) {
             return;
         }
-
-        if (destroy) {
-            indexRegistry.destroyIndexes();
-            return;
-        }
-
+        IndexRegistry indexRegistry = mapContainer.getGlobalIndexRegistry();
         if (indexRegistry.haveAtLeastOneIndex()) {
             // clears indexed data of this partition
             // from shared global index.
@@ -132,8 +127,8 @@ public class IndexingMutationObserver<R extends Record> implements MutationObser
      * Only indexed data will be removed, index info will stay.
      */
     private void clearPartitionedIndexes(boolean destroy) {
-        IndexRegistry indexRegistry = mapContainer.getOrCreateIndexRegistry(partitionId);
-        if (indexRegistry.isGlobal()) {
+        IndexRegistry indexRegistry = mapContainer.getOrNullPartitionedIndexRegistry(partitionId);
+        if (indexRegistry == null) {
             return;
         }
 
@@ -185,7 +180,9 @@ public class IndexingMutationObserver<R extends Record> implements MutationObser
             return;
         }
 
-        indexRegistry.removeEntry(toBackingKeyFormat(dataKey), getValueOrCachedValue(record, ss), operationSource);
+        Data backingKey = toBackingKeyFormat(dataKey);
+        Object valueOrCachedValue = getValueOrCachedValue(record, ss);
+        indexRegistry.removeEntry(backingKey, valueOrCachedValue, operationSource);
     }
 
     private Data toBackingKeyFormat(Data key) {

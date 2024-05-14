@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -248,6 +248,7 @@ public class RestClientTest {
     private void assertTls13SupportInternal(String caFileName) throws IOException {
         try (Tls13CipherCheckingServer server = new Tls13CipherCheckingServer()) {
             new Thread(server).start();
+            assertTrueEventually("Server socket is not ready", server.serverReady::get);
             RestClient restClient = caFileName != null
                     ? RestClient.create("https://127.0.0.1:" + server.getPort())
                     : RestClient.createWithSSL("https://127.0.0.1:" + server.serverSocket.getLocalPort(),
@@ -271,6 +272,7 @@ public class RestClientTest {
         private final AtomicBoolean tls13CipherFound = new AtomicBoolean();
         private final ServerSocket serverSocket;
         private volatile boolean shutdownRequested;
+        private final AtomicBoolean serverReady = new AtomicBoolean(false);
 
         Tls13CipherCheckingServer() throws IOException {
             this.serverSocket = new ServerSocket(0);
@@ -289,6 +291,7 @@ public class RestClientTest {
         public void run() {
             while (!(shutdownRequested || tls13CipherFound.get())) {
                 try {
+                    serverReady.set(true);
                     Socket socket = serverSocket.accept();
                     new Thread(() -> {
                         LOGGER.info("Socket accepted " + socket);

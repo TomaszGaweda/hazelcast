@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,22 +33,20 @@ public final class YamlToJsonConverter {
         if (yamlNode == null) {
             return JSONObject.NULL;
         }
-        if (yamlNode instanceof YamlMapping) {
-            YamlMapping yamlMapping = (YamlMapping) yamlNode;
+        if (yamlNode instanceof YamlMapping yamlMapping) {
             JSONObject resultObject = new JSONObject();
             for (YamlNameNodePair pair : yamlMapping.childrenPairs()) {
                 resultObject.put(pair.nodeName(), convert(pair.childNode()));
             }
             return resultObject;
-        } else if (yamlNode instanceof YamlSequence) {
-            YamlSequence yamlSequence = (YamlSequence) yamlNode;
+        } else if (yamlNode instanceof YamlSequence yamlSequence) {
             JSONArray resultArray = new JSONArray();
             for (YamlNode child : yamlSequence.children()) {
                 resultArray.put(convert(child));
             }
             return resultArray;
-        } else if (yamlNode instanceof YamlScalar) {
-            return ((YamlScalar) yamlNode).nodeValue();
+        } else if (yamlNode instanceof YamlScalar scalar) {
+            return scalar.nodeValue();
         }
         throw new IllegalArgumentException("Unknown type " + yamlNode.getClass().getName());
     }

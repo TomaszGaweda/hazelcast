@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,10 @@ public final class OutOfMemoryErrorDispatcher {
     private static final HazelcastInstance[] EMPTY_INSTANCES = new HazelcastInstance[0];
 
     private static final AtomicReference<HazelcastInstance[]> SERVER_INSTANCES_REF =
-            new AtomicReference<HazelcastInstance[]>(EMPTY_INSTANCES);
+            new AtomicReference<>(EMPTY_INSTANCES);
 
     private static final AtomicReference<HazelcastInstance[]> CLIENT_INSTANCES_REF =
-            new AtomicReference<HazelcastInstance[]>(EMPTY_INSTANCES);
+            new AtomicReference<>(EMPTY_INSTANCES);
 
     private static volatile OutOfMemoryHandler handler = new DefaultOutOfMemoryHandler();
 
@@ -152,8 +152,8 @@ public final class OutOfMemoryErrorDispatcher {
             return;
         }
 
-        if (throwable instanceof OutOfMemoryError) {
-            onOutOfMemory((OutOfMemoryError) throwable);
+        if (throwable instanceof OutOfMemoryError error) {
+            onOutOfMemory(error);
         }
     }
 

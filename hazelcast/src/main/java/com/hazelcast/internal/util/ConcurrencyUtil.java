@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ public final class ConcurrencyUtil {
      * <p>
      * The behavior is equivalent to {@link ConcurrentMap#computeIfAbsent(K, Function)}, with the following exceptions:
      * <ul>
-     * <li>If no mapping, the value of {@code func.createNew(K)} will be inserted into the {@link map} - even if {@code null}
+     * <li>If no mapping, the value of {@code func.createNew(K)} will be inserted into the {@code map} - even if {@code null}
      * <li>Instances of {@link ConcurrentMap} can override their implementation, but here the implementation can be assured
      * </ul>
      * <p>

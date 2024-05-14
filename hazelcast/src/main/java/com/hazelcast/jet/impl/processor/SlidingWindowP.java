@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,8 +61,6 @@ import static com.hazelcast.jet.Traversers.traverseStream;
 import static com.hazelcast.jet.Util.entry;
 import static com.hazelcast.jet.config.ProcessingGuarantee.EXACTLY_ONCE;
 import static com.hazelcast.jet.core.BroadcastKey.broadcastKey;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFine;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFinest;
 import static com.hazelcast.jet.impl.util.Util.logLateEvent;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -280,7 +278,7 @@ public class SlidingWindowP<K, A, R, OUT> extends AbstractProcessor {
                     )
                     .append(entry(broadcastKey(Keys.NEXT_WIN_TO_EMIT), nextWinToEmit))
                     .onFirstNull(() -> {
-                        logFinest(getLogger(), "Saved nextWinToEmit: %s", nextWinToEmit);
+                        getLogger().finest("Saved nextWinToEmit: %s", nextWinToEmit);
                         snapshotTraverser = null;
                     });
         }
@@ -290,8 +288,7 @@ public class SlidingWindowP<K, A, R, OUT> extends AbstractProcessor {
     @Override
     @SuppressWarnings("unchecked")
     protected void restoreFromSnapshot(@Nonnull Object key, @Nonnull Object value) {
-        if (key instanceof BroadcastKey) {
-            BroadcastKey bcastKey = (BroadcastKey) key;
+        if (key instanceof BroadcastKey bcastKey) {
             if (!Keys.NEXT_WIN_TO_EMIT.equals(bcastKey.key())) {
                 throw new JetException("Unexpected broadcast key: " + bcastKey.key());
             }
@@ -345,7 +342,7 @@ public class SlidingWindowP<K, A, R, OUT> extends AbstractProcessor {
             nextWinToEmit = minRestoredNextWinToEmit > Long.MIN_VALUE
                     ? winPolicy.higherFrameTs(minRestoredNextWinToEmit - 1)
                     : minRestoredNextWinToEmit;
-            logFine(getLogger(), "Restored nextWinToEmit from snapshot to: %s", nextWinToEmit);
+            getLogger().finest("Restored nextWinToEmit from snapshot to: %s", nextWinToEmit);
             // Delete too old restored frames. This can happen when restoring from exported state and new job
             // has smaller window size
             if (nextWinToEmit > Long.MIN_VALUE + winPolicy.windowSize()) {
@@ -544,8 +541,8 @@ public class SlidingWindowP<K, A, R, OUT> extends AbstractProcessor {
         public boolean equals(Object o) {
             SnapshotKey that;
             return this == o
-                    || o instanceof SnapshotKey
-                    && this.timestamp == (that = (SnapshotKey) o).timestamp
+                    || o instanceof SnapshotKey snapshotKey
+                    && this.timestamp == (that = snapshotKey).timestamp
                     && Objects.equals(this.key, that.key);
         }
 

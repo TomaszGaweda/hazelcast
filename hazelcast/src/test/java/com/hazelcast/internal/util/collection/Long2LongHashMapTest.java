@@ -1,6 +1,6 @@
 /*
  * Original work Copyright 2015 Real Logic Ltd.
- * Modified work Copyright (c) 2015-2023, Hazelcast, Inc. All Rights Reserved.
+ * Modified work Copyright (c) 2015-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,7 +174,7 @@ public class Long2LongHashMapTest {
         map.put(1L, 1L);
         map.put(2L, 3L);
 
-        final Map<Long, Long> other = new HashMap<Long, Long>();
+        final Map<Long, Long> other = new HashMap<>();
         other.put(1L, 2L);
         other.put(3L, 4L);
 

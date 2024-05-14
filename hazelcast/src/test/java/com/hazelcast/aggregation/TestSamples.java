@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,15 +40,15 @@ final class TestSamples {
     }
 
     static <T> Map.Entry<T, T> createEntryWithValue(T value) {
-        return new MapEntrySimple<T, T>(value, value);
+        return new MapEntrySimple<>(value, value);
     }
 
     static <T> Map.Entry<T, T> createExtractableEntryWithValue(T value, InternalSerializationService ss) {
-        return new ExtractableEntry<T, T>(value, value, ss);
+        return new ExtractableEntry<>(value, value, ss);
     }
 
     static List<Integer> sampleIntegers() {
-        return sampleValues(new RandomNumberSupplier<Integer>() {
+        return sampleValues(new RandomNumberSupplier<>() {
             @Override
             protected Integer mapFrom(Number value) {
                 return value.intValue();
@@ -57,7 +57,7 @@ final class TestSamples {
     }
 
     static List<Long> sampleLongs() {
-        return sampleValues(new RandomNumberSupplier<Long>() {
+        return sampleValues(new RandomNumberSupplier<>() {
             @Override
             protected Long mapFrom(Number value) {
                 return value.longValue();
@@ -66,7 +66,7 @@ final class TestSamples {
     }
 
     static Collection<Float> sampleFloats() {
-        return sampleValues(new RandomNumberSupplier<Float>() {
+        return sampleValues(new RandomNumberSupplier<>() {
             @Override
             protected Float mapFrom(Number value) {
                 return value.floatValue();
@@ -75,7 +75,7 @@ final class TestSamples {
     }
 
     static List<Double> sampleDoubles() {
-        return sampleValues(new RandomNumberSupplier<Double>() {
+        return sampleValues(new RandomNumberSupplier<>() {
             @Override
             protected Double mapFrom(Number value) {
                 return value.doubleValue();
@@ -84,7 +84,7 @@ final class TestSamples {
     }
 
     static List<BigDecimal> sampleBigDecimals() {
-        return sampleValues(new RandomNumberSupplier<BigDecimal>() {
+        return sampleValues(new RandomNumberSupplier<>() {
             @Override
             protected BigDecimal mapFrom(Number value) {
                 return BigDecimal.valueOf(value.doubleValue());
@@ -93,7 +93,7 @@ final class TestSamples {
     }
 
     static List<BigInteger> sampleBigIntegers() {
-        return sampleValues(new RandomNumberSupplier<BigInteger>() {
+        return sampleValues(new RandomNumberSupplier<>() {
             @Override
             protected BigInteger mapFrom(Number value) {
                 return BigInteger.valueOf(value.longValue());
@@ -102,11 +102,11 @@ final class TestSamples {
     }
 
     static List<String> sampleStrings() {
-        return new ArrayList(asList(LOREM_IPSUM.split(" ")));
+        return new ArrayList<>(asList(LOREM_IPSUM.split(" ")));
     }
 
     static List<Person> samplePersons() {
-        List<Person> personList = new ArrayList<Person>(NUMBER_OF_SAMPLE_VALUES);
+        List<Person> personList = new ArrayList<>(NUMBER_OF_SAMPLE_VALUES);
         for (Double age : sampleDoubles()) {
             personList.add(new Person(age));
         }
@@ -114,7 +114,7 @@ final class TestSamples {
     }
 
     static List<ValueContainer> sampleValueContainers(ValueContainer.ValueType valueType) {
-        List<ValueContainer> containerList = new ArrayList<ValueContainer>(NUMBER_OF_SAMPLE_VALUES);
+        List<ValueContainer> containerList = new ArrayList<>(NUMBER_OF_SAMPLE_VALUES);
         switch (valueType) {
             case INTEGER:
                 for (int intValue : sampleIntegers()) {
@@ -180,7 +180,7 @@ final class TestSamples {
     }
 
     private static <T extends Number> List<T> sampleValues(RandomNumberSupplier<T> randomNumberSupplier) {
-        List<T> numbers = new ArrayList<T>();
+        List<T> numbers = new ArrayList<>();
         for (int i = 0; i < NUMBER_OF_SAMPLE_VALUES; i++) {
             numbers.add(randomNumberSupplier.get());
         }

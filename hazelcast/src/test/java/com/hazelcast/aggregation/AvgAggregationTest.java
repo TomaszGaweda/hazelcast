@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -301,7 +301,7 @@ public class AvgAggregationTest {
 
     @Test(timeout = TimeoutInMillis.MINUTE)
     public void testGenericAvg() {
-        List<Number> values = new ArrayList<Number>();
+        List<Number> values = new ArrayList<>();
         values.addAll(sampleLongs());
         values.addAll(sampleDoubles());
         values.addAll(sampleIntegers());

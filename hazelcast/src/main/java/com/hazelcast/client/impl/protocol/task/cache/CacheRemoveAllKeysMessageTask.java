@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class CacheRemoveAllKeysMessageTask
     @Override
     protected OperationFactory createOperationFactory() {
         CacheOperationProvider operationProvider = getOperationProvider(parameters.name);
-        Set<Data> keys = new HashSet<Data>(parameters.keys);
+        Set<Data> keys = new HashSet<>(parameters.keys);
         return operationProvider.createRemoveAllOperationFactory(keys, parameters.completionId);
     }
 
@@ -72,8 +72,8 @@ public class CacheRemoveAllKeysMessageTask
             }
             final CacheClearResponse cacheClearResponse = (CacheClearResponse) nodeEngine.toObject(entry.getValue());
             final Object response = cacheClearResponse.getResponse();
-            if (response instanceof CacheException) {
-                throw (CacheException) response;
+            if (response instanceof CacheException exception) {
+                throw exception;
             }
         }
         return null;

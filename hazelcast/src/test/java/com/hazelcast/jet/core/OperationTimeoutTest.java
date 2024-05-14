@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,8 @@ import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import static com.hazelcast.jet.core.TestUtil.executeAndPeel;
@@ -36,9 +34,6 @@ import static com.hazelcast.jet.core.TestUtil.executeAndPeel;
 public class OperationTimeoutTest extends JetTestSupport {
 
     private static final int TIMEOUT_MILLIS = 8000;
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     private Config config;
 

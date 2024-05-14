@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class DataStructureMethodsTest {
         String adapterClassName = DataStructureAdapter.class.getSimpleName();
         String methodsClassName = DataStructureMethods.class.getSimpleName();
 
-        Map<Method, DataStructureMethods> knownMethods = new HashMap<Method, DataStructureMethods>();
+        Map<Method, DataStructureMethods> knownMethods = new HashMap<>();
         for (DataStructureMethods method : DataStructureMethods.values()) {
             try {
                 Method adapterMethod = DataStructureAdapter.class.getMethod(method.getMethodName(), method.getParameterTypes());

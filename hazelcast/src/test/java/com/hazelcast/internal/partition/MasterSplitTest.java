@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.hazelcast.internal.partition.IPartitionService.SERVICE_NAME;
 import static com.hazelcast.test.Accessors.getAddress;
-import static com.hazelcast.test.Accessors.getNode;
 import static com.hazelcast.test.Accessors.getOperationService;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
@@ -100,9 +99,9 @@ public class MasterSplitTest extends HazelcastTestSupport {
 
     private MigrationInfo createMigrationInfo(HazelcastInstance master, HazelcastInstance nonMaster) {
         MigrationInfo migration
-                = new MigrationInfo(getPartitionId(nonMaster), new PartitionReplica(
-                getAddress(nonMaster), getNode(nonMaster).getThisUuid()),
-                new PartitionReplica(getAddress(master), getNode(master).getThisUuid()),
+                = new MigrationInfo(getPartitionId(nonMaster),
+                PartitionReplica.from(nonMaster.getCluster().getLocalMember()),
+                PartitionReplica.from(master.getCluster().getLocalMember()),
                 0, 1, -1, 0);
         migration.setMaster(getAddress(nonMaster));
         return migration;

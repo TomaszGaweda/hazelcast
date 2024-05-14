@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class ClientMapNearCachePreloaderTest extends AbstractNearCachePreloaderT
     @Override
     protected <K, V> DataStructureAdapter<K, V> getDataStructure(NearCacheTestContext<K, V, Data, String> context, String name) {
         IMap<K, V> map = context.nearCacheInstance.getMap(name);
-        return new IMapDataStructureAdapter<K, V>(map);
+        return new IMapDataStructureAdapter<>(map);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class ClientMapNearCachePreloaderTest extends AbstractNearCachePreloaderT
 
         HazelcastInstance member = hazelcastFactory.newHazelcastInstance(config);
         IMap<K, V> memberMap = member.getMap(nearCacheConfig.getName());
-        IMapDataStructureAdapter<K, V> dataAdapter = new IMapDataStructureAdapter<K, V>(memberMap);
+        IMapDataStructureAdapter<K, V> dataAdapter = new IMapDataStructureAdapter<>(memberMap);
 
         if (createNearCacheInstance) {
             NearCacheTestContextBuilder<K, V, Data, String> contextBuilder = createNearCacheContextBuilder();
@@ -124,7 +124,7 @@ public class ClientMapNearCachePreloaderTest extends AbstractNearCachePreloaderT
 
         return new NearCacheTestContextBuilder<K, V, Data, String>(nearCacheConfig, client.getSerializationService())
                 .setNearCacheInstance(client)
-                .setNearCacheAdapter(new IMapDataStructureAdapter<K, V>(clientMap))
+                .setNearCacheAdapter(new IMapDataStructureAdapter<>(clientMap))
                 .setNearCache(nearCache)
                 .setNearCacheManager(nearCacheManager);
     }

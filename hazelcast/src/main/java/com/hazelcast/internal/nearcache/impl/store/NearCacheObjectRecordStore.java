@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,9 +56,9 @@ public class NearCacheObjectRecordStore<K, V> extends BaseHeapNearCacheRecordSto
         value = toValue(value);
         long creationTime = currentTimeMillis();
         if (timeToLiveMillis > 0) {
-            return new NearCacheObjectRecord<V>(value, creationTime, creationTime + timeToLiveMillis);
+            return new NearCacheObjectRecord<>(value, creationTime, creationTime + timeToLiveMillis);
         } else {
-            return new NearCacheObjectRecord<V>(value, creationTime, TIME_NOT_SET);
+            return new NearCacheObjectRecord<>(value, creationTime, TIME_NOT_SET);
         }
     }
 

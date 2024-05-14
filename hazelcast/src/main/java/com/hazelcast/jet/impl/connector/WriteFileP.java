@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.jet.impl.execution.init.JetInitDataSerializerHook;
 import com.hazelcast.jet.impl.processor.TwoPhaseSnapshotCommitUtility.TransactionId;
 import com.hazelcast.jet.impl.processor.TwoPhaseSnapshotCommitUtility.TransactionalResource;
 import com.hazelcast.jet.impl.processor.UnboundedTransactionsProcessorUtility;
-import com.hazelcast.jet.impl.util.LoggingUtil;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
@@ -283,7 +282,7 @@ public final class WriteFileP<T> implements Processor {
                         return index % context.totalParallelism() == context.globalProcessorIndex();
                     })
                     .forEach(file -> uncheckRun(() -> {
-                        LoggingUtil.logFine(context.logger(), "deleting %s",  file);
+                        context.logger().fine("deleting %s",  file);
                         Files.delete(file);
                     }));
         } catch (IOException e) {
@@ -293,7 +292,7 @@ public final class WriteFileP<T> implements Processor {
 
     private Writer createWriter(Path file) {
         try {
-            LoggingUtil.logFine(context.logger(), "creating %s", file);
+            context.logger().fine("creating %s", file);
             FileOutputStream fos = new FileOutputStream(file.toFile(), true);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             sizeTrackingStream = new SizeTrackingStream(bos);
@@ -363,7 +362,7 @@ public final class WriteFileP<T> implements Processor {
 
         private void closeFile() throws IOException {
             if (writer != null) {
-                LoggingUtil.logFine(context.logger(), "closing %s", id().fileName);
+                context.logger().fine("closing %s", id().fileName);
                 writer.close();
                 writer = null;
             }
@@ -488,13 +487,13 @@ public final class WriteFileP<T> implements Processor {
 
         @Override
         public void readData(ObjectDataInput in) throws IOException {
-            fileName = in.readUTF();
+            fileName = in.readString();
             index = in.readInt();
         }
 
         @Override
         public void writeData(ObjectDataOutput out) throws IOException {
-            out.writeUTF(fileName);
+            out.writeString(fileName);
             out.writeInt(index);
         }
     }

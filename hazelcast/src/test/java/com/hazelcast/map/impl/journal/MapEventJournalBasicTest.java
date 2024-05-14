@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class MapEventJournalBasicTest<K, V> extends AbstractEventJournalBasicTes
 
     @Override
     protected EventJournalTestContext<K, V, EventJournalMapEvent<K, V>> createContext() {
-        return new EventJournalTestContext<K, V, EventJournalMapEvent<K, V>>(
+        return new EventJournalTestContext<>(
                 new EventJournalMapDataStructureAdapter<K, V>(getRandomInstance().<K, V>getMap(NON_EXPIRING_MAP)),
                 new EventJournalMapDataStructureAdapter<K, V>(getRandomInstance().<K, V>getMap(EXPIRING_MAP)),
                 new EventJournalMapEventAdapter<K, V>()

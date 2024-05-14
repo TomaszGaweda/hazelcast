@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,8 +155,8 @@ public class ProtocolNegotiationTest {
                         new Thread(() -> {
                             LOGGER.info("Socket accepted " + socket);
                             try {
-                                if (socket instanceof SSLSocket) {
-                                    ((SSLSocket) socket).startHandshake();
+                                if (socket instanceof SSLSocket sslSocket) {
+                                    sslSocket.startHandshake();
                                 }
                                 socket.setSoTimeout(100);
                                 int count = readWithTimeout(socket.getInputStream(), 2000);

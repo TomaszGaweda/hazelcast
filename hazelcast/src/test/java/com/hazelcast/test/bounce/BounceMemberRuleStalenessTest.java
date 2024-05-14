@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,12 +52,7 @@ public class BounceMemberRuleStalenessTest extends HazelcastTestSupport {
     public void stalenessIsDetected() {
         long startNanos = Timer.nanos();
         try {
-            bounceMemberRule.testRepeatedly(1, new Runnable() {
-                @Override
-                public void run() {
-                    sleepAtLeastMillis(10000);
-                }
-            }, 120);
+            bounceMemberRule.testRepeatedly(1, () -> sleepAtLeastMillis(10000), 120);
 
             fail("The Bouncing Rule should detect a staleness!");
         } catch (AssertionError ae) {

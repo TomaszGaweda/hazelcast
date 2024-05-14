@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,7 +192,7 @@ public class ClientDiscoverySpiTest extends HazelcastTestSupport {
         CountDownLatch startLatch = new CountDownLatch(2);
         CountDownLatch stopLatch = new CountDownLatch(2);
 
-        List<DiscoveryNode> discoveryNodes = new CopyOnWriteArrayList<DiscoveryNode>();
+        List<DiscoveryNode> discoveryNodes = new CopyOnWriteArrayList<>();
         DiscoveryStrategyFactory factory = new LifecycleDiscoveryStrategyFactory(startLatch, stopLatch, discoveryNodes);
 
         JoinConfig join = config.getNetworkConfig().getJoin();
@@ -399,7 +399,7 @@ public class ClientDiscoverySpiTest extends HazelcastTestSupport {
         @Override
         public Collection<DiscoveryNode> discoverNodes() {
             try {
-                List<DiscoveryNode> discoveryNodes = new ArrayList<DiscoveryNode>(4);
+                List<DiscoveryNode> discoveryNodes = new ArrayList<>(4);
                 Address privateAddress = new Address("127.0.0.1", 1);
                 Address publicAddress = new Address("127.0.0.1", 50001);
                 discoveryNodes.add(new SimpleDiscoveryNode(privateAddress, publicAddress));
@@ -482,7 +482,7 @@ public class ClientDiscoverySpiTest extends HazelcastTestSupport {
             if (firstCall.compareAndSet(true, false)) {
                 throw new RuntimeException();
             }
-            List<DiscoveryNode> discoveryNodes = new ArrayList<DiscoveryNode>(1);
+            List<DiscoveryNode> discoveryNodes = new ArrayList<>(1);
             discoveryNodes.add(new SimpleDiscoveryNode(address));
             return discoveryNodes;
         }
@@ -524,7 +524,7 @@ public class ClientDiscoverySpiTest extends HazelcastTestSupport {
 
         @Override
         public Collection<PropertyDefinition> getConfigurationProperties() {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
 
@@ -578,7 +578,7 @@ public class ClientDiscoverySpiTest extends HazelcastTestSupport {
 
         @Override
         public Iterable<DiscoveryNode> discoverNodes() {
-            return new ArrayList<DiscoveryNode>(discoveryNodes);
+            return new ArrayList<>(discoveryNodes);
         }
 
         @Override
@@ -646,7 +646,7 @@ public class ClientDiscoverySpiTest extends HazelcastTestSupport {
 
         @Override
         public Iterable<DiscoveryNode> discoverNodes() {
-            return new ArrayList<DiscoveryNode>(discoveryNodes);
+            return new ArrayList<>(discoveryNodes);
         }
 
         @Override
@@ -659,7 +659,7 @@ public class ClientDiscoverySpiTest extends HazelcastTestSupport {
 
     public static class TestNodeFilter implements NodeFilter {
 
-        private final List<DiscoveryNode> nodes = new ArrayList<DiscoveryNode>();
+        private final List<DiscoveryNode> nodes = new ArrayList<>();
 
         @Override
         public boolean test(DiscoveryNode candidate) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,8 +166,8 @@ public class InvocationRegistry implements Iterable<Invocation>, StaticMetricsPr
 
         Operation op = invocation.op;
         Class c = op.getClass();
-        if (op instanceof PartitionIteratingOperation) {
-            c = ((PartitionIteratingOperation) op).getOperationFactory().getClass();
+        if (op instanceof PartitionIteratingOperation operation) {
+            c = operation.getOperationFactory().getClass();
         }
         LatencyDistribution distribution = latencyDistributions.computeIfAbsent(c, k -> new LatencyDistribution());
         distribution.done(invocation.firstInvocationTimeNanos);

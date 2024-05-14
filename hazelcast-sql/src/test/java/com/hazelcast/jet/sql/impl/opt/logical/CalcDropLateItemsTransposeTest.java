@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,14 @@
 
 package com.hazelcast.jet.sql.impl.opt.logical;
 
-import com.google.common.collect.ImmutableList;
 import com.hazelcast.jet.sql.impl.connector.SqlConnectorCache;
 import com.hazelcast.jet.sql.impl.connector.test.TestAbstractSqlConnector;
 import com.hazelcast.jet.sql.impl.connector.test.TestStreamSqlConnector;
 import com.hazelcast.jet.sql.impl.opt.OptimizerTestSupport;
 import com.hazelcast.jet.sql.impl.opt.metadata.HazelcastRelMetadataQuery;
 import com.hazelcast.jet.sql.impl.schema.HazelcastTable;
-import com.hazelcast.jet.sql.impl.schema.TableResolverImpl;
 import com.hazelcast.jet.sql.impl.schema.RelationsStorage;
+import com.hazelcast.jet.sql.impl.schema.TableResolverImpl;
 import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.sql.impl.schema.TableResolver;
 import org.apache.calcite.rel.RelNode;
@@ -36,6 +35,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static com.hazelcast.jet.impl.util.Util.getNodeEngine;
@@ -98,7 +98,7 @@ public class CalcDropLateItemsTransposeTest extends OptimizerTestSupport {
                 )
         );
 
-        assertRowsEventuallyInAnyOrder(sql, ImmutableList.of(new Row(1, timestamp(1L), "1")));
+        assertRowsEventuallyInAnyOrder(sql, List.of(new Row(1, timestamp(1L), "1")));
     }
 
     @Test

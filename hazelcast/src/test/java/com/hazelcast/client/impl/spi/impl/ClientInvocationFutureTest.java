@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import static com.hazelcast.test.HazelcastTestSupport.ASSERT_TRUE_EVENTUALLY_TIM
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -93,8 +94,7 @@ public class ClientInvocationFutureTest {
     }
 
     @Test
-    public void test_exceptionalCompletion_withGet()
-            throws ExecutionException, InterruptedException {
+    public void test_exceptionalCompletion_withGet() {
         invocationFuture.completeExceptionally(new IllegalArgumentException());
 
         assertTrue(invocationFuture.isDone());
@@ -160,8 +160,7 @@ public class ClientInvocationFutureTest {
     }
 
     @Test
-    public void test_cancellation()
-            throws ExecutionException, InterruptedException {
+    public void test_cancellation() {
         invocationFuture.cancel(true);
 
         assertTrue(invocationFuture.isDone());
@@ -172,9 +171,7 @@ public class ClientInvocationFutureTest {
 
     @Test
     public void test_whenComplete() throws Exception {
-        CompletableFuture nextStage = invocationFuture.whenComplete((value, throwable) -> {
-            assertEquals(response, value);
-        });
+        CompletableFuture nextStage = invocationFuture.whenComplete((value, throwable) -> assertEquals(response, value));
         invocationFuture.complete(response);
 
         assertEquals(response, nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
@@ -184,12 +181,10 @@ public class ClientInvocationFutureTest {
 
     @Test
     public void test_thenRun() throws Exception {
-        CompletableFuture nextStage = invocationFuture.thenRun(() -> {
-            ignore(null);
-        });
+        CompletableFuture nextStage = invocationFuture.thenRun(() -> ignore(null));
         invocationFuture.complete(response);
 
-        assertEquals(null, nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
+        assertNull(nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
         verify(callIdSequence).forceNext();
         verify(callIdSequence, times(2)).complete();
     }
@@ -219,7 +214,7 @@ public class ClientInvocationFutureTest {
         CompletableFuture nextStage = invocationFuture.thenAccept((v) -> ignore(null));
         invocationFuture.complete(response);
 
-        assertEquals(null, nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
+        assertNull(nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
         verify(callIdSequence).forceNext();
         verify(callIdSequence, times(2)).complete();
     }
@@ -230,7 +225,7 @@ public class ClientInvocationFutureTest {
                 (t, u) -> ignore(null));
         invocationFuture.complete(null);
 
-        assertEquals(null, nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
+        assertNull(nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
         verify(callIdSequence).forceNext();
         verify(callIdSequence, times(2)).complete();
     }
@@ -271,7 +266,7 @@ public class ClientInvocationFutureTest {
         CompletableFuture nextStage = invocationFuture.acceptEither(newCompletedFuture(null),
                 t -> ignore(null));
 
-        assertEquals(null, nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
+        assertNull(nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
         verify(callIdSequence).forceNext();
         verify(callIdSequence, times(1)).complete();
     }
@@ -280,7 +275,7 @@ public class ClientInvocationFutureTest {
     public void test_applyEither() throws Exception {
         CompletableFuture nextStage = invocationFuture.applyToEither(newCompletedFuture(null), (t) -> t);
 
-        assertEquals(null, nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
+        assertNull(nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
         verify(callIdSequence).forceNext();
         verify(callIdSequence, times(1)).complete();
     }
@@ -290,7 +285,7 @@ public class ClientInvocationFutureTest {
         CompletableFuture<Void> nextStage = invocationFuture.runAfterBoth(newCompletedFuture(null), () -> ignore(null));
         invocationFuture.complete(null);
 
-        assertEquals(null, nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
+        assertNull(nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
         verify(callIdSequence).forceNext();
         verify(callIdSequence, times(2)).complete();
     }
@@ -300,7 +295,7 @@ public class ClientInvocationFutureTest {
         CompletableFuture<Void> nextStage = invocationFuture.runAfterEither(newCompletedFuture(null),
                 () -> ignore(null));
 
-        assertEquals(null, nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
+        assertNull(nextStage.get(ASSERT_TRUE_EVENTUALLY_TIMEOUT, TimeUnit.SECONDS));
         verify(callIdSequence).forceNext();
         verify(callIdSequence, times(1)).complete();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.topic;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.TopicConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.NightlyTest;
@@ -89,7 +88,7 @@ public class TopicStressTest extends HazelcastTestSupport {
             publishThreads[threadIndex] = publishThread;
         }
 
-        listenerMap = new HashMap<String, List<MessageListenerImpl>>();
+        listenerMap = new HashMap<>();
         for (int topicIndex = 0; topicIndex < TOPIC_COUNT; topicIndex++) {
             String topicName = getTopicName(topicIndex);
             List<MessageListenerImpl> listeners = registerTopicListeners(topicName, instances);
@@ -108,15 +107,12 @@ public class TopicStressTest extends HazelcastTestSupport {
 
         System.out.println("All publish threads have completed");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                for (int topicIndex = 0; topicIndex < TOPIC_COUNT; topicIndex++) {
-                    String topicName = getTopicName(topicIndex);
-                    long expected = getExpectedCount(topicName);
-                    long actual = getActualCount(topicName);
-                    assertEquals("Count for topic " + topicName + " is not the same", expected, actual);
-                }
+        assertTrueEventually(() -> {
+            for (int topicIndex = 0; topicIndex < TOPIC_COUNT; topicIndex++) {
+                String topicName = getTopicName(topicIndex);
+                long expected = getExpectedCount(topicName);
+                long actual = getActualCount(topicName);
+                assertEquals("Count for topic " + topicName + " is not the same", expected, actual);
             }
         });
     }
@@ -154,7 +150,7 @@ public class TopicStressTest extends HazelcastTestSupport {
 
     private class PublishThread extends Thread {
         private final Random random = new Random();
-        private final Map<String, Long> messageCount = new HashMap<String, Long>();
+        private final Map<String, Long> messageCount = new HashMap<>();
         private final CountDownLatch startLatch;
 
         private PublishThread(CountDownLatch startLatch) {
@@ -213,7 +209,7 @@ public class TopicStressTest extends HazelcastTestSupport {
     }
 
     private List<MessageListenerImpl> registerTopicListeners(String topicName, HazelcastInstance[] instances) {
-        List<MessageListenerImpl> listeners = new LinkedList<MessageListenerImpl>();
+        List<MessageListenerImpl> listeners = new LinkedList<>();
         for (HazelcastInstance hz : instances) {
             MessageListenerImpl listener = new MessageListenerImpl();
             ITopic<Integer> topic = hz.getTopic(topicName);

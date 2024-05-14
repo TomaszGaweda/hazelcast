@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public final class NullMultiValueGetter extends Getter {
     private static final MultiResult NULL_MULTIVALUE_RESULT;
 
     static {
-        MultiResult<Object> result = new MultiResult<Object>();
+        MultiResult<Object> result = new MultiResult<>();
         result.addNullOrEmptyTarget();
         NULL_MULTIVALUE_RESULT = new ImmutableMultiResult<Object>(result);
     }

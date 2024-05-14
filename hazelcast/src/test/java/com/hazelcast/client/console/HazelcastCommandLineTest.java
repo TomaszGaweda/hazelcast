@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -534,7 +534,9 @@ public class HazelcastCommandLineTest extends JetTestSupport {
         logger.addAppender(appender);
 
         PrintStream oldErr = System.err;
+        PrintStream oldOut = System.out;
         System.setErr(new PrintStream(err));
+        System.setOut(new PrintStream(out));
         Path testJarFile = Files.createTempFile("testjob-with-hazelcast-codebase-", ".jar");
         try (InputStream inputStream = HazelcastCommandLineTest.class.getResourceAsStream("testjob-with-hazelcast-codebase.jar")) {
             assert inputStream != null;
@@ -552,6 +554,7 @@ public class HazelcastCommandLineTest extends JetTestSupport {
             assertThat(actual).contains("WARNING: Hazelcast code detected in the jar: " + pathToClass + ". Hazelcast dependency should be set with the 'provided' scope or equivalent.");
         } finally {
             System.setErr(oldErr);
+            System.setOut(oldOut);
             IOUtil.deleteQuietly(testJarFile.toFile());
         }
     }

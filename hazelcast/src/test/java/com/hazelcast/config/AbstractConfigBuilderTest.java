@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,21 @@
 
 package com.hazelcast.config;
 
+import com.hazelcast.config.rest.RestConfig;
+import com.hazelcast.config.vector.Metric;
+import com.hazelcast.config.vector.VectorCollectionConfig;
+import com.hazelcast.config.vector.VectorIndexConfig;
 import com.hazelcast.instance.EndpointQualifier;
 import com.hazelcast.instance.ProtocolType;
 import com.hazelcast.test.HazelcastTestSupport;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -33,6 +39,7 @@ import static com.hazelcast.config.RestEndpointGroup.HEALTH_CHECK;
 import static com.hazelcast.instance.ProtocolType.CLIENT;
 import static com.hazelcast.instance.ProtocolType.MEMCACHE;
 import static com.hazelcast.instance.ProtocolType.WAN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -56,6 +63,9 @@ public abstract class AbstractConfigBuilderTest extends HazelcastTestSupport {
 
     @Rule
     public ExpectedException expected = ExpectedException.none();
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Test
     public abstract void testConfigurationURL() throws Exception;
@@ -118,7 +128,10 @@ public abstract class AbstractConfigBuilderTest extends HazelcastTestSupport {
     public abstract void readSetConfig();
 
     @Test
-    public abstract void readReliableTopic();
+    public abstract void readReliableTopicConfig();
+
+    @Test
+    public abstract void readTopicConfig();
 
     @Test
     public abstract void readRingbuffer();
@@ -388,6 +401,9 @@ public abstract class AbstractConfigBuilderTest extends HazelcastTestSupport {
     public abstract void testJavaSerializationFilter();
 
     @Test
+    public abstract void testJavaReflectionFilter();
+
+    @Test
     public abstract void testCompactSerialization_serializerRegistration();
 
     @Test
@@ -454,7 +470,7 @@ public abstract class AbstractConfigBuilderTest extends HazelcastTestSupport {
     public abstract void testConfigPermission();
 
     @Test
-    public abstract void testAllPermissionsCovered();
+    public abstract void testAllPermissionsCovered() throws IOException;
 
     @Test(expected = InvalidConfigurationException.class)
     public abstract void testCacheConfig_withNativeInMemoryFormat_failsFastInOSS();
@@ -708,6 +724,33 @@ public abstract class AbstractConfigBuilderTest extends HazelcastTestSupport {
         assertEquals(1, map1.getAttributeConfigs().size());
     }
 
+    static void validateRestConfig(Config config) {
+        RestConfig restConfig = config.getRestConfig();
+        assertTrue(restConfig.isEnabled());
+        assertEquals(8080, restConfig.getPort());
+        assertEquals("realmName", restConfig.getSecurityRealm());
+        assertEquals(500, restConfig.getTokenValidityDuration().toSeconds());
+        assertTrue(restConfig.getSsl().isEnabled());
+        assertEquals(RestConfig.Ssl.ClientAuth.NEED, restConfig.getSsl().getClientAuth());
+        assertEquals("TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256", restConfig.getSsl().getCiphers());
+        assertEquals("TLSv1.2, TLSv1.3", restConfig.getSsl().getEnabledProtocols());
+        assertEquals("myKeyAlias", restConfig.getSsl().getKeyAlias());
+        assertEquals("myKeyPassword", restConfig.getSsl().getKeyPassword());
+        assertEquals("/path/to/keystore", restConfig.getSsl().getKeyStore());
+        assertEquals("myKeyStorePassword", restConfig.getSsl().getKeyStorePassword());
+        assertEquals("JKS", restConfig.getSsl().getKeyStoreType());
+        assertEquals("SUN", restConfig.getSsl().getKeyStoreProvider());
+        assertEquals("/path/to/truststore", restConfig.getSsl().getTrustStore());
+        assertEquals("myTrustStorePassword", restConfig.getSsl().getTrustStorePassword());
+        assertEquals("JKS", restConfig.getSsl().getTrustStoreType());
+        assertEquals("SUN", restConfig.getSsl().getTrustStoreProvider());
+        assertEquals("TLS", restConfig.getSsl().getProtocol());
+        assertEquals("/path/to/certificate", restConfig.getSsl().getCertificate());
+        assertEquals("/path/to/certificate-key", restConfig.getSsl().getCertificatePrivateKey());
+        assertEquals("/path/to/trust-certificate", restConfig.getSsl().getTrustCertificate());
+        assertEquals("/path/to/trust-certificate-key", restConfig.getSsl().getTrustCertificatePrivateKey());
+    }
+
     @Test
     public abstract void testMapExpiryConfig();
 
@@ -728,6 +771,50 @@ public abstract class AbstractConfigBuilderTest extends HazelcastTestSupport {
 
     @Test
     public abstract void testPartitioningAttributeConfigs();
+
+    @Test
+    public abstract void testNamespaceConfigs() throws IOException;
+
+    @Test
+    public abstract void testRestConfig() throws IOException;
+
+    @Test
+    public abstract void testVectorCollectionConfig();
+
+    protected void validateVectorCollectionConfig(Config config) {
+        var vectorCollectionConfigs = config.getVectorCollectionConfigs();
+        var expectedCollectionConfigs = new HashMap<String, VectorCollectionConfig>();
+        expectedCollectionConfigs.put(
+                "vector-1",
+                new VectorCollectionConfig("vector-1")
+                        .addVectorIndexConfig(
+                                new VectorIndexConfig()
+                                        .setName("index-1-1")
+                                        .setDimension(2)
+                                        .setMetric(Metric.DOT)
+                                        .setMaxDegree(10)
+                                        .setEfConstruction(10)
+                                        .setUseDeduplication(true)
+                        )
+                        .addVectorIndexConfig(
+                                new VectorIndexConfig()
+                                        .setName("index-1-2")
+                                        .setDimension(3)
+                                        .setMetric(Metric.EUCLIDEAN)
+                        )
+        );
+        expectedCollectionConfigs.put(
+                "vector-2",
+                new VectorCollectionConfig("vector-2")
+                        .addVectorIndexConfig(
+                                new VectorIndexConfig()
+                                        .setDimension(4)
+                                        .setMetric(Metric.COSINE)
+                                        .setUseDeduplication(false)
+                        )
+        );
+        assertThat(vectorCollectionConfigs).usingRecursiveComparison().isEqualTo(expectedCollectionConfigs);
+    }
 
     protected abstract Config buildAuditlogConfig();
 

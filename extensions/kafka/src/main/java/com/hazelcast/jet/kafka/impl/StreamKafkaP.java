@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ import static com.hazelcast.jet.Traversers.traverseStream;
 import static com.hazelcast.jet.Util.entry;
 import static com.hazelcast.jet.config.ProcessingGuarantee.NONE;
 import static com.hazelcast.jet.core.BroadcastKey.broadcastKey;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFinest;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toMap;
 
@@ -209,7 +208,7 @@ public final class StreamKafkaP<K, V, T> extends AbstractProcessor {
                 seekToInitialOffsets(newAssignments);
             }
         }
-        logFinest(getLogger(), "Currently assigned partitions: %s", currentAssignment);
+        getLogger().finest("Currently assigned partitions: %s", currentAssignment);
     }
 
     private void seekToInitialOffsets(Collection<TopicPartition> newAssignments) {

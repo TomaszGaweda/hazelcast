@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,8 +80,8 @@ public class ClientClusterRestartEventTest {
 
         final CountDownLatch memberAdded = new CountDownLatch(1);
         final CountDownLatch memberRemoved = new CountDownLatch(1);
-        final AtomicReference<Member> addedMemberReference = new AtomicReference<Member>();
-        final AtomicReference<Member> removedMemberReference = new AtomicReference<Member>();
+        final AtomicReference<Member> addedMemberReference = new AtomicReference<>();
+        final AtomicReference<Member> removedMemberReference = new AtomicReference<>();
         client.getCluster().addMembershipListener(new MembershipListener() {
             @Override
             public void memberAdded(MembershipEvent membershipEvent) {
@@ -123,9 +123,9 @@ public class ClientClusterRestartEventTest {
         Member oldMember2 = instance2.getCluster().getLocalMember();
 
         final CountDownLatch memberAdded = new CountDownLatch(2);
-        final Set<Member> addedMembers = Collections.newSetFromMap(new ConcurrentHashMap<Member, Boolean>());
+        final Set<Member> addedMembers = Collections.newSetFromMap(new ConcurrentHashMap<>());
         final CountDownLatch memberRemoved = new CountDownLatch(2);
-        final Set<Member> removedMembers = Collections.newSetFromMap(new ConcurrentHashMap<Member, Boolean>());
+        final Set<Member> removedMembers = Collections.newSetFromMap(new ConcurrentHashMap<>());
         client.getCluster().addMembershipListener(new MembershipListener() {
             @Override
             public void memberAdded(MembershipEvent membershipEvent) {

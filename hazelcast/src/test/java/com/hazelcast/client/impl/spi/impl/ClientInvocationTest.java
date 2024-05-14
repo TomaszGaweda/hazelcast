@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class ClientInvocationTest extends ClientTestSupport {
 
 
     /**
-     * When a async operation fails because of a node termination,
+     * When an async operation fails because of a node termination,
      * failure stack trace is copied incrementally for each async invocation/future
      * <p/>
      * see https://github.com/hazelcast/hazelcast/issues/4192
@@ -140,9 +140,7 @@ public class ClientInvocationTest extends ClientTestSupport {
             // submitStage is completed with HazelcastClientNotActiveException
             CompletionStage<Object> submitStage = map.submitToKey(randomString(), new DummyEntryProcessor());
             // a user-supplied callback submitted to default executor will not be executed with RejectedExecutionException
-            CompletableFuture<Object> userCallbackFuture = submitStage.whenCompleteAsync((v, t) -> {
-                fail("This must not be executed");
-            }).toCompletableFuture();
+            CompletableFuture<Object> userCallbackFuture = submitStage.whenCompleteAsync((v, t) -> fail("This must not be executed")).toCompletableFuture();
             userCallbackFutures[i] = userCallbackFuture;
             userCallbackFuture.whenCompleteAsync((v, t) -> {
                 if (t instanceof HazelcastClientNotActiveException) {
@@ -164,15 +162,15 @@ public class ClientInvocationTest extends ClientTestSupport {
         assertOpenEventually("Not all of the requests failed", errorLatch);
     }
 
-    private static class DummyEntryProcessor implements EntryProcessor {
+    private static class DummyEntryProcessor implements EntryProcessor<Object, Object, Object> {
         @Override
-        public Object process(Map.Entry entry) {
+        public Object process(Map.Entry<Object, Object> entry) {
             LockSupport.parkNanos(10000);
             return null;
         }
 
         @Override
-        public EntryProcessor getBackupProcessor() {
+        public EntryProcessor<Object, Object, Object> getBackupProcessor() {
             return null;
         }
     }

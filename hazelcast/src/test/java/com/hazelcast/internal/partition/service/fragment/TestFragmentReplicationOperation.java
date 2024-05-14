@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class TestFragmentReplicationOperation extends Operation {
         super.readInternal(in);
 
         int len = in.readInt();
-        values = new HashMap<TestServiceNamespace, Integer>(len);
+        values = new HashMap<>(len);
         for (int i = 0; i < len; i++) {
             TestServiceNamespace ns = in.readObject();
             int value = in.readInt();

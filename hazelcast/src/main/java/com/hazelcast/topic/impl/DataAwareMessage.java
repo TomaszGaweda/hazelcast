@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.hazelcast.internal.serialization.SerializationService;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 
 public class DataAwareMessage extends Message<Object> {
 
@@ -39,6 +40,7 @@ public class DataAwareMessage extends Message<Object> {
         this.messageData = messageData;
     }
 
+    @Override
     public Object getMessageObject() {
         if (messageObject == null && messageData != null) {
             messageObject = serializationService.toObject(messageData);
@@ -50,6 +52,7 @@ public class DataAwareMessage extends Message<Object> {
         return messageData;
     }
 
+    @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         throw new NotSerializableException();
     }

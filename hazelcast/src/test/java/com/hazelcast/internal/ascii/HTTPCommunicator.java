@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -455,9 +455,7 @@ public class HTTPCommunicator {
         @Override
         public String toString() {
             StringBuilder str = new StringBuilder("HTTP ").append(responseCode).append("\r\n");
-            responseHeaders.forEach((name, values) -> {
-                values.forEach(headerValue -> str.append(name).append(": ").append(headerValue).append("\r\n"));
-            });
+            responseHeaders.forEach((name, values) -> values.forEach(headerValue -> str.append(name).append(": ").append(headerValue).append("\r\n")));
             str.append("\r\n");
             return str.append(response).toString();
         }

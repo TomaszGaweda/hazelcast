@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.hazelcast.config.ReliableTopicConfig;
 import com.hazelcast.core.HazelcastException;
 import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.internal.monitor.impl.LocalTopicStatsImpl;
+import com.hazelcast.internal.namespace.NamespaceUtil;
 import com.hazelcast.internal.nio.ClassLoaderUtil;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.util.ExceptionUtil;
@@ -73,7 +74,7 @@ public class ReliableTopicProxy<E> extends AbstractDistributedObject<ReliableTop
     final Ringbuffer<ReliableTopicMessage> ringbuffer;
     final Executor executor;
     final ConcurrentMap<UUID, MessageRunner<E>> runnersMap
-            = new ConcurrentHashMap<UUID, MessageRunner<E>>();
+            = new ConcurrentHashMap<>();
 
     /**
      * Local statistics for this reliable topic, including
@@ -124,8 +125,7 @@ public class ReliableTopicProxy<E> extends AbstractDistributedObject<ReliableTop
             return;
         }
 
-        if (listener instanceof HazelcastInstanceAware) {
-            HazelcastInstanceAware hazelcastInstanceAware = (HazelcastInstanceAware) listener;
+        if (listener instanceof HazelcastInstanceAware hazelcastInstanceAware) {
             hazelcastInstanceAware.setHazelcastInstance(nodeEngine.getHazelcastInstance());
         }
         addMessageListener(listener);
@@ -139,7 +139,9 @@ public class ReliableTopicProxy<E> extends AbstractDistributedObject<ReliableTop
             }
 
             if (listenerConfig.getClassName() != null) {
-                Object object = ClassLoaderUtil.newInstance(nodeEngine.getConfigClassLoader(), listenerConfig.getClassName());
+                String namespace = ReliableTopicService.lookupNamespace(nodeEngine, name);
+                ClassLoader loader = NamespaceUtil.getClassLoaderForNamespace(nodeEngine, namespace);
+                Object object = ClassLoaderUtil.newInstance(loader, listenerConfig.getClassName());
 
                 if (!(object instanceof MessageListener)) {
                     throw new HazelcastException("class '"
@@ -232,13 +234,17 @@ public class ReliableTopicProxy<E> extends AbstractDistributedObject<ReliableTop
 
         UUID id = UuidUtil.newUnsecureUUID();
         ReliableMessageListener<E> reliableMessageListener;
-        if (listener instanceof ReliableMessageListener) {
-            reliableMessageListener = (ReliableMessageListener) listener;
-        } else {
-            reliableMessageListener = new ReliableMessageListenerAdapter<E>(listener);
+        if (listener instanceof HazelcastInstanceAware aware) {
+            aware.setHazelcastInstance(nodeEngine.getHazelcastInstance());
         }
 
-        MessageRunner<E> runner = new ReliableMessageRunner<E>(id, reliableMessageListener,
+        if (listener instanceof ReliableMessageListener messageListener) {
+            reliableMessageListener = messageListener;
+        } else {
+            reliableMessageListener = new ReliableMessageListenerAdapter<>(listener);
+        }
+
+        MessageRunner<E> runner = new ReliableMessageRunner<>(id, reliableMessageListener,
                 nodeEngine.getSerializationService(), executor, nodeEngine.getLogger(this.getClass()),
                 nodeEngine.getClusterService(), this);
         runnersMap.put(id, runner);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.hazelcast.jet.core.Watermark;
 import com.hazelcast.jet.impl.processor.TransactionPoolSnapshotUtility;
 import com.hazelcast.jet.impl.processor.TwoPhaseSnapshotCommitUtility;
 import com.hazelcast.jet.impl.processor.TwoPhaseSnapshotCommitUtility.TransactionalResource;
-import com.hazelcast.jet.impl.util.LoggingUtil;
 import com.hazelcast.jet.kafka.KafkaDataConnection;
 import com.hazelcast.jet.kafka.KafkaProcessors;
 import com.hazelcast.jet.pipeline.DataConnectionRef;
@@ -152,7 +151,7 @@ public final class WriteKafkaP<T, K, V> implements Processor {
             return false;
         }
         transaction.flush();
-        LoggingUtil.logFinest(context.logger(), "flush in complete() done, %s", transaction.transactionId);
+        context.logger().finest("flush in complete() done, %s", transaction.transactionId);
         checkError();
         snapshotUtility.afterCompleted();
         return true;
@@ -239,12 +238,15 @@ public final class WriteKafkaP<T, K, V> implements Processor {
     /**
      * Use {@link KafkaProcessors#writeKafkaP(DataConnectionRef, FunctionEx, boolean)}
      */
+    @SuppressWarnings("AnonInnerLength")
     public static <T, K, V> ProcessorSupplier supplier(
             @Nonnull DataConnectionRef dataConnectionRef,
             @Nonnull Function<? super T, ? extends ProducerRecord<K, V>> toRecordFn,
             boolean exactlyOnce
     ) {
         return new ProcessorSupplier() {
+
+            private static final long serialVersionUID = 1L;
 
             private transient KafkaDataConnection kafkaDataConnection;
 
@@ -279,6 +281,7 @@ public final class WriteKafkaP<T, K, V> implements Processor {
     /**
      * Use {@link KafkaProcessors#writeKafkaP(DataConnectionRef, Properties, FunctionEx, boolean)}
      */
+    @SuppressWarnings("AnonInnerLength")
     public static <T, K, V> ProcessorSupplier supplier(
             @Nonnull DataConnectionRef dataConnectionRef,
             @Nonnull Properties properties,
@@ -286,6 +289,8 @@ public final class WriteKafkaP<T, K, V> implements Processor {
             boolean exactlyOnce
     ) {
         return new ProcessorSupplier() {
+
+            private static final long serialVersionUID = 1L;
 
             private transient KafkaDataConnection kafkaDataConnection;
 
@@ -342,7 +347,7 @@ public final class WriteKafkaP<T, K, V> implements Processor {
         @Override
         public void begin() {
             if (!txnInitialized) {
-                LoggingUtil.logFine(logger, "initTransactions in begin %s", transactionId);
+                logger.fine("initTransactions in begin %s", transactionId);
                 txnInitialized = true;
                 producer.initTransactions();
                 transactionId.updateProducerAndEpoch(producer);

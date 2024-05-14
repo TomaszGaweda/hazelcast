@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,14 +41,13 @@ import com.hazelcast.client.impl.protocol.codec.JetUploadJobMultipartCodec;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.util.collection.Int2ObjectHashMap;
 import com.hazelcast.spi.impl.NodeEngine;
-import com.hazelcast.spi.impl.NodeEngineImpl;
 
 public class JetMessageTaskFactoryProvider implements MessageTaskFactoryProvider {
     private final Int2ObjectHashMap<MessageTaskFactory> factories = new Int2ObjectHashMap<>(50);
     private final Node node;
 
     public JetMessageTaskFactoryProvider(NodeEngine nodeEngine) {
-        this.node = ((NodeEngineImpl) nodeEngine).getNode();
+        this.node = nodeEngine.getNode();
         initFactories();
     }
 

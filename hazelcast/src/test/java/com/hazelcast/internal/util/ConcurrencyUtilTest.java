@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class ConcurrencyUtilTest extends HazelcastTestSupport {
 
     private final IntIntConstructorFunction constructorFunction = new IntIntConstructorFunction();
 
-    private ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<Integer, Integer>();
+    private ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<>();
 
     @Test
     public void testConstructor() {

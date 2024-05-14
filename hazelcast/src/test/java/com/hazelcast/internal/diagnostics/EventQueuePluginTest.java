@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import com.hazelcast.collection.impl.queue.QueueEvent;
 import com.hazelcast.collection.impl.queue.QueueService;
 import com.hazelcast.collection.impl.set.SetService;
 import com.hazelcast.config.Config;
-import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ItemEventType;
 import com.hazelcast.internal.longregister.LongRegisterService;
@@ -49,7 +48,6 @@ import com.hazelcast.map.listener.EntryRemovedListener;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.impl.eventservice.impl.EventServiceImpl;
 import com.hazelcast.spi.impl.eventservice.impl.LocalEventDispatcher;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -125,28 +123,15 @@ public class EventQueuePluginTest extends AbstractDiagnosticsPluginTest {
     @Test
     public void testMap() {
         final IMap<Integer, Integer> map = hz.getMap(MAP_NAME);
-        map.addLocalEntryListener(new EntryAddedListener<Integer, Integer>() {
-            @Override
-            public void entryAdded(EntryEvent<Integer, Integer> event) {
-                assertOpenEventually(listenerLatch);
-            }
-        });
-        map.addLocalEntryListener(new EntryRemovedListener() {
-            @Override
-            public void entryRemoved(EntryEvent event) {
-                assertOpenEventually(listenerLatch);
-            }
-        });
+        map.addLocalEntryListener((EntryAddedListener<Integer, Integer>) event -> assertOpenEventually(listenerLatch));
+        map.addLocalEntryListener((EntryRemovedListener<Integer, Integer>) event -> assertOpenEventually(listenerLatch));
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                Random random = new Random();
-                for (int i = 0; i < EVENT_COUNTER; i++) {
-                    int key = random.nextInt(Integer.MAX_VALUE);
-                    map.putAsync(key, 23);
-                    map.removeAsync(key);
-                }
+        spawn((Runnable) () -> {
+            Random random = new Random();
+            for (int i = 0; i < EVENT_COUNTER; i++) {
+                int key = random.nextInt(Integer.MAX_VALUE);
+                map.putAsync(key, 23);
+                map.removeAsync(key);
             }
         });
 
@@ -158,22 +143,19 @@ public class EventQueuePluginTest extends AbstractDiagnosticsPluginTest {
     @Test
     public void testCache() {
         CompleteConfiguration<Integer, Integer> cacheConfig = new MutableConfiguration<Integer, Integer>()
-                .addCacheEntryListenerConfiguration(new MutableCacheEntryListenerConfiguration<Integer, Integer>(
+                .addCacheEntryListenerConfiguration(new MutableCacheEntryListenerConfiguration<>(
                         FactoryBuilder.factoryOf(new TestCacheListener()), null, true, true));
 
         CachingProvider memberProvider = createServerCachingProvider(hz);
         HazelcastServerCacheManager memberCacheManager = (HazelcastServerCacheManager) memberProvider.getCacheManager();
         final ICache<Integer, Integer> cache = memberCacheManager.createCache(CACHE_NAME, cacheConfig);
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                Random random = new Random();
-                for (int i = 0; i < EVENT_COUNTER; i++) {
-                    int key = random.nextInt(Integer.MAX_VALUE);
-                    cache.putAsync(key, 23);
-                    cache.removeAsync(key);
-                }
+        spawn((Runnable) () -> {
+            Random random = new Random();
+            for (int i = 0; i < EVENT_COUNTER; i++) {
+                int key = random.nextInt(Integer.MAX_VALUE);
+                cache.putAsync(key, 23);
+                cache.removeAsync(key);
             }
         });
 
@@ -187,15 +169,12 @@ public class EventQueuePluginTest extends AbstractDiagnosticsPluginTest {
         final IQueue<Integer> queue = hz.getQueue(QUEUE_NAME);
         queue.addItemListener(new TestItemListener(), true);
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                Random random = new Random();
-                for (int i = 0; i < EVENT_COUNTER; i++) {
-                    int key = random.nextInt(Integer.MAX_VALUE);
-                    queue.add(key);
-                    queue.poll();
-                }
+        spawn((Runnable) () -> {
+            Random random = new Random();
+            for (int i = 0; i < EVENT_COUNTER; i++) {
+                int key = random.nextInt(Integer.MAX_VALUE);
+                queue.add(key);
+                queue.poll();
             }
         });
 
@@ -209,14 +188,11 @@ public class EventQueuePluginTest extends AbstractDiagnosticsPluginTest {
         final IList<Integer> list = hz.getList(LIST_NAME);
         list.addItemListener(new TestItemListener(), true);
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                Random random = new Random();
-                for (int i = 0; i < EVENT_COUNTER; i++) {
-                    int key = random.nextInt(EVENT_COUNTER);
-                    list.add(key);
-                }
+        spawn((Runnable) () -> {
+            Random random = new Random();
+            for (int i = 0; i < EVENT_COUNTER; i++) {
+                int key = random.nextInt(EVENT_COUNTER);
+                list.add(key);
             }
         });
 
@@ -228,15 +204,12 @@ public class EventQueuePluginTest extends AbstractDiagnosticsPluginTest {
         final ISet<Integer> set = hz.getSet(SET_NAME);
         set.addItemListener(new TestItemListener(), true);
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                Random random = new Random();
-                for (int i = 0; i < EVENT_COUNTER; i++) {
-                    int key = random.nextInt(Integer.MAX_VALUE);
-                    set.add(key);
-                    set.remove(key);
-                }
+        spawn((Runnable) () -> {
+            Random random = new Random();
+            for (int i = 0; i < EVENT_COUNTER; i++) {
+                int key = random.nextInt(Integer.MAX_VALUE);
+                set.add(key);
+                set.remove(key);
             }
         });
 
@@ -268,7 +241,7 @@ public class EventQueuePluginTest extends AbstractDiagnosticsPluginTest {
         assertSampleRunnable("ICache 'cacheName' REMOVED", cacheEventSetRemoved, CacheService.SERVICE_NAME);
 
         List<CacheEventData> cacheEventData = asList(cacheEventCreated, cacheEventUpdated, cacheEventRemoved);
-        Set<CacheEventData> cacheEvents = new HashSet<CacheEventData>(cacheEventData);
+        Set<CacheEventData> cacheEvents = new HashSet<>(cacheEventData);
         CacheEventSet cacheEventSetAll = new CacheEventSet(CacheEventType.EXPIRED, cacheEvents, 1);
         assertCacheEventSet(cacheEventSetAll,
                 "ICache 'cacheName' CREATED",
@@ -297,16 +270,13 @@ public class EventQueuePluginTest extends AbstractDiagnosticsPluginTest {
 
     private void assertContainsEventually(final String... messages) {
         try {
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() {
-                    plugin.run(logWriter);
+            assertTrueEventually(() -> {
+                plugin.run(logWriter);
 
-                    //System.out.println(getContent());
+                //System.out.println(getContent());
 
-                    for (String message : messages) {
-                        assertContains(message);
-                    }
+                for (String message : messages) {
+                    assertContains(message);
                 }
             });
         } finally {

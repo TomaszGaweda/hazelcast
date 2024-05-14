@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.hazelcast.internal.monitor.impl;
 
+import com.hazelcast.internal.cluster.Versions;
 import com.hazelcast.internal.monitor.LocalRecordStoreStats;
 import com.hazelcast.map.impl.MapDataSerializerHook;
 import com.hazelcast.nio.ObjectDataInput;
@@ -120,8 +121,12 @@ public class LocalRecordStoreStatsImpl
         out.writeLong(hits);
         out.writeLong(lastAccessTime);
         out.writeLong(lastUpdateTime);
-        out.writeLong(evictionCount);
-        out.writeLong(expirationCount);
+
+        // RU_COMPAT 5.2
+        if (out.getVersion().isGreaterOrEqual(Versions.V5_3)) {
+            out.writeLong(evictionCount);
+            out.writeLong(expirationCount);
+        }
     }
 
     @Override
@@ -129,8 +134,12 @@ public class LocalRecordStoreStatsImpl
         hits = in.readLong();
         lastAccessTime = in.readLong();
         lastUpdateTime = in.readLong();
-        evictionCount = in.readLong();
-        expirationCount = in.readLong();
+
+        // RU_COMPAT 5.2
+        if (in.getVersion().isGreaterOrEqual(Versions.V5_3)) {
+            evictionCount = in.readLong();
+            expirationCount = in.readLong();
+        }
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,12 @@ public final class TestTaskExecutorUtil {
      */
     public static <T> T runOnPartitionThread(HazelcastInstance instance, final Callable<T> task, final int partitionId) {
         OperationServiceImpl operationService = getNodeEngineImpl(instance).getOperationService();
-        BlockingQueue<Object> resultQueue = new ArrayBlockingQueue<Object>(1);
+        BlockingQueue<Object> resultQueue = new ArrayBlockingQueue<>(1);
         operationService.execute(new PartitionSpecificRunnableWithResultQueue<T>(partitionId, task, resultQueue));
         try {
             Object result = resultQueue.poll(TIMEOUT_SECONDS, SECONDS);
-            if (result instanceof Throwable) {
-                sneakyThrow((Throwable) result);
+            if (result instanceof Throwable throwable) {
+                sneakyThrow(throwable);
             }
             //noinspection unchecked
             return (T) unwrapNullIfNeeded(result);

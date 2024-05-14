@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import com.hazelcast.function.ComparatorEx;
 import com.hazelcast.function.FunctionEx;
 import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.internal.serialization.SerializationServiceAware;
+import com.hazelcast.internal.serialization.impl.HeapData;
 import com.hazelcast.jet.JetException;
 import com.hazelcast.jet.config.EdgeConfig;
 import com.hazelcast.jet.config.JetConfig;
 import com.hazelcast.jet.impl.MasterJobContext;
 import com.hazelcast.jet.impl.execution.init.CustomClassLoadedObject;
 import com.hazelcast.jet.impl.util.ConstantFunctionEx;
+import com.hazelcast.jet.impl.util.Util;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.HazelcastSerializationException;
@@ -36,6 +38,7 @@ import com.hazelcast.spi.annotation.PrivateApi;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Map;
@@ -75,6 +78,14 @@ public class Edge implements IdentifiedDataSerializable {
      * @since Jet 4.3
      */
     public static final Address DISTRIBUTE_TO_ALL;
+
+    private static final int DONT_CARE_PARTITION = 1;
+    /**
+     * Partition key that maps to partition 1.
+     * Note that it is not serializable as Object.
+     */
+    private static final HeapData DONT_CARE_PARTITION_KEY =
+            new HeapData(Util.heapDataWithHash(DONT_CARE_PARTITION));
 
     static {
         try {
@@ -348,6 +359,22 @@ public class Edge implements IdentifiedDataSerializable {
     }
 
     /**
+     * Activates a special-cased {@link RoutingPolicy#PARTITIONED PARTITIONED}
+     * routing policy where all items will be routed to the same partition ID.
+     * It means that all items will be directed to the same processor and other
+     * processors will be idle.
+     *
+     * @implNote currently always uses partition 1, but it is not guaranteed in
+     *           the future
+     * @see #allToOne(Object)
+     * @since 5.4
+     */
+    @Nonnull
+    public Edge allToOne() {
+        return allToOne(null);
+    }
+
+    /**
      * Activates the {@link RoutingPolicy#BROADCAST BROADCAST} routing policy.
      */
     @Nonnull
@@ -606,8 +633,8 @@ public class Edge implements IdentifiedDataSerializable {
     public boolean equals(Object obj) {
         final Edge that;
         return this == obj
-                || obj instanceof Edge
-                    && this.sourceName.equals((that = (Edge) obj).sourceName)
+                || obj instanceof Edge edge
+                    && this.sourceName.equals((that = edge).sourceName)
                     && this.destName.equals(that.destName)
                     && this.sourceOrdinal == that.sourceOrdinal
                     && this.destOrdinal == that.destOrdinal;
@@ -629,9 +656,9 @@ public class Edge implements IdentifiedDataSerializable {
 
     @Override
     public void writeData(@Nonnull ObjectDataOutput out) throws IOException {
-        out.writeUTF(getSourceName());
+        out.writeString(getSourceName());
         out.writeInt(getSourceOrdinal());
-        out.writeUTF(getDestName());
+        out.writeString(getDestName());
         out.writeInt(getDestOrdinal());
         out.writeInt(getPriority());
         out.writeObject(getDistributedTo());
@@ -643,9 +670,9 @@ public class Edge implements IdentifiedDataSerializable {
 
     @Override
     public void readData(@Nonnull ObjectDataInput in) throws IOException {
-        sourceName = in.readUTF();
+        sourceName = in.readString();
         sourceOrdinal = in.readInt();
-        destName = in.readUTF();
+        destName = in.readString();
         destOrdinal = in.readInt();
         priority = in.readInt();
         distributedTo = in.readObject();
@@ -737,6 +764,7 @@ public class Edge implements IdentifiedDataSerializable {
 
     static class Single implements Partitioner<Object>, IdentifiedDataSerializable {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private Object key;
@@ -745,13 +773,14 @@ public class Edge implements IdentifiedDataSerializable {
         Single() {
         }
 
-        Single(Object key) {
+        Single(@Nullable Object key) {
             this.key = key;
         }
 
         @Override
         public void init(@Nonnull DefaultPartitionStrategy strategy) {
-            partition = strategy.getPartition(key);
+            // fast path when we do not care about specific partition key
+            partition = key != null ? strategy.getPartition(key) : DONT_CARE_PARTITION;
         }
 
         @Override
@@ -761,7 +790,7 @@ public class Edge implements IdentifiedDataSerializable {
 
         @Override
         public Object getConstantPartitioningKey() {
-            return key;
+            return key != null ? key : DONT_CARE_PARTITION_KEY;
         }
 
         @Override
@@ -790,6 +819,7 @@ public class Edge implements IdentifiedDataSerializable {
     static final class KeyPartitioner<T, K> implements Partitioner<T>, SerializationServiceAware,
             IdentifiedDataSerializable {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private FunctionEx<T, K> keyExtractor;
@@ -810,8 +840,8 @@ public class Edge implements IdentifiedDataSerializable {
         @Override
         public void init(@Nonnull DefaultPartitionStrategy strategy) {
             partitioner.init(strategy);
-            if (keyExtractor instanceof SerializationServiceAware) {
-                ((SerializationServiceAware) keyExtractor).setSerializationService(serializationService);
+            if (keyExtractor instanceof SerializationServiceAware aware) {
+                aware.setSerializationService(serializationService);
             }
         }
 

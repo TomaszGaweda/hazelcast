@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class FastMultiResultSet extends AbstractSet<QueryableEntry> implements M
 
     private Set<Object> index;
     private final List<Map<Data, QueryableEntry>> resultSets
-            = new ArrayList<Map<Data, QueryableEntry>>();
+            = new ArrayList<>();
 
     public FastMultiResultSet() {
     }
@@ -50,7 +50,7 @@ public class FastMultiResultSet extends AbstractSet<QueryableEntry> implements M
         } else {
             //todo: what is the point of this condition? Is it some kind of optimization?
             if (resultSets.size() > 3) {
-                index = new HashSet<Object>();
+                index = new HashSet<>();
                 for (Map<Data, QueryableEntry> result : resultSets) {
                     for (QueryableEntry queryableEntry : result.values()) {
                         index.add(queryableEntry.getKeyData());

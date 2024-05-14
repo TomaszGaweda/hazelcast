@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ public abstract class AbstractBaseNearCacheInvalidationListener {
     protected abstract boolean canSendInvalidation(Invalidation invalidation);
 
     protected final void sendInvalidation(Invalidation invalidation) {
-        if (invalidation instanceof BatchNearCacheInvalidation) {
-            ExtractedParams params = extractParams(((BatchNearCacheInvalidation) invalidation));
+        if (invalidation instanceof BatchNearCacheInvalidation cacheInvalidation) {
+            ExtractedParams params = extractParams(cacheInvalidation);
             ClientMessage message = encodeBatchInvalidation(invalidation.getName(), params.keys,
                     params.sourceUuids, params.partitionUuids, params.sequences);
 

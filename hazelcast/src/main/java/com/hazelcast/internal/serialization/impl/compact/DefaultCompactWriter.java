@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@ import static com.hazelcast.nio.serialization.FieldKind.ARRAY_OF_TIME;
  * The writer can also handle compact serializable classes that we want to
  * include schema in it.
  */
+@SuppressWarnings("MethodCount")
 public class DefaultCompactWriter implements CompactWriter {
 
     private final CompactStreamSerializer serializer;

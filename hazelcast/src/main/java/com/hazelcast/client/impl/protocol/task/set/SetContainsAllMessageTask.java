@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.hazelcast.client.impl.protocol.task.set;
 
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.SetContainsAllCodec;
-import com.hazelcast.client.impl.protocol.task.AbstractPartitionMessageTask;
 import com.hazelcast.collection.impl.collection.operations.CollectionContainsOperation;
 import com.hazelcast.collection.impl.set.SetService;
 import com.hazelcast.instance.impl.Node;
@@ -37,7 +36,7 @@ import java.util.Set;
  * SetContainsAllMessageTask
  */
 public class SetContainsAllMessageTask
-        extends AbstractPartitionMessageTask<SetContainsAllCodec.RequestParameters> {
+        extends AbstractSetMessageTask<SetContainsAllCodec.RequestParameters> {
 
     public SetContainsAllMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
@@ -45,7 +44,7 @@ public class SetContainsAllMessageTask
 
     @Override
     protected Operation prepareOperation() {
-        Set<Data> values = new HashSet<Data>(parameters.items);
+        Set<Data> values = new HashSet<>(parameters.items);
         return new CollectionContainsOperation(parameters.name, values);
     }
 

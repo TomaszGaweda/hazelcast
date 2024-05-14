@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.hazelcast.sql.impl.type.QueryDataType;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.time.temporal.Temporal;
 import java.util.Locale;
 
@@ -78,6 +79,7 @@ public class ToCharFunction extends TriExpression<String> {
         prepareCache();
     }
 
+    @Serial
     private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
         in.defaultReadObject();
         prepareCache();

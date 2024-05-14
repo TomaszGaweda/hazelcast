@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ public class MapWordCountAggregationBenchmark extends HazelcastTestSupport {
 
             int batchSize = 10000;
             int batchSizeCount = 0;
-            Map<String, String> batch = new HashMap<String, String>(batchSize);
+            Map<String, String> batch = new HashMap<>(batchSize);
             String line;
             while ((line = reader.readLine()) != null) {
                 batch.put(UuidUtil.newSecureUuidString(), line);
@@ -167,7 +167,7 @@ public class MapWordCountAggregationBenchmark extends HazelcastTestSupport {
 
     private static class WordCountAggregator implements Aggregator<Map.Entry<String, String>, Map<String, MutableInt>> {
 
-        Map<String, MutableInt> result = new HashMap<String, MutableInt>(1000);
+        Map<String, MutableInt> result = new HashMap<>(1000);
 
         void accumulate(String value, int times) {
             StringTokenizer tokenizer = new StringTokenizer(value);

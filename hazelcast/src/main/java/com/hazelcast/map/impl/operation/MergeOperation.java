@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.hazelcast.map.impl.operation.steps.MergeOpSteps;
 import com.hazelcast.map.impl.operation.steps.engine.Step;
 import com.hazelcast.map.impl.operation.steps.engine.State;
 import com.hazelcast.map.impl.record.Record;
+import com.hazelcast.map.impl.recordstore.DefaultRecordStore;
 import com.hazelcast.map.impl.recordstore.MapMergeResponse;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
@@ -308,6 +309,16 @@ public class MergeOperation extends MapOperation
     }
 
     /**
+     * Sets the {@link BitSet} of keys which should not be WAN replicated, as their values have not changed.
+     * See {@link MergeOpSteps#PROCESS}
+     *
+     * @param nonWanReplicatedKeys the key indexes which should not be WAN replicated
+     */
+    public void setNonWanReplicatedKeys(BitSet nonWanReplicatedKeys) {
+        this.nonWanReplicatedKeys = nonWanReplicatedKeys;
+    }
+
+    /**
      * Since records may get evicted on NOOME after
      * they have been merged. We are re-checking
      * backup pair list to eliminate evicted entries.
@@ -327,7 +338,7 @@ public class MergeOperation extends MapOperation
         final boolean hasNonWanReplicatedKeys = localNonWanReplicatedKeys != null;
         for (int i = 0; i < backupPairs.size(); i += 2) {
             Data dataKey = ((Data) backupPairs.get(i));
-            Record record = recordStore.getRecord(dataKey);
+            Record record = ((DefaultRecordStore) recordStore).getRecordSafe(dataKey);
             if (record != null) {
                 toBackupList.add(dataKey);
                 toBackupList.add(backupPairs.get(i + 1));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,8 +90,8 @@ public final class PeekWrappedP<T> extends ProcessorWrapper {
     private void log(String prefix, @Nonnull T object) {
         if (shouldLogFn.test(object)) {
             logger.info(prefix + ": " + toStringFn.apply(object)
-                    + (object instanceof JetEvent
-                            ? " (eventTime=" + toLocalTime(((JetEvent) object).timestamp()) + ")"
+                    + (object instanceof JetEvent jetEvent
+                            ? " (eventTime=" + toLocalTime(jetEvent.timestamp()) + ")"
                             : ""));
         }
     }
@@ -141,7 +141,7 @@ public final class PeekWrappedP<T> extends ProcessorWrapper {
         @Nonnull @Override
         public Iterator<Object> iterator() {
             Iterator<Object> it = wrappedInbox.iterator();
-            return new Iterator<Object>() {
+            return new Iterator<>() {
                 @Override
                 public boolean hasNext() {
                     return it.hasNext();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,11 @@ import com.hazelcast.internal.services.ObjectNamespace;
 import com.hazelcast.spi.impl.InternalCompletableFuture;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.impl.operationservice.Operation;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
 import com.hazelcast.test.annotation.ParallelJVMTest;
-import com.hazelcast.test.annotation.QuickTest;
+import com.hazelcast.test.annotation.SlowTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -63,7 +62,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @RunWith(HazelcastParallelClassRunner.class)
-@Category({QuickTest.class, ParallelJVMTest.class})
+@Category({SlowTest.class, ParallelJVMTest.class})
 public class Invocation_BlockingTest extends HazelcastTestSupport {
 
     // ============================ heartbeat timeout =============================================================================
@@ -181,12 +180,7 @@ public class Invocation_BlockingTest extends HazelcastTestSupport {
                 .setPartitionId(partitionId);
         final InternalCompletableFuture<Object> future = opService.invokeOnPartition(op);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertTrue(future.isDone());
-            }
-        });
+        assertTrueEventually(() -> assertTrue(future.isDone()));
 
         assertEquals(Boolean.FALSE, future.join());
     }
@@ -310,14 +304,9 @@ public class Invocation_BlockingTest extends HazelcastTestSupport {
                 .setCallTimeout(callTimeout)
                 .invoke();
         // now we are going to do a get on the future by a whole bunch of threads
-        final List<Future> futures = new LinkedList<Future>();
+        final List<Future> futures = new LinkedList<>();
         for (int k = 0; k < 10; k++) {
-            futures.add(spawn(new Callable() {
-                @Override
-                public Object call() throws Exception {
-                    return future.join();
-                }
-            }));
+            futures.add(spawn((Callable) () -> future.join()));
         }
 
         // lets do a very long wait so that the heartbeat/retrying mechanism have kicked in.

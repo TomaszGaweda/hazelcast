@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import com.hazelcast.config.MapPartitionLostListenerConfig;
 import com.hazelcast.config.MemberGroupConfig;
 import com.hazelcast.config.MergePolicyConfig;
 import com.hazelcast.config.MultiMapConfig;
+import com.hazelcast.config.UserCodeNamespaceConfig;
 import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.config.OnJoinPermissionOperationName;
 import com.hazelcast.config.PNCounterConfig;
@@ -75,6 +76,7 @@ import com.hazelcast.config.WanBatchPublisherConfig;
 import com.hazelcast.config.WanCustomPublisherConfig;
 import com.hazelcast.config.WanReplicationConfig;
 import com.hazelcast.config.WanReplicationRef;
+import com.hazelcast.config.cp.CPMapConfig;
 import com.hazelcast.config.cp.CPSubsystemConfig;
 import com.hazelcast.config.cp.FencedLockConfig;
 import com.hazelcast.config.cp.SemaphoreConfig;
@@ -83,6 +85,8 @@ import com.hazelcast.config.security.RealmConfig;
 import com.hazelcast.config.security.SimpleAuthenticationConfig;
 import com.hazelcast.config.security.TokenEncoding;
 import com.hazelcast.config.security.TokenIdentityConfig;
+import com.hazelcast.config.vector.VectorCollectionConfig;
+import com.hazelcast.config.vector.VectorIndexConfig;
 import com.hazelcast.instance.ProtocolType;
 import com.hazelcast.internal.util.StringUtil;
 import com.hazelcast.internal.yaml.YamlNode;
@@ -92,6 +96,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,6 +109,7 @@ import java.util.function.Function;
 
 import static com.hazelcast.internal.config.DomConfigHelper.childElements;
 import static com.hazelcast.internal.config.DomConfigHelper.cleanNodeName;
+import static com.hazelcast.internal.config.DomConfigHelper.firstChildElement;
 import static com.hazelcast.internal.config.DomConfigHelper.getBooleanValue;
 import static com.hazelcast.internal.config.DomConfigHelper.getIntegerValue;
 import static com.hazelcast.internal.config.yaml.W3cDomUtil.getWrappedYamlSequence;
@@ -132,7 +140,7 @@ public class YamlMemberDomConfigProcessor extends MemberDomConfigProcessor {
         cfg.addSecurityInterceptorConfig(new SecurityInterceptorConfig(className));
     }
 
-    @SuppressWarnings({ "checkstyle:npathcomplexity", "checkstyle:methodlength" })
+    @SuppressWarnings({"checkstyle:npathcomplexity", "checkstyle:methodlength"})
     protected void handleSecurityPermissions(Node node) {
         String onJoinOp = getAttribute(node, "on-join-operation");
         if (onJoinOp != null) {
@@ -306,6 +314,51 @@ public class YamlMemberDomConfigProcessor extends MemberDomConfigProcessor {
             String name = mapNode.getNodeName();
             MapConfig mapConfig = ConfigUtils.getByNameOrNew(config.getMapConfigs(), name, MapConfig.class);
             handleMapNode(mapNode, mapConfig);
+        }
+    }
+
+    @Override
+    protected void handleNamespacesNode(Node node) {
+        for (Node n : childElements(node)) {
+            String nodeName = cleanNodeName(n);
+            if (matches(nodeName, "class-filter")) {
+                fillJavaSerializationFilter(n, config.getNamespacesConfig());
+            } else if (!matches("enabled", nodeName)) {
+                UserCodeNamespaceConfig ns = new UserCodeNamespaceConfig(n.getNodeName());
+                //get list of resources
+                for (Node subChild : childElements(n)) {
+                    String resourceId = null;
+                    String resourceTypeName = null;
+                    String resourceUrl = null;
+                    for (Node resourceChild : childElements(subChild)) {
+                        if (resourceChild.getNodeName().equals("resource-type")) {
+                            resourceTypeName = resourceChild.getNodeValue();
+                        } else if (resourceChild.getNodeName().equals("url")) {
+                            resourceUrl = resourceChild.getNodeValue();
+                        } else if (resourceChild.getNodeName().equals("id")) {
+                            resourceId = resourceChild.getNodeValue();
+                        }
+                    }
+                    if (resourceTypeName == null || resourceUrl == null || resourceId == null) {
+                        throw new IllegalArgumentException("For each namespace, resource elements \"id\","
+                                + " \"resource-type\" and \"url\" must be defined.");
+                    }
+                    try {
+                        if ("jar".equalsIgnoreCase(resourceTypeName)) {
+                            ns.addJar(new URI(resourceUrl).toURL(), resourceId);
+                        } else if ("jars_in_zip".equalsIgnoreCase(resourceTypeName)) {
+                            ns.addJarsInZip(new URI(resourceUrl).toURL(), resourceId);
+                        } else if ("class".equalsIgnoreCase(resourceTypeName)) {
+                            ns.addClass(new URI(resourceUrl).toURL(), resourceId);
+                        }
+                    } catch (MalformedURLException | URISyntaxException e) {
+                        throw new IllegalArgumentException(
+                                String.format("Namespace resource %s was configured with invalid URL %s",
+                                        resourceId, resourceUrl), e);
+                    }
+                }
+                config.getNamespacesConfig().addNamespaceConfig(ns);
+            }
         }
     }
 
@@ -899,6 +952,21 @@ public class YamlMemberDomConfigProcessor extends MemberDomConfigProcessor {
     }
 
     @Override
+    void handleCPMaps(CPSubsystemConfig cpSubsystemConfig, Node node) {
+        for (Node child : childElements(node)) {
+            CPMapConfig cpMapConfig = new CPMapConfig();
+            cpMapConfig.setName(child.getNodeName());
+            for (Node subChild : childElements(child)) {
+                String nodeName = cleanNodeName(subChild);
+                if (matches("max-size-mb", nodeName)) {
+                    cpMapConfig.setMaxSizeMb(Integer.parseInt(getTextContent(subChild)));
+                }
+            }
+            cpSubsystemConfig.addCPMapConfig(cpMapConfig);
+        }
+    }
+
+    @Override
     protected void handleRealms(Node node) {
         for (Node child : childElements(node)) {
             handleRealm(child);
@@ -967,6 +1035,38 @@ public class YamlMemberDomConfigProcessor extends MemberDomConfigProcessor {
             persistentMemoryConfig.addDirectoryConfig(new PersistentMemoryDirectoryConfig(directory, numaNodeId));
         } else {
             persistentMemoryConfig.addDirectoryConfig(new PersistentMemoryDirectoryConfig(directory));
+        }
+    }
+
+    @Override
+    protected void handleVector(Node node) {
+        for (Node vectorNode : childElements(node)) {
+            String name = vectorNode.getNodeName();
+            VectorCollectionConfig vectorConfig = ConfigUtils.getByNameOrNew(
+                    config.getVectorCollectionConfigs(),
+                    name,
+                    VectorCollectionConfig.class
+            );
+            handleVectorNode(vectorNode, vectorConfig);
+        }
+    }
+
+    @Override
+    protected void handleVectorNode(Node node, VectorCollectionConfig collectionConfig) {
+        var indexesNode = firstChildElement(node);
+        if (indexesNode == null) {
+            return;
+        }
+        handleVectorIndex(indexesNode, collectionConfig);
+        config.addVectorCollectionConfig(collectionConfig);
+    }
+
+    @Override
+    protected void handleVectorIndex(Node node, VectorCollectionConfig collectionConfig) {
+        for (Node indexNode : childElements(node)) {
+            VectorIndexConfig indexConfig = new VectorIndexConfig();
+            handleVectorIndexNode(indexNode, indexConfig);
+            collectionConfig.addVectorIndexConfig(indexConfig);
         }
     }
 

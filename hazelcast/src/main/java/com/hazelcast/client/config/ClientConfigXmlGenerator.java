@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@ import static com.hazelcast.internal.util.XmlUtil.format;
  * The ClientConfigXmlGenerator is responsible for transforming a
  * {@link ClientConfig} to a Hazelcast Client XML string.
  */
+@SuppressWarnings("ClassFanOutComplexity")
 public final class ClientConfigXmlGenerator {
 
     private ClientConfigXmlGenerator() {
@@ -149,9 +150,12 @@ public final class ClientConfigXmlGenerator {
 
     private static void network(XmlGenerator gen, ClientNetworkConfig network) {
         gen.open("network")
-                .node("smart-routing", network.isSmartRouting())
-                .node("redo-operation", network.isRedoOperation())
-                .node("connection-timeout", network.getConnectionTimeout());
+           .node("smart-routing", network.isSmartRouting())
+           .node("subset-routing", null,
+                   "enabled", network.getSubsetRoutingConfig().isEnabled(),
+                   "routing-strategy", network.getSubsetRoutingConfig().getRoutingStrategy())
+           .node("redo-operation", network.isRedoOperation())
+           .node("connection-timeout", network.getConnectionTimeout());
 
         clusterMembers(gen, network.getAddresses());
         socketOptions(gen, network.getSocketOptions());
@@ -670,6 +674,8 @@ public final class ClientConfigXmlGenerator {
     }
 
     private static void tpc(XmlGenerator gen, ClientTpcConfig tpcConfig) {
-        gen.open("tpc", "enabled", tpcConfig.isEnabled()).close();
+        gen.open("tpc", "enabled", tpcConfig.isEnabled())
+           .node("connection-count", tpcConfig.getConnectionCount())
+           .close();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
 public class QueryResultSizeLimiterTest {
 
     private static final String ANY_MAP_NAME = "foobar";
-    private static final int PARTITION_COUNT = Integer.valueOf(ClusterProperty.PARTITION_COUNT.getDefaultValue());
+    private static final int PARTITION_COUNT = Integer.parseInt(ClusterProperty.PARTITION_COUNT.getDefaultValue());
 
     private final Map<Integer, Integer> localPartitions = new HashMap<>();
 

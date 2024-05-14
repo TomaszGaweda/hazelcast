@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -203,14 +203,78 @@ public enum PhoneHomeMetrics {
     REST_CONFIG_RELOAD_FAILURE("restconfigreloadfail"),
 
     REST_REQUEST_COUNT("restrequestct"),
-    REST_UNIQUE_REQUEST_COUNT("restuniqrequestct");
+    REST_UNIQUE_REQUEST_COUNT("restuniqrequestct"),
+
+    //New REST module
+    //Note: Hazelcast has two types of REST support. The new REST Service (hazelcast-enterprise-rest) uses "rests" prefix
+    //while old one uses "rest".
+    RESTS_ENABLED("restsenabled"),
+    RESTS_GET_MEMBERS_COUNT("restsgtmsct"),
+    RESTS_GET_MEMBER_SELF_COUNT("restsgtmselfct"),
+    RESTS_GET_MEMBER_WITH_UUID_COUNT("restsgtmuuidct"),
+    RESTS_GET_CLUSTER_COUNT("restsgtcct"),
+    RESTS_GET_CLUSTER_STATE_COUNT("restsgtcstct"),
+    RESTS_POST_CLUSTER_STATE_COUNT("restsptcstct"),
+    RESTS_GET_CLUSTER_VERSION_COUNT("restsgtcvect"),
+    RESTS_POST_CLUSTER_VERSION_COUNT("restsptcvect"),
+    RESTS_GET_MEMBER_READY_COUNT("restsgtmrdct"),
+    RESTS_GET_MEMBER_HEALTH_COUNT("restsgtmhtlct"),
+
+    RESTS_POST_CONFIG_RELOAD_COUNT("restscfgrld"),
+    RESTS_POST_WAN_SYNC_MAP_COUNT("restsptwsncmpct"),
+    RESTS_POST_WAN_SYNC_ALL_MAPS_COUNT("restsptwsncallmpct"),
+    RESTS_POST_WAN_STOP_PUBLISHER_COUNT("restsptwstpblshrct"),
+    RESTS_POST_WAN_RESUME_PUBLISHER_COUNT("restsprespublshrct"),
+    RESTS_POST_WAN_PAUSE_PUBLISHER_COUNT("restspausepublshrct"),
+    RESTS_POST_WAN_CONSISTENCY_CHECK_COUNT("restspwconstct"),
+    RESTS_POST_WAN_CLEAR_QUEUES_COUNT("restspwclrquesuct"),
+    RESTS_POST_WAN_ADD_CONFIG_COUNT("restspwaddcnfgct"),
+    RESTS_GET_WAN_PROGRESS_COUNT("restsgtwprgssct"),
+    RESTS_POST_QUEUE_COUNT("restspqeuect"),
+    RESTS_DELETE_QUEUE_COUNT("restsdqeuect"),
+    RESTS_GET_MAP_COUNT("restsgmpct"),
+    RESTS_POST_MAP_COUNT("restspmpct"),
+    RESTS_DELETE_MAP_COUNT("restsdmpct"),
+    RESTS_DELETE_MAP_STRUCTURE_COUNT("restsdmpstrct"),
+    RESTS_GET_QUEUE_SIZE_COUNT("restsgtqszct"),
+    RESTS_POST_LOG_LEVEL_COUNT("restsplglvlct"),
+    RESTS_GET_LOG_LEVEL_COUNT("restsglglvlct"),
+    RESTS_DELETE_LOG_LEVEL_COUNT("restsdlglvlct"),
+    RESTS_POST_LICENSE_COUNT("restsplicnsct"),
+    RESTS_GET_LICENSE_COUNT("restsglicnsct"),
+    RESTS_POST_CONFIG_COUNT("restspcfgct"),
+    RESTS_POST_PERSISTENCE_BACKUP_COUNT("restspersbckpct"),
+    RESTS_POST_FORCE_PERSISTENCE_BACKUP_COUNT("restspfrcpersbckpct"),
+    RESTS_POST_PARTIAL_PERSISTENCE_BACKUP_COUNT("restspprtpersbckpct"),
+    RESTS_POST_INTERRUPT_PERSISTENCE_BACKUP_COUNT("restspintpersbckpct"),
+    RESTS_POST_MEMBERS_COUNT("restspmsct"),
+    RESTS_POST_CP_RESET_COUNT("restspcpresetct"),
+    RESTS_GET_CP_MEMBERS_COUNT("restsgcpmsct"),
+    RESTS_GET_CP_LOCAL_MEMBER_COUNT("restsgcplcmemct"),
+    RESTS_GET_CP_GROUPS_COUNT("restsgcpgrct"),
+    RESTS_GET_CP_GROUP_BY_NAME_COUNT("restsgcpgbnct"),
+    RESTS_DELETE_CP_GROUP_BY_NAME_COUNT("restsdcpgbnct"),
+    RESTS_GET_CP_SESSIONS_COUNT("restsgcpsct"),
+    RESTS_DELETE_CP_MEMBER_BY_UUID_COUNT("restsdcpmct"),
+    RESTS_DELETE_CP_SESSION_COUNT("restsdcpsct"),
+
+    UCN_ENABLED("ucnenabled"),
+    UCN_NAMESPACE_COUNT("ucncount"),
+    V_CPU_COUNT("vcpuct");
+
     private final String query;
 
     PhoneHomeMetrics(String query) {
         this.query = query;
     }
 
-    String getRequestParameterName() {
+    //Visible for testing.
+    public String getRequestParameterName() {
+        return query;
+    }
+
+    @Override
+    public String toString() {
         return query;
     }
 }

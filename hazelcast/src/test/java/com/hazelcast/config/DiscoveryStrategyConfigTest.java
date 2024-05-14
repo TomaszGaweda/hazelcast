@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class DiscoveryStrategyConfigTest {
     @Test
     public void test_DiscoveryStrategyFactory_constructor_classname_properties() {
         String discoveryStrategyFactoryClass = TestDiscoveryStrategyFactory.class.getName();
-        Map<String, Comparable> properties = new HashMap<String, Comparable>();
+        Map<String, Comparable> properties = new HashMap<>();
         properties.put("test", "value");
 
         DiscoveryStrategyConfig discoveryStrategyConfig = new DiscoveryStrategyConfig(discoveryStrategyFactoryClass, properties);
@@ -74,7 +74,7 @@ public class DiscoveryStrategyConfigTest {
     @Test
     public void test_DiscoveryStrategyFactory_constructor_factory_properties() {
         DiscoveryStrategyFactory discoveryStrategyFactory = new TestDiscoveryStrategyFactory();
-        Map<String, Comparable> properties = new HashMap<String, Comparable>();
+        Map<String, Comparable> properties = new HashMap<>();
         properties.put("test", "value");
 
         DiscoveryStrategyConfig discoveryStrategyConfig = new DiscoveryStrategyConfig(discoveryStrategyFactory, properties);

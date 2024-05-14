@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.hazelcast.sql.impl.client;
 
-import com.hazelcast.jet.impl.util.ExceptionUtil;
+import com.hazelcast.internal.util.ExceptionUtil;
 import com.hazelcast.sql.HazelcastSqlException;
 import com.hazelcast.sql.impl.CoreQueryUtils;
 
@@ -42,7 +42,7 @@ public final class SqlClientUtils {
                 sqlException.getSuggestion() != null,
                 sqlException.getSuggestion(),
                 true,
-                ExceptionUtil.stackTraceToString(exception)
+                ExceptionUtil.toString(exception)
         );
     }
 }

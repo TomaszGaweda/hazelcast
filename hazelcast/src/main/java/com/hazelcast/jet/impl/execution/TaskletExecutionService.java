@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.hazelcast.jet.impl.util.ProgressState;
 import com.hazelcast.jet.impl.util.ProgressTracker;
 import com.hazelcast.jet.impl.util.Util;
 import com.hazelcast.logging.ILogger;
-import com.hazelcast.spi.impl.NodeEngineImpl;
+import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.impl.executionservice.ExecutionService;
 import com.hazelcast.spi.properties.HazelcastProperties;
 import com.hazelcast.spi.properties.HazelcastProperty;
@@ -63,7 +63,6 @@ import static com.hazelcast.internal.util.executor.ExecutorType.CACHED;
 import static com.hazelcast.jet.impl.util.ExceptionUtil.peel;
 import static com.hazelcast.internal.util.ExceptionUtil.sneakyThrow;
 import static com.hazelcast.internal.util.ExceptionUtil.withTryCatch;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFinest;
 import static com.hazelcast.jet.impl.util.Util.doWithClassLoader;
 import static com.hazelcast.jet.impl.util.Util.uncheckRun;
 import static com.hazelcast.spi.properties.ClusterProperty.JET_IDLE_COOPERATIVE_MAX_MICROSECONDS;
@@ -95,7 +94,7 @@ public class TaskletExecutionService {
     private final IdleStrategy idlerCooperative;
     private final IdleStrategy idlerNonCooperative;
 
-    public TaskletExecutionService(NodeEngineImpl nodeEngine, int threadCount, HazelcastProperties properties) {
+    public TaskletExecutionService(NodeEngine nodeEngine, int threadCount, HazelcastProperties properties) {
         hzExecutionService = nodeEngine.getExecutionService();
         hzExecutionService.register(TASKLET_INIT_CLOSE_EXECUTOR_NAME,
                 RuntimeAvailableProcessors.get(), Integer.MAX_VALUE, CACHED);
@@ -270,7 +269,7 @@ public class TaskletExecutionService {
             max = min;
         }
 
-        logFinest(logger, "Creating idler with %s=%dµs,%s=%dµs", minName, min, maxName, max);
+        logger.finest("Creating idler with %s=%dµs,%s=%dµs", minName, min, maxName, max);
         return new BackoffIdleStrategy(0, 0,
             minProp.getTimeUnit().toNanos(min), maxProp.getTimeUnit().toNanos(max)
         );
@@ -429,7 +428,7 @@ public class TaskletExecutionService {
         }
 
         private void dismissTasklet(TaskletTracker t) {
-            logFinest(logger, "Tasklet %s is done", t.tasklet);
+            logger.finest("Tasklet %s is done", t.tasklet);
             t.executionTracker.taskletDone();
             trackers.remove(t);
         }

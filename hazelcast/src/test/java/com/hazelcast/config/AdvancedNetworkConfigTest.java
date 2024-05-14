@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,7 +150,7 @@ public class AdvancedNetworkConfigTest extends HazelcastTestSupport {
     @Test
     public void test_setEndpointConfigs_throwsException_whenServerSocketCardinalityBroken() throws Exception {
         IdentityHashMap<EndpointQualifier, EndpointConfig> offendingEndpointConfigs =
-                new IdentityHashMap<EndpointQualifier, EndpointConfig>();
+                new IdentityHashMap<>();
         EndpointQualifier one = createReflectively(ProtocolType.MEMBER, "1");
         EndpointQualifier two = createReflectively(ProtocolType.MEMBER, "2");
         offendingEndpointConfigs.put(one, new ServerSocketEndpointConfig());

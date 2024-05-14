@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class QueryCacheConfigReadOnly extends QueryCacheConfig {
     @Override
     public List<EntryListenerConfig> getEntryListenerConfigs() {
         List<EntryListenerConfig> listenerConfigs = super.getEntryListenerConfigs();
-        List<EntryListenerConfig> readOnlyListenerConfigs = new ArrayList<EntryListenerConfig>(listenerConfigs.size());
+        List<EntryListenerConfig> readOnlyListenerConfigs = new ArrayList<>(listenerConfigs.size());
         for (EntryListenerConfig listenerConfig : listenerConfigs) {
             readOnlyListenerConfigs.add(new EntryListenerConfigReadOnly(listenerConfig));
         }

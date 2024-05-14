@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class EntrySetResponse implements IdentifiedDataSerializable {
         this.map = createHashMap(map.size());
         for (Map.Entry<Data, Collection<MultiMapRecord>> entry : map.entrySet()) {
             Collection<MultiMapRecord> records = entry.getValue();
-            Collection<Data> coll = new ArrayList<Data>(records.size());
+            Collection<Data> coll = new ArrayList<>(records.size());
             for (MultiMapRecord record : records) {
                 coll.add(nodeEngine.toData(record.getObject()));
             }
@@ -99,7 +99,7 @@ public class EntrySetResponse implements IdentifiedDataSerializable {
         for (int i = 0; i < size; i++) {
             Data key = IOUtil.readData(in);
             int collSize = in.readInt();
-            Collection<Data> coll = new ArrayList<Data>(collSize);
+            Collection<Data> coll = new ArrayList<>(collSize);
             for (int j = 0; j < collSize; j++) {
                 coll.add(IOUtil.readData(in));
             }

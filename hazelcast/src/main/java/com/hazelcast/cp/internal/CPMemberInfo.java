@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.UUID;
@@ -41,6 +42,7 @@ import static com.hazelcast.internal.util.UUIDSerializationUtil.writeUUID;
  */
 public class CPMemberInfo implements CPMember, Serializable, IdentifiedDataSerializable {
 
+    @Serial
     private static final long serialVersionUID = 5628148969327743953L;
 
     private UUID uuid;
@@ -76,12 +78,14 @@ public class CPMemberInfo implements CPMember, Serializable, IdentifiedDataSeria
         return endpoint;
     }
 
+    @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         writeUUID(out, uuid);
         out.writeUTF(address.getHost());
         out.writeInt(address.getPort());
     }
 
+    @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         uuid = readUUID(in);
         endpoint = new RaftEndpointImpl(uuid);
@@ -109,12 +113,12 @@ public class CPMemberInfo implements CPMember, Serializable, IdentifiedDataSeria
 
     @Override
     public int getFactoryId() {
-        return RaftServiceDataSerializerHook.F_ID;
+        return RaftServiceSerializerConstants.F_ID;
     }
 
     @Override
     public int getClassId() {
-        return RaftServiceDataSerializerHook.CP_MEMBER;
+        return RaftServiceSerializerConstants.CP_MEMBER;
     }
 
     @Override

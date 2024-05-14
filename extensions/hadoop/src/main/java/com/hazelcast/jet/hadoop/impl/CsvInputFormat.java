@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ public class CsvInputFormat extends FileInputFormat<NullWritable, Object> {
     public static final String CSV_INPUT_FORMAT_FIELD_LIST_PREFIX = "csv.field.list.";
 
     @Override
+    @SuppressWarnings("AnonInnerLength")
     public RecordReader<NullWritable, Object> createRecordReader(InputSplit split, TaskAttemptContext context) {
 
         return new RecordReader<NullWritable, Object>() {

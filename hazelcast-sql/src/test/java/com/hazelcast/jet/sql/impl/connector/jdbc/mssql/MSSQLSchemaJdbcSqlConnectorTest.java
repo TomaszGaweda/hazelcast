@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ public class MSSQLSchemaJdbcSqlConnectorTest extends SchemaJdbcConnectorTest {
 
     @BeforeClass
     public static void beforeClass() {
-        //There is no arm64 image for mssql server
-        assumeNoArm64Architecture();
         initialize(new MSSQLDatabaseProvider());
     }
 

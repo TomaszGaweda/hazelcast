@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package com.hazelcast.test.compatibility;
 import com.hazelcast.auditlog.AuditlogService;
 import com.hazelcast.auditlog.impl.NoOpAuditlogService;
 import com.hazelcast.cluster.ClusterState;
+import com.hazelcast.config.SSLConfig;
+import com.hazelcast.cp.CPSubsystem;
 import com.hazelcast.cp.internal.persistence.CPPersistenceService;
-import com.hazelcast.cp.internal.persistence.NopCPPersistenceService;
 import com.hazelcast.hotrestart.HotRestartService;
 import com.hazelcast.instance.EndpointQualifier;
 import com.hazelcast.instance.impl.HazelcastInstanceImpl;
@@ -32,20 +33,26 @@ import com.hazelcast.internal.hotrestart.InternalHotRestartService;
 import com.hazelcast.internal.jmx.ManagementService;
 import com.hazelcast.internal.management.TimedMemberStateFactory;
 import com.hazelcast.internal.memory.MemoryStats;
+import com.hazelcast.internal.namespace.UserCodeNamespaceService;
 import com.hazelcast.internal.networking.ChannelInitializer;
 import com.hazelcast.internal.networking.InboundHandler;
 import com.hazelcast.internal.networking.OutboundHandler;
 import com.hazelcast.internal.serialization.InternalSerializationService;
 import com.hazelcast.internal.serialization.SerializationService;
+import com.hazelcast.internal.serialization.impl.AbstractSerializationService;
 import com.hazelcast.internal.serialization.impl.compact.schema.MemberSchemaService;
 import com.hazelcast.internal.server.ServerConnection;
 import com.hazelcast.internal.server.ServerContext;
+import com.hazelcast.internal.tpc.TpcServerBootstrap;
+import com.hazelcast.internal.tpc.TpcServerBootstrapImpl;
 import com.hazelcast.internal.util.ByteArrayProcessor;
 import com.hazelcast.jet.JetService;
 import com.hazelcast.jet.impl.JetServiceBackend;
 import com.hazelcast.nio.MemberSocketInterceptor;
+import com.hazelcast.nio.ssl.SSLEngineFactory;
 import com.hazelcast.security.SecurityContext;
 import com.hazelcast.security.SecurityService;
+import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.version.Version;
 
 import javax.annotation.Nullable;
@@ -68,13 +75,13 @@ public class SamplingNodeExtension implements NodeExtension {
     @Override
     public InternalSerializationService createSerializationService() {
         InternalSerializationService serializationService = nodeExtension.createSerializationService();
-        return new SamplingSerializationService(serializationService);
+        return new SamplingSerializationService((AbstractSerializationService) serializationService);
     }
 
     @Override
     public InternalSerializationService createCompatibilitySerializationService() {
         InternalSerializationService serializationService = nodeExtension.createCompatibilitySerializationService();
-        return new SamplingSerializationService(serializationService);
+        return new SamplingSerializationService((AbstractSerializationService) serializationService);
     }
 
     @Override
@@ -300,7 +307,12 @@ public class SamplingNodeExtension implements NodeExtension {
     }
 
     public CPPersistenceService getCPPersistenceService() {
-        return NopCPPersistenceService.INSTANCE;
+        return nodeExtension.getCPPersistenceService();
+    }
+
+    @Override
+    public CPSubsystem createCPSubsystem(NodeEngine nodeEngine) {
+        return nodeExtension.createCPSubsystem(nodeEngine);
     }
 
     @Override
@@ -312,5 +324,20 @@ public class SamplingNodeExtension implements NodeExtension {
     @Override
     public JetServiceBackend getJetServiceBackend() {
         return nodeExtension.getJetServiceBackend();
+    }
+
+    @Override
+    public SSLEngineFactory createSslEngineFactory(SSLConfig sslConfig) {
+        return nodeExtension.createSslEngineFactory(sslConfig);
+    }
+
+    @Override
+    public UserCodeNamespaceService getNamespaceService() {
+        return nodeExtension.getNamespaceService();
+    }
+
+    @Override
+    public TpcServerBootstrap createTpcServerBootstrap() {
+        return new TpcServerBootstrapImpl(null);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class ClientMemberAttributeTest extends HazelcastTestSupport {
     }
 
     @Test(timeout = 120000)
-    public void testConfigAttributes() throws Exception {
+    public void testConfigAttributes() {
         Config c = new Config();
         JoinConfig join = c.getNetworkConfig().getJoin();
         join.getTcpIpConfig().addMember("127.0.0.1").setEnabled(true);

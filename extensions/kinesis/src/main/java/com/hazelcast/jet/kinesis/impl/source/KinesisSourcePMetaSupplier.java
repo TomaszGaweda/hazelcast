@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.jet.kinesis.impl.source;
 import com.amazonaws.services.kinesis.model.Record;
 import com.amazonaws.services.kinesis.model.Shard;
 import com.hazelcast.cluster.Address;
-import com.hazelcast.cluster.Member;
 import com.hazelcast.function.BiFunctionEx;
 import com.hazelcast.jet.core.EventTimePolicy;
 import com.hazelcast.jet.core.ProcessorMetaSupplier;
@@ -28,16 +27,16 @@ import com.hazelcast.jet.kinesis.impl.AwsConfig;
 import com.hazelcast.jet.retry.RetryStrategy;
 
 import javax.annotation.Nonnull;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 public class KinesisSourcePMetaSupplier<T> implements ProcessorMetaSupplier {
-
+    @Serial
     private static final long serialVersionUID = 2L;
 
     @Nonnull
@@ -73,7 +72,7 @@ public class KinesisSourcePMetaSupplier<T> implements ProcessorMetaSupplier {
 
     @Override
     public void init(@Nonnull ProcessorMetaSupplier.Context context) {
-        List<Address> addresses = getMemberAddresses(context);
+        List<Address> addresses = context.partitionAssignment().keySet().stream().toList();
         assignedHashRanges = assignHashRangesToMembers(addresses);
         if (context.logger().isFineEnabled()) {
             context.logger().fine("Hash ranges assigned to members: \n\t" +
@@ -91,18 +90,9 @@ public class KinesisSourcePMetaSupplier<T> implements ProcessorMetaSupplier {
         };
     }
 
-    @Nonnull
-    private static List<Address> getMemberAddresses(@Nonnull Context context) {
-        return context
-                .hazelcastInstance().getCluster().getMembers().stream()
-                .map(Member::getAddress)
-                .collect(toList());
-    }
-
     /**
-     * Divide the range of all possible hash key values into equally sized
-     * chunks, as many as there are Jet members in the cluster and assign each
-     * chunk to a member.
+     * Divide the range of all possible hash key values into equally sized chunks,
+     * as many as the number of selected members, and assign each chunk to a member.
      */
     @Nonnull
     private static Map<Address, HashRange> assignHashRangesToMembers(List<Address> addresses) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class TpcChannelClientConnectionAdapter implements ClientConnection {
 
+    private final long startTime = System.currentTimeMillis();
     private final Channel channel;
 
     public TpcChannelClientConnectionAdapter(Channel channel) {
@@ -117,6 +118,11 @@ public class TpcChannelClientConnectionAdapter implements ClientConnection {
     @Override
     public long lastWriteTimeMillis() {
         throw new UnsupportedOperationException("Not supported for TPC channels");
+    }
+
+    @Override
+    public long getStartTime() {
+        return startTime;
     }
 
     @Nullable

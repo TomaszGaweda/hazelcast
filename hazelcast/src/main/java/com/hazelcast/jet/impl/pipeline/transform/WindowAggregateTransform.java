@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.hazelcast.jet.pipeline.SlidingWindowDefinition;
 import com.hazelcast.jet.pipeline.WindowDefinition;
 
 import javax.annotation.Nonnull;
+import java.io.Serial;
 import java.util.List;
 
 import static com.hazelcast.jet.core.Edge.between;
@@ -49,6 +50,7 @@ import static java.util.Collections.nCopies;
 
 public class WindowAggregateTransform<A, R> extends AbstractTransform {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private static final int MAX_WATERMARK_STRIDE = 100;
@@ -91,10 +93,10 @@ public class WindowAggregateTransform<A, R> extends AbstractTransform {
      * value returned here.
      */
     static long preferredWatermarkStride(WindowDefinition wDef) {
-        if (wDef instanceof SlidingWindowDefinition) {
-            return ((SlidingWindowDefinition) wDef).slideBy();
-        } else if (wDef instanceof SessionWindowDefinition) {
-            long timeout = ((SessionWindowDefinition) wDef).sessionTimeout();
+        if (wDef instanceof SlidingWindowDefinition definition) {
+            return definition.slideBy();
+        } else if (wDef instanceof SessionWindowDefinition definition) {
+            long timeout = definition.sessionTimeout();
             return Math.min(MAX_WATERMARK_STRIDE, Math.max(1, timeout / MIN_WMS_PER_SESSION));
         } else {
             throw new IllegalArgumentException(wDef.getClass().getName());
@@ -108,8 +110,8 @@ public class WindowAggregateTransform<A, R> extends AbstractTransform {
 
     @Override
     public void addToDag(Planner p, Context context) {
-        if (wDef instanceof SessionWindowDefinition) {
-            addSessionWindow(p, (SessionWindowDefinition) wDef);
+        if (wDef instanceof SessionWindowDefinition definition) {
+            addSessionWindow(p, definition);
         } else if (aggrOp.combineFn() == null || wDef.earlyResultsPeriod() > 0) {
             addSlidingWindowSingleStage(p, (SlidingWindowDefinition) wDef);
         } else {

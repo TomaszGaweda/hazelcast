@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.impl.operationservice.OperationService;
 import com.hazelcast.spi.impl.operationservice.PartitionAwareOperation;
 import com.hazelcast.spi.impl.operationservice.UrgentSystemOperation;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.QuickTest;
@@ -59,12 +58,7 @@ public class SystemOperationPrecedenseTest extends HazelcastTestSupport {
 
         //if the system operation would be given urgency, we should only wait for 1 operation to be processed before
         //our system operation is processed.
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(0, latch.getCount());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(0, latch.getCount()));
     }
 
     @Test
@@ -85,12 +79,7 @@ public class SystemOperationPrecedenseTest extends HazelcastTestSupport {
 
         //if the system operation would be given urgency, we should only wait for 1 operation to be processed before
         //our system operation is processed.
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(0, latch.getCount());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(0, latch.getCount()));
     }
 
     public static class UrgentPartitionAwareOperation extends Operation

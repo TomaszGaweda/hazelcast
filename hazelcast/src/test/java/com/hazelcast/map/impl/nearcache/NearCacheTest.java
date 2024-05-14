@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,16 +268,12 @@ public class NearCacheTest extends NearCacheTestSupport {
 
     @Test
     public void testMapExecuteOnEntriesWithPredicate_withReadOnlyProcessor_noInvalidations() {
-        verifyNoInvalidationsWith((map, size) -> {
-            map.executeOnEntries(new TestReadOnlyProcessor(), Predicates.alwaysTrue());
-        });
+        verifyNoInvalidationsWith((map, size) -> map.executeOnEntries(new TestReadOnlyProcessor(), Predicates.alwaysTrue()));
     }
 
     @Test
     public void testMapExecuteOnEntriesWithoutPredicate_withReadOnlyProcessor_noInvalidations() {
-        verifyNoInvalidationsWith((map, size) -> {
-            map.executeOnEntries(new TestReadOnlyProcessor());
-        });
+        verifyNoInvalidationsWith((map, size) -> map.executeOnEntries(new TestReadOnlyProcessor()));
     }
 
     @Test

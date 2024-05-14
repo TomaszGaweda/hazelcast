@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ final class RingbufferTestUtil {
         }
 
         SerializationService serializationService = nodeEngine.getSerializationService();
-        List<Object> backupRingbuffer = new ArrayList<Object>((int) container.size());
+        List<Object> backupRingbuffer = new ArrayList<>((int) container.size());
         for (long sequence = container.headSequence(); sequence <= container.tailSequence(); sequence++) {
             backupRingbuffer.add(serializationService.toObject(container.readAsData(sequence)));
         }

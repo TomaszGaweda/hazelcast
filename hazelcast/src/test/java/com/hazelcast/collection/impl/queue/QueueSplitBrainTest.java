@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -335,7 +335,7 @@ public class QueueSplitBrainTest extends SplitBrainTestSupport {
      */
     private static class SplitBrainQueueStore implements QueueStore<Object> {
 
-        private final ConcurrentMap<Long, Collection<Object>> store = new ConcurrentHashMap<Long, Collection<Object>>();
+        private final ConcurrentMap<Long, Collection<Object>> store = new ConcurrentHashMap<>();
 
         @Override
         public Object load(Long key) {
@@ -395,8 +395,8 @@ public class QueueSplitBrainTest extends SplitBrainTestSupport {
                 Iterator<Object> collectionIterator = collection.iterator();
                 while (collectionIterator.hasNext()) {
                     Object value = collectionIterator.next();
-                    if (value instanceof String) {
-                        if (((String) value).startsWith(prefix)) {
+                    if (value instanceof String string) {
+                        if (string.startsWith(prefix)) {
                             collectionIterator.remove();
                         }
                     }
@@ -423,7 +423,7 @@ public class QueueSplitBrainTest extends SplitBrainTestSupport {
         private Collection<Object> getCollection(Long key) {
             Collection<Object> collection = store.get(key);
             if (collection == null) {
-                collection = new ConcurrentLinkedQueue<Object>();
+                collection = new ConcurrentLinkedQueue<>();
                 Collection<Object> candidate = store.putIfAbsent(key, collection);
                 if (candidate != null) {
                     return candidate;

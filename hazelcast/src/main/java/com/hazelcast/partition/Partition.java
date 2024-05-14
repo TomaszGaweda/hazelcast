@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.hazelcast.partition;
 
 import com.hazelcast.cluster.Member;
 
+import javax.annotation.Nullable;
+
 /**
  * In Hazelcast the data is split up in partitions: by default, 271 and configurable through the 'hazelcast.partition.count'
  * ClusterProperty. Each partition is owned by one member and the ownership can change if members join or leave the cluster.
@@ -28,7 +30,7 @@ import com.hazelcast.cluster.Member;
 public interface Partition {
 
     /**
-     * Returns the ID of the partition. This value will never change and will always be greater to  or equal to 0 and smaller
+     * Returns the ID of the partition. This value will never change and will always be greater to or equal to 0 and smaller
      * than the partition-count.
      *
      * @return the ID of the partition
@@ -44,5 +46,6 @@ public interface Partition {
      *
      * @return the owner member of the partition
      */
+    @Nullable
     Member getOwner();
 }

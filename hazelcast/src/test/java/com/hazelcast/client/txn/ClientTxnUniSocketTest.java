@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.client.test.TestHazelcastFactory;
 import com.hazelcast.client.util.AbstractLoadBalancer;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.cluster.Member;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -86,12 +85,7 @@ public class ClientTxnUniSocketTest extends ClientTestSupport {
         final HazelcastInstance client = hazelcastFactory.newHazelcastClient(config);
         hazelcastFactory.newHazelcastInstance();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(2, client.getCluster().getMembers().size());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(2, client.getCluster().getMembers().size()));
 
 
         ClientConnectionManager connectionManager = getHazelcastClientInstanceImpl(client).getConnectionManager();

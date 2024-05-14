@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.hazelcast.jet.impl.connector;
 
 import com.hazelcast.client.impl.clientside.HazelcastClientProxy;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.dataconnection.HazelcastDataConnection;
 import com.hazelcast.function.FunctionEx;
 import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.jet.core.Processor;
@@ -27,6 +28,7 @@ import com.hazelcast.security.PermissionsUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serial;
 import java.util.Collection;
 import java.util.stream.Stream;
 
@@ -36,20 +38,27 @@ import static java.util.stream.Collectors.toList;
 
 public abstract class AbstractHazelcastConnectorSupplier implements ProcessorSupplier {
 
+    protected final String dataConnectionName;
     protected final String clientXml;
 
     private transient HazelcastInstance instance;
     private transient SerializationService serializationService;
 
-    AbstractHazelcastConnectorSupplier(@Nullable String clientXml) {
+    protected AbstractHazelcastConnectorSupplier(
+            @Nullable String dataConnectionName,
+            @Nullable String clientXml
+    ) {
         this.clientXml = clientXml;
+        this.dataConnectionName = dataConnectionName;
     }
 
     public static ProcessorSupplier ofMap(
             @Nullable String clientXml,
             @Nonnull FunctionEx<HazelcastInstance, Processor> procFn
     ) {
-        return new AbstractHazelcastConnectorSupplier(clientXml) {
+        return new AbstractHazelcastConnectorSupplier(null, clientXml) {
+            @Serial
+            private static final long serialVersionUID = 1L;
 
             @Override
             public void init(@Nonnull Context context) {
@@ -66,7 +75,23 @@ public abstract class AbstractHazelcastConnectorSupplier implements ProcessorSup
 
     @Override
     public void init(@Nonnull Context context) {
-        if (clientXml != null) {
+        createHzClient(context);
+    }
+
+    private void createHzClient(ProcessorSupplier.Context context) {
+        // The order is important.
+        // If dataConnectionConfig is specified prefer it to clientXml
+        if (dataConnectionName != null) {
+            HazelcastDataConnection hazelcastDataConnection = context
+                    .dataConnectionService()
+                    .getAndRetainDataConnection(dataConnectionName, HazelcastDataConnection.class);
+            try {
+                instance =  hazelcastDataConnection.getClient();
+                serializationService = ((HazelcastClientProxy) instance).getSerializationService();
+            } finally {
+                hazelcastDataConnection.release();
+            }
+        } else if (clientXml != null) {
             instance = newHazelcastClient(asClientConfig(clientXml));
             serializationService = ((HazelcastClientProxy) instance).getSerializationService();
         } else {
@@ -84,8 +109,18 @@ public abstract class AbstractHazelcastConnectorSupplier implements ProcessorSup
 
     protected abstract Processor createProcessor(HazelcastInstance instance, SerializationService serializationService);
 
+    /**
+     * Return if ProcessorSupplier is for local cluster or not
+     */
     boolean isLocal() {
-        return clientXml == null;
+        return (clientXml == null) && (dataConnectionName == null);
+    }
+
+    /**
+     * Return if ProcessorSupplier is for remote cluster or not
+     */
+    boolean isRemote() {
+        return !isLocal();
     }
 
     @Override

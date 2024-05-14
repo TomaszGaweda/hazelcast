@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,17 +106,17 @@ public final class InvocationFuture<E> extends AbstractInvocationFuture<E> {
             return (T) response;
         }
         response = ((ExceptionalResult) response).getCause();
-        if (response instanceof WrappableException) {
-            response = ((WrappableException) response).wrap();
+        if (response instanceof WrappableException exception) {
+            response = exception.wrap();
         } else if (response instanceof RuntimeException || response instanceof Error) {
             response = cloneExceptionWithFixedAsyncStackTrace((Throwable) response);
         }
-        if (response instanceof CancellationException) {
-            throw (CancellationException) response;
-        } else if (response instanceof ExecutionException) {
-            throw (ExecutionException) response;
-        } else if (response instanceof InterruptedException) {
-            throw (InterruptedException) response;
+        if (response instanceof CancellationException exception) {
+            throw exception;
+        } else if (response instanceof ExecutionException exception) {
+            throw exception;
+        } else if (response instanceof InterruptedException exception) {
+            throw exception;
         } else {
             throw new ExecutionException((Throwable) response);
         }
@@ -142,8 +142,8 @@ public final class InvocationFuture<E> extends AbstractInvocationFuture<E> {
             }
         }
 
-        Throwable cause = (value instanceof ExceptionalResult)
-                ? ((ExceptionalResult) value).getCause()
+        Throwable cause = (value instanceof ExceptionalResult er)
+                ? er.getCause()
                 : null;
 
         if (invocation.shouldFailOnIndeterminateOperationState()

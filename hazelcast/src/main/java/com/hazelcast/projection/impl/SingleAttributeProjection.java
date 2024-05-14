@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,8 @@ public final class SingleAttributeProjection<I, O> implements Projection<I, O>, 
     @Override
     @SuppressWarnings("unchecked")
     public O transform(I input) {
-        if (input instanceof Extractable) {
-            return (O) ((Extractable) input).getAttributeValue(attributePath);
+        if (input instanceof Extractable extractable) {
+            return (O) extractable.getAttributeValue(attributePath);
         }
         throw new IllegalArgumentException("The given map entry is not extractable");
     }

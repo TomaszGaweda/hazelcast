@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,8 +121,8 @@ public class EvictBatchBackupOperation
 
     @Override
     public ExceptionAction onInvocationException(Throwable throwable) {
-        if (throwable instanceof WrongTargetException) {
-            if (((WrongTargetException) throwable).getTarget() == null) {
+        if (throwable instanceof WrongTargetException exception) {
+            if (exception.getTarget() == null) {
                 // If there isn't any address of backup replica, no need to retry this operation.
                 return ExceptionAction.THROW_EXCEPTION;
             }

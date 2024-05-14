@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class ListProxyImpl<E> extends AbstractCollectionProxyImpl<ListService, E
         checkNotNull(c, "Null collection is not allowed");
         checkIndexNotNegative(index);
 
-        List<Data> valueList = new ArrayList<Data>(c.size());
+        List<Data> valueList = new ArrayList<>(c.size());
         final NodeEngine nodeEngine = getNodeEngine();
         for (E e : c) {
             checkNotNull(e, "Null collection element is not allowed");

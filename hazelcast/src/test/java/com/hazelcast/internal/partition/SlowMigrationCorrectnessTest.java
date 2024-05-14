@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,14 +101,12 @@ public class SlowMigrationCorrectnessTest extends AbstractMigrationCorrectnessTe
                 final HazelcastInstance hz = factory.getInstance(address);
                 assertNotNull("No instance known for address: " + address, hz);
 
-                new Thread() {
-                    public void run() {
-                        TestUtil.terminateInstance(hz);
-                        sleepMillis(RandomPicker.getInt(1, 3000));
-                        factory.newHazelcastInstance(address, config);
-                        latch.countDown();
-                    }
-                }.start();
+                new Thread(() -> {
+                    TestUtil.terminateInstance(hz);
+                    sleepMillis(RandomPicker.getInt(1, 3000));
+                    factory.newHazelcastInstance(address, config);
+                    latch.countDown();
+                }).start();
             }
             assertTrue(latch.await(2, TimeUnit.MINUTES));
         }

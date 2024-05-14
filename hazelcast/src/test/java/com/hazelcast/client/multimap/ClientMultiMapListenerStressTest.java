@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.hazelcast.core.EntryAdapter;
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.multimap.MultiMap;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.NightlyTest;
 import org.junit.After;
@@ -63,7 +62,7 @@ public class ClientMultiMapListenerStressTest {
     }
 
     @Test
-    public void listenerAddStressTest() throws InterruptedException {
+    public void listenerAddStressTest() {
         final PutItemsThread[] putThreads = new PutItemsThread[NUMBER_OF_CLIENTS * THREADS_PER_CLIENT];
 
         int idx = 0;
@@ -116,12 +115,7 @@ public class ClientMultiMapListenerStressTest {
         }
 
         public void assertResult(final int target) {
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() throws Exception {
-                    assertEquals(target, listener.add.get());
-                }
-            });
+            assertTrueEventually(() -> assertEquals(target, listener.add.get()));
         }
     }
 

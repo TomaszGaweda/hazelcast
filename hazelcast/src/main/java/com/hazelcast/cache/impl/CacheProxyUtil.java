@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,10 +51,10 @@ public final class CacheProxyUtil {
      */
     public static void validateResults(Map<Integer, Object> results) {
         for (Object result : results.values()) {
-            if (result != null && result instanceof CacheClearResponse) {
-                Object response = ((CacheClearResponse) result).getResponse();
-                if (response instanceof Throwable) {
-                    ExceptionUtil.sneakyThrow((Throwable) response);
+            if (result != null && result instanceof CacheClearResponse clearResponse) {
+                Object response = clearResponse.getResponse();
+                if (response instanceof Throwable throwable) {
+                    ExceptionUtil.sneakyThrow(throwable);
                 }
             }
         }

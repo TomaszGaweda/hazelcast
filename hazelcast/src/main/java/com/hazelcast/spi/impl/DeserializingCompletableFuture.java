@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -288,7 +288,7 @@ public class DeserializingCompletableFuture<V> extends InternalCompletableFuture
         if (!deserialize) {
             return super.whenCompleteAsync(new DeserializingBiConsumer<>(action), executor);
         } else {
-            return new DelegatingCompletableFuture<V>(serializationService,
+            return new DelegatingCompletableFuture<>(serializationService,
                     super.whenCompleteAsync(new DeserializingBiConsumer<>(action), executor));
         }
     }
@@ -318,9 +318,8 @@ public class DeserializingCompletableFuture<V> extends InternalCompletableFuture
     }
 
     private V resolve(Object object) {
-        if (deserialize && object instanceof Data) {
+        if (deserialize && object instanceof Data data) {
             // we need to deserialize.
-            Data data = (Data) object;
             object = serializationService.toObject(data);
 
             //todo do we need to call dispose data here

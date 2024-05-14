@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 /**
  * Special thanks to Alexandre Vasseur for providing this very nice test application.
  */
-@SuppressWarnings("checkstyle:magicnumber")
+@SuppressWarnings({"checkstyle:magicnumber", "ClassFanOutComplexity", "MethodCount"})
 public class ConsoleApp implements EntryListener<Object, Object>, ItemListener<Object>, MessageListener<Object> {
 
     private static final String EXECUTOR_NAMESPACE = "Sample Executor";
@@ -1231,8 +1231,8 @@ public class ConsoleApp implements EntryListener<Object, Object>, ItemListener<O
         int c = 1;
         for (int i = 0; i < count; i++) {
             Object obj = getQueue().poll();
-            if (obj instanceof byte[]) {
-                println(c++ + " " + ((byte[]) obj).length);
+            if (obj instanceof byte[] bytes) {
+                println(c++ + " " + bytes.length);
             } else {
                 println(c++ + " " + obj);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class ClientLongRegisterTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         assertEquals(0, longRegister.getAndAdd(2));
         assertEquals(2, longRegister.get());
         longRegister.set(5);

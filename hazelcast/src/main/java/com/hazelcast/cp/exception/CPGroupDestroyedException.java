@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.hazelcast.cp.exception;
 
 import com.hazelcast.cp.CPGroupId;
 
+import java.io.Serial;
+
 /**
  * A {@code CPSubsystemException} which is thrown when a request is sent to
  * a destroyed CP group.
@@ -26,6 +28,7 @@ import com.hazelcast.cp.CPGroupId;
  */
 public class CPGroupDestroyedException extends CPSubsystemException {
 
+    @Serial
     private static final long serialVersionUID = -5363753263443789491L;
 
     private final CPGroupId groupId;

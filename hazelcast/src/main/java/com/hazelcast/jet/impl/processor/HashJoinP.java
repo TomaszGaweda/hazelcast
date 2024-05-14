@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -157,8 +157,8 @@ public class HashJoinP<E0> extends AbstractProcessor {
             // look up matching values for each joined table
             for (int i = 0; i < lookedUpValues.length; i++) {
                 lookedUpValues[i] = lookUpJoined(i, item);
-                sizes[i] = lookedUpValues[i] instanceof HashJoinArrayList
-                        ? ((HashJoinArrayList) lookedUpValues[i]).size() : 1;
+                sizes[i] = lookedUpValues[i] instanceof HashJoinArrayList arrayList
+                        ? arrayList.size() : 1;
             }
             Arrays.fill(indices, 0);
             currentItem = item;

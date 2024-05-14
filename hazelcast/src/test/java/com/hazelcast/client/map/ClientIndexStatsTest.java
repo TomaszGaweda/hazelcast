@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,17 @@ package com.hazelcast.client.map;
 
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.test.TestHazelcastFactory;
+import com.hazelcast.cluster.Address;
+import com.hazelcast.cluster.ClusterState;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.InMemoryFormat;
+import com.hazelcast.config.IndexConfig;
+import com.hazelcast.config.IndexType;
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.internal.monitor.impl.PartitionedIndexStatsImpl;
 import com.hazelcast.internal.monitor.impl.LocalMapStatsImpl;
+import com.hazelcast.internal.monitor.impl.PartitionedIndexStatsImpl;
 import com.hazelcast.internal.monitor.impl.PerIndexStats;
 import com.hazelcast.map.IMap;
 import com.hazelcast.map.LocalIndexStatsTest;
@@ -30,6 +36,7 @@ import com.hazelcast.map.LocalMapStats;
 import com.hazelcast.query.LocalIndexStats;
 import com.hazelcast.query.Predicates;
 import com.hazelcast.query.impl.IndexRegistry;
+import com.hazelcast.test.Accessors;
 import com.hazelcast.test.HazelcastParallelParametersRunnerFactory;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -46,9 +53,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static com.hazelcast.test.Accessors.getAllIndexes;
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -66,6 +75,10 @@ public class ClientIndexStatsTest extends LocalIndexStatsTest {
 
     private TestHazelcastFactory hazelcastFactory = new TestHazelcastFactory();
 
+    private Config finalConfig;
+    private HazelcastInstance member1;
+    private HazelcastInstance member2;
+
     protected IMap map1;
     protected IMap map2;
 
@@ -74,8 +87,9 @@ public class ClientIndexStatsTest extends LocalIndexStatsTest {
 
     @Override
     protected HazelcastInstance createInstance(Config config) {
-        HazelcastInstance member1 = hazelcastFactory.newHazelcastInstance(config);
-        HazelcastInstance member2 = hazelcastFactory.newHazelcastInstance(config);
+        finalConfig = config;
+        member1 = hazelcastFactory.newHazelcastInstance(config);
+        member2 = hazelcastFactory.newHazelcastInstance(config);
 
         map1 = member1.getMap(mapName);
         map2 = member2.getMap(mapName);
@@ -96,7 +110,6 @@ public class ClientIndexStatsTest extends LocalIndexStatsTest {
         waitAllForSafeState(hazelcastFactory.getAllHazelcastInstances());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     @Override
     public void testQueryCounting_WhenPartitionPredicateIsUsed() {
@@ -122,6 +135,125 @@ public class ClientIndexStatsTest extends LocalIndexStatsTest {
         // do nothing
     }
 
+    @Test
+    public void shouldUseIndexFromClient_whenMemberProxyExists() {
+        testIndexWithoutMapProxy((s) -> {});
+    }
+
+    @Test
+    @Ignore("HZ-4455")
+    public void shouldUseIndexFromClient_whenMemberProxyDestroyed() {
+        testIndexWithoutMapProxy((mapName) -> member1.getMap(mapName).destroy());
+    }
+
+    @Test
+    public void shouldUseIndexFromClient_whenClusterRestarted() {
+        warmUpPartitions(member1, member2);
+        testIndexWithoutMapProxy((mapName) -> restartCluster(true, ClusterState.ACTIVE, mapName));
+    }
+
+    @Test
+    public void shouldUseIndexFromClient_whenClusterRestartedForcefully() {
+        warmUpPartitions(member1, member2);
+        testIndexWithoutMapProxy((mapName) -> restartCluster(false, ClusterState.ACTIVE, mapName));
+    }
+
+    @Test
+    public void shouldUseIndexFromClient_whenClusterRestartedInPassiveState() {
+        warmUpPartitions(member1, member2);
+        testIndexWithoutMapProxy((mapName) -> restartCluster(true, ClusterState.PASSIVE, mapName));
+    }
+
+    @Test
+    public void shouldUseIndexFromClient_whenClusterRestartedInFrozenState() {
+        warmUpPartitions(member1, member2);
+        testIndexWithoutMapProxy((mapName) -> restartCluster(true, ClusterState.FROZEN, mapName));
+    }
+
+    private void testIndexWithoutMapProxy(Consumer<String> actionBeforeTest) {
+        // given map with static index
+        String indexMapName = randomMapName() + "_client";
+        // inherit default config
+        MapConfig mapWithIndex = new MapConfig(finalConfig.getMapConfig(mapName))
+                .setName(indexMapName)
+                .addIndexConfig(new IndexConfig(IndexType.SORTED, "this").setName("index"));
+        member1.getConfig().addMapConfig(mapWithIndex);
+
+        var clientMap = instance.getMap(indexMapName);
+
+        // when
+        actionBeforeTest.accept(indexMapName);
+
+        for (int i = 0; i < 100; ++i) {
+            clientMap.put(i, i);
+        }
+        for (int i = 0; i < 100; ++i) {
+            assertThat(clientMap.entrySet(Predicates.equal("this", i)))
+                    .hasSize(1)
+                    .containsOnly(Map.entry(i, i));
+        }
+
+        // then
+        // get member maps after test not to create proxies accidentally earlier
+        map1 = member1.getMap(indexMapName);
+        map2 = member2.getMap(indexMapName);
+
+        assertThat(stats().getQueryCount()).isEqualTo(100);
+        assertThat(stats().getIndexedQueryCount()).isEqualTo(100);
+    }
+
+    private void assertMapProxyInitializedEventually(String indexMapName) {
+        assertTrueEventually(() -> {
+            // In some circumstances getDistributedObjects may not return all objects,
+            // but that should not happen in this test.
+            assertThat(member1.getDistributedObjects().stream().map(DistributedObject::getName))
+                    .as("Should initialize proxy on member1")
+                    .contains(indexMapName);
+            assertThat(member2.getDistributedObjects().stream().map(DistributedObject::getName))
+                    .as("Should initialize proxy on member2")
+                    .contains(indexMapName);
+        });
+    }
+
+    private void restartCluster(boolean graceful, ClusterState restartInState, String indexMapName) {
+        // Avoid race conditions between async proxy initialization on other members (via events)
+        // and cluster restart. Those races are unfortunate but are not tested here.
+        assertMapProxyInitializedEventually(indexMapName);
+
+        warmUpPartitions(member1, member2);
+        member1.getCluster().changeClusterState(restartInState);
+        member1 = restartMember(member1, member2, graceful);
+
+        // do not restart the other member until proxy is fully initialized on first member
+        // so the proxy can be included in PostJoinProxyOperation. Proxy initialization may take
+        // some time (especially when backup operations fail) and is async process.
+        assertMapProxyInitializedEventually(indexMapName);
+
+        member2 = restartMember(member2, member1, graceful);
+
+        member1.getCluster().changeClusterState(ClusterState.ACTIVE);
+
+        // Wait for proxy initialization by post join operation to avoid race condition.
+        // Note that indexes are initialized in many ways, proxy initialization being only one
+        // of them. So even without proxy indexes might work but with proxy they will for sure.
+        assertMapProxyInitializedEventually(indexMapName);
+    }
+
+    private HazelcastInstance restartMember(HazelcastInstance member, HazelcastInstance otherMember, boolean graceful) {
+        Address address1 = Accessors.getAddress(member);
+        if (graceful) {
+            member.shutdown();
+        } else {
+            member.getLifecycleService().terminate();
+        }
+        assertClusterSizeEventually(1, otherMember);
+        waitAllForSafeState(otherMember);
+        HazelcastInstance restartedMember = hazelcastFactory.newHazelcastInstance(address1, finalConfig);
+        assertClusterSizeEventually(2, restartedMember, otherMember);
+        waitAllForSafeState(restartedMember, otherMember);
+        return restartedMember;
+    }
+
     @Override
     protected LocalMapStats stats() {
         return combineStats(map1, map2);
@@ -136,7 +268,7 @@ public class ClientIndexStatsTest extends LocalIndexStatsTest {
         LocalMapStats stats1 = map1.getLocalMapStats();
         LocalMapStats stats2 = map2.getLocalMapStats();
 
-        List<IndexRegistry> allIndexes = new ArrayList<IndexRegistry>();
+        List<IndexRegistry> allIndexes = new ArrayList<>();
         allIndexes.addAll(getAllIndexes(map1));
         allIndexes.addAll(getAllIndexes(map2));
 
@@ -148,7 +280,7 @@ public class ClientIndexStatsTest extends LocalIndexStatsTest {
         combinedStats.setIndexedQueryCount(stats1.getIndexedQueryCount());
 
         assertEquals(stats1.getIndexStats().size(), stats2.getIndexStats().size());
-        Map<String, PartitionedIndexStatsImpl> combinedIndexStatsMap = new HashMap<String, PartitionedIndexStatsImpl>();
+        Map<String, PartitionedIndexStatsImpl> combinedIndexStatsMap = new HashMap<>();
         for (Map.Entry<String, LocalIndexStats> indexEntry : stats1.getIndexStats().entrySet()) {
             LocalIndexStats indexStats1 = indexEntry.getValue();
             LocalIndexStats indexStats2 = stats2.getIndexStats().get(indexEntry.getKey());

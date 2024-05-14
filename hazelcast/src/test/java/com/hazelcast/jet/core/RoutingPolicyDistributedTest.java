@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.hazelcast.jet.core;
 
-import com.google.common.collect.ImmutableSet;
 import com.hazelcast.cluster.Address;
 import com.hazelcast.jet.SimpleTestInClusterSupport;
 import com.hazelcast.jet.core.TestProcessors.CollectPerProcessorSink;
@@ -25,10 +24,8 @@ import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -41,6 +38,7 @@ import static com.hazelcast.jet.core.Edge.between;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 
 @Category({QuickTest.class, ParallelJVMTest.class})
@@ -56,8 +54,6 @@ public class RoutingPolicyDistributedTest extends SimpleTestInClusterSupport {
 
     private static Address address1;
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private CollectPerProcessorSink consumerSup;
 
@@ -140,8 +136,8 @@ public class RoutingPolicyDistributedTest extends SimpleTestInClusterSupport {
            .vertex(consumer)
            .edge(edge);
 
-        exception.expectMessage(expectedError);
-        instance().getJet().newJob(dag).join();
+        assertThatThrownBy(() -> instance().getJet().newJob(dag).join())
+                .hasMessageContaining(expectedError);
     }
 
     @Test
@@ -154,10 +150,10 @@ public class RoutingPolicyDistributedTest extends SimpleTestInClusterSupport {
            .vertex(consumer)
            .edge(between(producer, consumer)
                    .distributeTo(new Address("1.2.3.4", 9999))
-                   .allToOne("foo"));
+                   .allToOne());
 
-        exception.expectMessage("The target member of an edge is not present in the cluster");
-        instance().getJet().newJob(dag).join();
+        assertThatThrownBy(() -> instance().getJet().newJob(dag).join())
+                .hasMessageContaining("The target member of an edge is not present in the cluster");
     }
 
     @Test
@@ -172,10 +168,10 @@ public class RoutingPolicyDistributedTest extends SimpleTestInClusterSupport {
 
         instance().getJet().newJob(dag).join();
 
-        assertEquals("items on member0-processor0", ImmutableSet.of(1), new HashSet<>(consumerSup.getListAt(0)));
-        assertEquals("items on member0-processor1", ImmutableSet.of(2), new HashSet<>(consumerSup.getListAt(1)));
-        assertEquals("items on member1-processor0", ImmutableSet.of(3), new HashSet<>(consumerSup.getListAt(2)));
-        assertEquals("items on member1-processor1", ImmutableSet.of(4), new HashSet<>(consumerSup.getListAt(3)));
+        assertEquals("items on member0-processor0", Set.of(1), new HashSet<>(consumerSup.getListAt(0)));
+        assertEquals("items on member0-processor1", Set.of(2), new HashSet<>(consumerSup.getListAt(1)));
+        assertEquals("items on member1-processor0", Set.of(3), new HashSet<>(consumerSup.getListAt(2)));
+        assertEquals("items on member1-processor1", Set.of(4), new HashSet<>(consumerSup.getListAt(3)));
     }
 
     @Test
@@ -190,10 +186,10 @@ public class RoutingPolicyDistributedTest extends SimpleTestInClusterSupport {
 
         instance().getJet().newJob(dag).join();
 
-        assertEquals("items on member0-processor0", ImmutableSet.of(1, 3), new HashSet<>(consumerSup.getListAt(0)));
-        assertEquals("items on member0-processor1", ImmutableSet.of(2, 4), new HashSet<>(consumerSup.getListAt(1)));
-        assertEquals("items on member1-processor0", ImmutableSet.of(1, 3), new HashSet<>(consumerSup.getListAt(2)));
-        assertEquals("items on member1-processor1", ImmutableSet.of(2, 4), new HashSet<>(consumerSup.getListAt(3)));
+        assertEquals("items on member0-processor0", Set.of(1, 3), new HashSet<>(consumerSup.getListAt(0)));
+        assertEquals("items on member0-processor1", Set.of(2, 4), new HashSet<>(consumerSup.getListAt(1)));
+        assertEquals("items on member1-processor0", Set.of(1, 3), new HashSet<>(consumerSup.getListAt(2)));
+        assertEquals("items on member1-processor1", Set.of(2, 4), new HashSet<>(consumerSup.getListAt(3)));
     }
 
     private Vertex consumer() {

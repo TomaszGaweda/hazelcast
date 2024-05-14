@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.hazelcast.client.impl.protocol.task.queue;
 
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.QueueDrainToMaxSizeCodec;
-import com.hazelcast.client.impl.protocol.task.AbstractPartitionMessageTask;
-import com.hazelcast.collection.impl.queue.QueueService;
 import com.hazelcast.collection.impl.queue.operations.DrainOperation;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.nio.Connection;
@@ -38,7 +36,7 @@ import java.util.List;
  * {@link com.hazelcast.client.impl.protocol.codec.QueueMessageType#QUEUE_DRAINTOMAXSIZE}
  */
 public class QueueDrainMaxSizeMessageTask
-        extends AbstractPartitionMessageTask<QueueDrainToMaxSizeCodec.RequestParameters> {
+        extends AbstractQueueMessageTask<QueueDrainToMaxSizeCodec.RequestParameters> {
 
     public QueueDrainMaxSizeMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
@@ -74,11 +72,6 @@ public class QueueDrainMaxSizeMessageTask
         SerializableList serializableList = (SerializableList) response;
         List<Data> coll = serializableList.getCollection();
         return QueueDrainToMaxSizeCodec.encodeResponse(coll);
-    }
-
-    @Override
-    public String getServiceName() {
-        return QueueService.SERVICE_NAME;
     }
 
     @Override

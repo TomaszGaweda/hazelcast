@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.hazelcast.internal.util;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -51,7 +52,7 @@ public final class IterableUtil {
      * Transform the Iterator by applying a function to each element
      **/
     public static <T, R> Iterator<R> map(Iterator<T> iterator, Function<T, R> mapper) {
-        return new Iterator<R>() {
+        return new Iterator<>() {
             @Override
             public boolean hasNext() {
                 return iterator.hasNext();
@@ -79,7 +80,7 @@ public final class IterableUtil {
         Iterator<T> givenIterator = iterable.iterator();
 
         @SuppressWarnings("checkstyle:anoninnerlength")
-        Iterator<T> filteringIterator = new Iterator<T>() {
+        Iterator<T> filteringIterator = new Iterator<>() {
             private T next;
 
             @Override
@@ -132,7 +133,7 @@ public final class IterableUtil {
     }
 
     public static <R> Iterator<R> limit(final Iterator<R> iterator, final int limit) {
-        return new Iterator<R>() {
+        return new Iterator<>() {
             private int iterated;
 
             @Override
@@ -169,7 +170,7 @@ public final class IterableUtil {
             return iterator;
         }
 
-        return new UnmodifiableIterator<T>() {
+        return new UnmodifiableIterator<>() {
             @Override
             public boolean hasNext() {
                 return iterator.hasNext();
@@ -180,5 +181,61 @@ public final class IterableUtil {
                 return iterator.next();
             }
         };
+    }
+
+    /**
+     * Add an element to the beginning of an iterator.
+     *
+     * @param prepend element to add.
+     * @param iterator the iterator to which an element will be added. A null value is not supported.
+     * @return iterator with prepended element
+     */
+    public static <T> Iterator<T> prepend(T prepend, @Nonnull Iterator<? extends T> iterator) {
+        checkNotNull(iterator, "iterator cannot be null.");
+        return new PrependIterator<>(prepend, iterator);
+    }
+
+    /**
+     * Skip elements until the first element satisfying the predicate is encountered.
+     *
+     * @param iterator the iterator whose first elements should be skipped. A null value is not supported.
+     * @param predicate a condition indicating when to stop skipping elements.
+     * @return iterator
+     */
+    public static <T> Iterator<T> skipFirst(Iterator<T> iterator, @Nonnull Predicate<? super T> predicate) {
+        checkNotNull(iterator, "iterator cannot be null.");
+        while (iterator.hasNext()) {
+            T object = iterator.next();
+            if (!predicate.test(object)) {
+                continue;
+            }
+            return prepend(object, iterator);
+        }
+        return iterator;
+    }
+
+    private static class PrependIterator<E> implements Iterator<E> {
+        E prependElement;
+        Iterator<? extends E> iterator;
+
+        PrependIterator(E prependElement, Iterator<? extends E> iterator) {
+            this.prependElement = prependElement;
+            this.iterator = iterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return prependElement != null || iterator.hasNext();
+        }
+
+        @Override
+        public E next() {
+            if (prependElement != null) {
+                var value = prependElement;
+                prependElement = null;
+                return value;
+            }
+            return iterator.next();
+        }
     }
 }

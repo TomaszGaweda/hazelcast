@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public class InnerPortable implements Portable {
     InnerPortable() {
     }
 
+    @SuppressWarnings("ParameterNumber")
     public InnerPortable(byte[] bb, char[] cc, short[] ss, int[] ii, long[] ll, float[] ff, double[] dd, NamedPortable[] nn,
                          BigDecimal[] bigDecimals, LocalTime[] localTimes, LocalDate[] localDates,
                          LocalDateTime[] localDateTimes, OffsetDateTime[] offsetDateTimes) {

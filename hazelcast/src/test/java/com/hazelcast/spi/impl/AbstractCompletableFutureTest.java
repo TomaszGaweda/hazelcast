@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.hazelcast.spi.impl;
 
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -168,7 +167,7 @@ public class AbstractCompletableFutureTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void get_exceptionResultSet_exceptionThrown() throws Exception {
+    public void get_exceptionResultSet_exceptionThrown() {
         TestFutureImpl future = new TestFutureImpl();
         future.completeExceptionally(EXCEPTION);
 
@@ -177,7 +176,7 @@ public class AbstractCompletableFutureTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void getWithTimeout_exceptionResultSet_exceptionThrown_noTimeout() throws Exception {
+    public void getWithTimeout_exceptionResultSet_exceptionThrown_noTimeout() {
         TestFutureImpl future = new TestFutureImpl();
         future.completeExceptionally(EXCEPTION);
 
@@ -235,7 +234,7 @@ public class AbstractCompletableFutureTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void getWithTimeout_threadInterrupted_exceptionThrown() throws Exception {
+    public void getWithTimeout_threadInterrupted_exceptionThrown() {
         TestFutureImpl future = new TestFutureImpl();
 
         Thread.currentThread().interrupt();
@@ -255,7 +254,7 @@ public class AbstractCompletableFutureTest extends HazelcastTestSupport {
     }
 
     @Test(timeout = 60000)
-    public void getWithTimeout_waited_waited_notifiedOnCancel() throws Exception {
+    public void getWithTimeout_waited_waited_notifiedOnCancel() {
         TestFutureImpl future = new TestFutureImpl();
 
         submitCancelAfterTimeInMillis(future, 200);
@@ -321,30 +320,24 @@ public class AbstractCompletableFutureTest extends HazelcastTestSupport {
         future.whenCompleteAsync(callback1);
         future.whenCompleteAsync(callback2);
 
-        if (result instanceof Throwable) {
-            future.completeExceptionally((Throwable) result);
+        if (result instanceof Throwable throwable) {
+            future.completeExceptionally(throwable);
         } else {
             future.complete(result);
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                if (result instanceof Throwable) {
-                    verify(callback1).accept(null, result);
-                } else {
-                    verify(callback1).accept(result, null);
-                }
+        assertTrueEventually(() -> {
+            if (result instanceof Throwable) {
+                verify(callback1).accept(null, result);
+            } else {
+                verify(callback1).accept(result, null);
             }
         });
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                if (result instanceof Throwable) {
-                    verify(callback2).accept(null, result);
-                } else {
-                    verify(callback2).accept(result, null);
-                }
+        assertTrueEventually(() -> {
+            if (result instanceof Throwable) {
+                verify(callback2).accept(null, result);
+            } else {
+                verify(callback2).accept(result, null);
             }
         });
     }
@@ -419,36 +412,25 @@ public class AbstractCompletableFutureTest extends HazelcastTestSupport {
         future.whenCompleteAsync(callback, executor);
 
         assertSame(result, future.get());
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                verify(callback).accept(result, null);
-            }
-        });
+        assertTrueEventually(() -> verify(callback).accept(result, null));
     }
 
     private void submitCancelAfterTimeInMillis(final TestFutureImpl future, final int timeInMillis) {
-        submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    sleepMillis(timeInMillis);
-                } finally {
-                    future.cancel(false);
-                }
+        submit(() -> {
+            try {
+                sleepMillis(timeInMillis);
+            } finally {
+                future.cancel(false);
             }
         });
     }
 
     private void submitSetResultAfterTimeInMillis(final TestFutureImpl future, final Object result, final int timeInMillis) {
-        submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    sleepMillis(timeInMillis);
-                } finally {
-                    future.complete(result);
-                }
+        submit(() -> {
+            try {
+                sleepMillis(timeInMillis);
+            } finally {
+                future.complete(result);
             }
         });
     }

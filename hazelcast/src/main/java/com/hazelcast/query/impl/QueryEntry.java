@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,13 +108,13 @@ public class QueryEntry extends QueryableEntry {
 
     @Override
     public Data getValueDataIfPresent() {
-        if (value instanceof Data) {
-            return (Data) value;
+        if (value instanceof Data data) {
+            return data;
         }
 
         Object possiblyData = record.getValue();
 
-        return possiblyData instanceof Data ? (Data) possiblyData : null;
+        return possiblyData instanceof Data d ? d : null;
     }
 
     @Override

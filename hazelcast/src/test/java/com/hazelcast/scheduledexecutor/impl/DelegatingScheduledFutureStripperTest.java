@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class DelegatingScheduledFutureStripperTest {
     @Test(expected = UnsupportedOperationException.class)
     @SuppressWarnings("ConstantConditions")
     public void compareTo() {
-        ScheduledFuture<Integer> future = new DelegatingScheduledFutureStripper<Integer>(
+        ScheduledFuture<Integer> future = new DelegatingScheduledFutureStripper<>(
                 scheduler.schedule(new SimpleCallableTestTask(), 0, TimeUnit.SECONDS));
         future.compareTo(null);
     }

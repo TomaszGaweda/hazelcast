@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ final class FromSqlRowConverter {
 
     // Convert SqlRow to GenericRecord
     @Nonnull
+    @SuppressWarnings("CyclomaticComplexity")
     public static GenericRecord toGenericRecord(SqlRow sqlRow, GenericMapStoreProperties properties) {
         GenericRecordBuilder builder = GenericRecordBuilder.compact(properties.compactTypeName);
 

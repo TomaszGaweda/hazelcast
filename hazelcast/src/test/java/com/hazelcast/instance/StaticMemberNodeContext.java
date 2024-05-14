@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import java.util.UUID;
 
 public class StaticMemberNodeContext implements NodeContext {
     private final NodeContext delegate;
-    private final UUID uuid;
+    protected final UUID uuid;
 
     public StaticMemberNodeContext(TestHazelcastInstanceFactory factory, Member member) {
         this(factory, member.getUuid(), member.getAddress());

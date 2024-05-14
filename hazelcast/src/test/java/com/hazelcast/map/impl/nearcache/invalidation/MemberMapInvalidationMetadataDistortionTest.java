@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import com.hazelcast.map.impl.MapServiceContext;
 import com.hazelcast.map.impl.nearcache.MapNearCacheManager;
 import com.hazelcast.map.impl.nearcache.NearCacheTestSupport;
 import com.hazelcast.spi.impl.NodeEngineImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
 import com.hazelcast.test.annotation.NightlyTest;
@@ -88,45 +87,35 @@ public class MemberMapInvalidationMetadataDistortionTest extends NearCacheTestSu
         HazelcastInstance nearCachedMember = factory.newHazelcastInstance(nearCachedConfig);
         final IMap<Integer, Integer> nearCachedMap = nearCachedMember.getMap(MAP_NAME);
 
-        Thread populateNearCache = new Thread(new Runnable() {
-            public void run() {
-                while (!stopTest.get()) {
-                    for (int i = 0; i < MAP_SIZE; i++) {
-                        nearCachedMap.get(i);
-                    }
+        Thread populateNearCache = new Thread(() -> {
+            while (!stopTest.get()) {
+                for (int i = 0; i < MAP_SIZE; i++) {
+                    nearCachedMap.get(i);
                 }
             }
         });
 
-        Thread distortSequence = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!stopTest.get()) {
-                    distortRandomPartitionSequence(MAP_NAME, member);
-                    sleepSeconds(1);
-                }
+        Thread distortSequence = new Thread(() -> {
+            while (!stopTest.get()) {
+                distortRandomPartitionSequence(MAP_NAME, member);
+                sleepSeconds(1);
             }
         });
 
-        Thread distortUuid = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!stopTest.get()) {
-                    distortRandomPartitionUuid(member);
-                    sleepSeconds(3);
-                }
+        Thread distortUuid = new Thread(() -> {
+            while (!stopTest.get()) {
+                distortRandomPartitionUuid(member);
+                sleepSeconds(3);
             }
         });
 
-        Thread put = new Thread(new Runnable() {
-            public void run() {
-                // change some data
-                while (!stopTest.get()) {
-                    int key = getInt(MAP_SIZE);
-                    int value = getInt(Integer.MAX_VALUE);
-                    memberMap.put(key, value);
-                    sleepAtLeastMillis(10);
-                }
+        Thread put = new Thread(() -> {
+            // change some data
+            while (!stopTest.get()) {
+                int key = getInt(MAP_SIZE);
+                int value = getInt(Integer.MAX_VALUE);
+                memberMap.put(key, value);
+                sleepAtLeastMillis(10);
             }
         });
 
@@ -142,15 +131,12 @@ public class MemberMapInvalidationMetadataDistortionTest extends NearCacheTestSu
         stopTest.set(true);
         assertJoinable(distortUuid, distortSequence, populateNearCache, put);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                for (int i = 0; i < MAP_SIZE; i++) {
-                    Integer valueSeenFromMember = memberMap.get(i);
-                    Integer valueSeenFromNearCachedSide = nearCachedMap.get(i);
+        assertTrueEventually(() -> {
+            for (int i = 0; i < MAP_SIZE; i++) {
+                Integer valueSeenFromMember = memberMap.get(i);
+                Integer valueSeenFromNearCachedSide = nearCachedMap.get(i);
 
-                    assertEquals(valueSeenFromMember, valueSeenFromNearCachedSide);
-                }
+                assertEquals(valueSeenFromMember, valueSeenFromNearCachedSide);
             }
         });
     }

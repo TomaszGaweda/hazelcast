@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,10 +55,10 @@ public class WriteBehindOnBackupsTest extends HazelcastTestSupport {
      * Normally backup nodes don't store entries only remove them from wbq-s. Here, we are testing removal of entries occurred or not.
      */
     @Test
-    public void testBackupRemovesEntries_afterProcessingDelay() throws Exception {
+    public void testBackupRemovesEntries_afterProcessingDelay() {
         final int numberOfItems = 10;
         final String mapName = randomMapName();
-        final MapStoreWithCounter<Integer, Integer> mapStore = new MapStoreWithCounter<Integer, Integer>();
+        final MapStoreWithCounter<Integer, Integer> mapStore = new MapStoreWithCounter<>();
         TestMapUsingMapStoreBuilder<Integer, Integer> storeBuilder = TestMapUsingMapStoreBuilder.create();
         final IMap<Integer, Integer> map = storeBuilder
                 .mapName(mapName)
@@ -79,7 +79,7 @@ public class WriteBehindOnBackupsTest extends HazelcastTestSupport {
     @Test
     public void testPutTransientDoesNotStoreEntry_onBackupPartition() {
         String mapName = randomMapName();
-        final MapStoreWithCounter<Integer, Integer> mapStore = new MapStoreWithCounter<Integer, Integer>();
+        final MapStoreWithCounter<Integer, Integer> mapStore = new MapStoreWithCounter<>();
         TestMapUsingMapStoreBuilder<Integer, Integer> storeBuilder = TestMapUsingMapStoreBuilder.create();
         final IMap<Integer, Integer> map = storeBuilder
                 .mapName(mapName)
@@ -103,7 +103,7 @@ public class WriteBehindOnBackupsTest extends HazelcastTestSupport {
     @Category(SlowTest.class)
     public void testPutTransientDoesNotStoreEntry_onPromotedReplica() {
         String mapName = randomMapName();
-        final MapStoreWithCounter<String, Object> mapStore = new MapStoreWithCounter<String, Object>();
+        final MapStoreWithCounter<String, Object> mapStore = new MapStoreWithCounter<>();
         TestMapUsingMapStoreBuilder<String, Object> storeBuilder = TestMapUsingMapStoreBuilder.create();
         TestHazelcastInstanceFactory factory = createHazelcastInstanceFactory(2);
         final IMap<String, Object> map = storeBuilder
@@ -181,8 +181,8 @@ public class WriteBehindOnBackupsTest extends HazelcastTestSupport {
                 continue;
             }
             final MapDataStore mapDataStore = recordStore.getMapDataStore();
-            if (mapDataStore instanceof WriteBehindStore) {
-                size += ((WriteBehindStore) mapDataStore).getWriteBehindQueue().size();
+            if (mapDataStore instanceof WriteBehindStore store) {
+                size += store.getWriteBehindQueue().size();
             }
         }
         return size;

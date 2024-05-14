@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,7 +176,7 @@ public abstract class AbstractExtractionTest extends HazelcastTestSupport {
      * Generates combinations of parameters and outputs them in the *horrible* JUnit format
      */
     protected static Collection<Object[]> axes(List<Index> indexes) {
-        List<Object[]> combinations = new ArrayList<Object[]>();
+        List<Object[]> combinations = new ArrayList<>();
         for (Index index : indexes) {
             combinations.add(new Object[]{index});
         }

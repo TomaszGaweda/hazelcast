@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import com.hazelcast.jet.pipeline.JoinClause;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serial;
 import java.util.List;
 
 import static com.hazelcast.jet.core.Edge.from;
@@ -43,6 +44,7 @@ import static com.hazelcast.jet.impl.util.Util.toList;
 @SuppressWarnings("rawtypes")
 public class HashJoinTransform<T0, R> extends AbstractTransform {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Nonnull

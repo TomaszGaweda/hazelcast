@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,20 @@ import com.hazelcast.cluster.Member;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.dataconnection.impl.InternalDataConnectionService;
+import com.hazelcast.instance.impl.Node;
 import com.hazelcast.instance.impl.NodeExtension;
 import com.hazelcast.internal.cluster.ClusterService;
+import com.hazelcast.internal.management.ManagementCenterService;
+import com.hazelcast.internal.metrics.MetricsRegistry;
+import com.hazelcast.internal.namespace.UserCodeNamespaceService;
 import com.hazelcast.internal.partition.IPartitionService;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.internal.serialization.impl.compact.schema.MemberSchemaService;
 import com.hazelcast.internal.services.ManagedService;
+import com.hazelcast.internal.tpc.TpcServerBootstrap;
 import com.hazelcast.logging.ILogger;
+import com.hazelcast.logging.LoggingService;
 import com.hazelcast.spi.annotation.PrivateApi;
 import com.hazelcast.spi.impl.eventservice.EventService;
 import com.hazelcast.spi.impl.executionservice.ExecutionService;
@@ -46,6 +52,7 @@ import com.hazelcast.wan.impl.WanReplicationService;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.UUID;
 
 /**
  * The NodeEngine is the 'umbrella' of services/service-method that gets injected into a {@link ManagedService}.
@@ -62,6 +69,8 @@ public interface NodeEngine {
     ExecutionService getExecutionService();
 
     ClusterService getClusterService();
+
+    ManagementCenterService getManagementCenterService();
 
     IPartitionService getPartitionService();
 
@@ -101,6 +110,13 @@ public interface NodeEngine {
     TransactionManagerService getTransactionManagerService();
 
     /**
+     * Gets the NamespaceService.
+     *
+     * @return the NamespaceService
+     */
+    UserCodeNamespaceService getNamespaceService();
+
+    /**
      * Gets the address of the master member.
      * <p>
      * This value can be null if no master is elected yet.
@@ -123,9 +139,10 @@ public interface NodeEngine {
     /**
      * Returns the local member.
      * <p>
-     * The returned value will never be null but it may change when local lite member is promoted to a data member
-     * or when this member merges to a new cluster after split-brain detected. Returned value should not be
-     * cached but instead this method should be called each time when local member is needed.
+     * The returned value will never be null, but it may change when local lite member is promoted to a data member
+     * or when a data member is demoted to a lite member or when this member merges to a new cluster after
+     * split-brain detected. Returned value should not be cached but instead this method should be called each time
+     * when local member is needed.
      *
      * @return the local member
      */
@@ -141,12 +158,18 @@ public interface NodeEngine {
     Config getConfig();
 
     /**
-     * Returns the Config ClassLoader. This class loader will be used for instantiation of all classes defined by the
-     * configuration (e.g. listeners, policies, stores, partitioning strategies, split brain protection functions, ...).
+     * Returns the Config ClassLoader. This class loader will be used for the instantiation of all classes defined
+     * by the configuration (e.g. listeners, policies, stores, partitioning strategies, split brain protection
+     * functions, etc.).
      * <p>
-     * TODO: add more documentation what the purpose is of the config classloader
+     * When the {@link UserCodeNamespaceService} is enabled, this will return an instance of the
+     * {@link com.hazelcast.internal.namespace.impl.NamespaceAwareClassLoader}, which delegates to child loaders
+     * depending on the Namespace context of the class loading.
+     * <p>
+     * When the {@link UserCodeNamespaceService} is disabled, this will return either the legacy User Code Deployment
+     * class loader if enabled, or else the {@link Config#getClassLoader()} will be returned.
      *
-     * @return the config ClassLoader.
+     * @return the config ClassLoader as defined above.
      */
     ClassLoader getConfigClassLoader();
 
@@ -289,5 +312,35 @@ public interface NodeEngine {
      */
     <S> Collection<S> getServices(Class<S> serviceClass);
 
+    /**
+     * Get member schema service.
+     * <p>
+     * @return the {@link MemberSchemaService}
+     */
     MemberSchemaService getSchemaService();
+
+    /**
+     * Get current node.
+     * <p>
+     * @return the {@link Node}
+     */
+    Node getNode();
+
+    /**
+     * Get logging service.
+     * <p>
+     * @return the {@link LoggingService}
+     */
+    LoggingService getLoggingService();
+
+    /**
+     * Get metrics registry.
+     * <p>
+     * @return the {@link MetricsRegistry}
+     */
+    MetricsRegistry getMetricsRegistry();
+
+    void onClientDisconnected(UUID clientUuid);
+
+    TpcServerBootstrap getTpcServerBootstrap();
 }

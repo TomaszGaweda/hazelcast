@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class ListenerLeakTest extends ClientTestSupport {
 
     private Collection<Node> createNodes() {
         int NODE_COUNT = 3;
-        Collection<Node> nodes = new ArrayList<Node>(3);
+        Collection<Node> nodes = new ArrayList<>(3);
         for (int i = 0; i < NODE_COUNT; i++) {
             HazelcastInstance hazelcast = hazelcastFactory.newHazelcastInstance();
             nodes.add(getNode(hazelcast));
@@ -263,7 +263,7 @@ public class ListenerLeakTest extends ClientTestSupport {
 
         assertTrueEventually(() -> {
             for (Node node : nodes) {
-                assertEquals(0, node.getClientEngine().getClusterListenerService().getClusterListeningEndpoints().size());
+                assertEquals(0, node.getClientEngine().getClusterViewListenerService().getClusterListeningEndpoints().size());
             }
         });
     }

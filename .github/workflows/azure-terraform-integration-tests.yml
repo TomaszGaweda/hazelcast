@@ -1,4 +1,5 @@
-name: azure-tests
+name: Azure Discovery Plugin Tests
+
 on:
   workflow_dispatch:
   pull_request_target:
@@ -8,8 +9,8 @@ on:
       - "master"
       - "*.z"
     paths:
-      - 'hazelcast/src/main/java/com/hazelcast/azure/**'
-      - '.github/terraform/azure/**'
+      - "hazelcast/src/main/java/com/hazelcast/azure/**"
+      - ".github/terraform/azure/**"
 
 jobs:
   build:
@@ -17,11 +18,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
     runs-on: ubuntu-latest
     if: >-
       github.repository_owner == 'hazelcast' && 
@@ -31,15 +27,9 @@ jobs:
           github.event.label.name == 'run-discovery-tests' 
         )
       )
+    env:
+      AWS_REGION: us-east-1
     steps:
-      - name: Setup JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          architecture: x64
-          distribution: adopt
-          cache: 'maven'
-
       - name: Decide which ref to checkout
         id: decide-ref
         run: |
@@ -54,28 +44,53 @@ jobs:
         with:
           ref: ${{steps.decide-ref.outputs.ref}}
 
+      - name: Read Java Config
+        uses: pietrobolcato/action-read-yaml@9f13718d61111b69f30ab4ac683e67a56d254e1d
+        id: java-config
+        with:
+          config: ${{ github.workspace }}/.github/java-config.yml
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ steps.java-config.outputs['java-version'] }}
+          distribution: ${{ steps.java-config.outputs['distribution'] }}
+          architecture: x64
+          cache: "maven"
+
       - name: Build hazelcast jar
         run: |
-          ./mvnw -T 4 -B -V -e clean package \
-          -Dfindbugs.skip \
-          -Dcheckstyle.skip \
-          -Dpmd.skip=true \
-          -Dspotbugs.skip \
-          -Denforcer.skip \
-          -Dmaven.javadoc.skip \
-          -DskipTests \
-          -Dlicense.skip=true \
-          -Drat.skip=true \
-          -Dspotless.check.skip=true \
-          -Dattribution.skip \
-          -Dmaven.source.skip=true
+          ./mvnw -T 4 -B -V -e clean package --activate-profiles quick \
           echo "Hazelcast jar is: " hazelcast/target/hazelcast-*-SNAPSHOT.jar
           cp hazelcast/target/hazelcast-*-SNAPSHOT.jar ~/hazelcast.jar
 
-      - name : Set-up Terraform
-        uses: hashicorp/setup-terraform@v2.0.0
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
-          terraform_version: 1.1.8
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get Secrets
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            AZURE_CREDENTIALS,CN/AZURE_CREDENTIALS
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ env.AZURE_CREDENTIALS }}
+
+      - name: Set Azure ServicePrincipal authentication env vars
+        run: |
+          export ARM_CLIENT_ID=$(echo $AZURE_CREDENTIALS | jq -r .clientId)
+          export ARM_CLIENT_SECRET=$(echo $AZURE_CREDENTIALS | jq -r .clientSecret)
+          export ARM_SUBSCRIPTION_ID=$(echo $AZURE_CREDENTIALS | jq -r .subscriptionId)
+          export ARM_TENANT_ID=$(echo $AZURE_CREDENTIALS | jq -r .tenantId)
+
+      - name: Set-up Terraform
+        uses: hashicorp/setup-terraform@v3.1.1
 
       - name: Terraform Init
         working-directory: .github/terraform/azure

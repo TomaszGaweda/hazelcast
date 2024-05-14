@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,5 +72,10 @@ public final class SchemaReplication implements IdentifiedDataSerializable {
     @Override
     public int getClassId() {
         return SchemaDataSerializerHook.SCHEMA_REPLICATION;
+    }
+
+    @Override
+    public String toString() {
+        return "SchemaReplication [schema=" + schema + ", status=" + status + "]";
     }
 }

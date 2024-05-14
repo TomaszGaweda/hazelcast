@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,5 +78,11 @@ public class MapSetReadCursorMessageTask
     @Override
     protected Operation prepareOperation() {
         return new SetReadCursorOperation(parameters.mapName, parameters.cacheName, parameters.sequence, getPartitionId());
+    }
+
+    @Override
+    protected String getUserCodeNamespace() {
+        // This task is not Namespace-aware so it doesn't matter
+        return null;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,29 +52,17 @@ public final class LockDataSerializerHook implements DataSerializerHook {
 
     @Override
     public DataSerializableFactory createFactory() {
-        return typeId -> {
-            switch (typeId) {
-                case IS_LOCKED:
-                    return new IsLockedOperation();
-                case LOCK:
-                    return new LockOperation();
-                case LOCK_BACKUP:
-                    return new LockBackupOperation();
-                case LOCK_REPLICATION:
-                    return new LockReplicationOperation();
-                case UNLOCK_BACKUP:
-                    return new UnlockBackupOperation();
-                case UNLOCK:
-                    return new UnlockOperation();
-                case LOCK_STORE:
-                    return new LockStoreImpl();
-                case LOCK_RESOURCE:
-                    return new LockResourceImpl();
-                case UNLOCK_IF_LEASE_EXPIRED:
-                    return new UnlockIfLeaseExpiredOperation();
-                default:
-                    return null;
-            }
+        return typeId -> switch (typeId) {
+            case IS_LOCKED -> new IsLockedOperation();
+            case LOCK -> new LockOperation();
+            case LOCK_BACKUP -> new LockBackupOperation();
+            case LOCK_REPLICATION -> new LockReplicationOperation();
+            case UNLOCK_BACKUP -> new UnlockBackupOperation();
+            case UNLOCK -> new UnlockOperation();
+            case LOCK_STORE -> new LockStoreImpl();
+            case LOCK_RESOURCE -> new LockResourceImpl();
+            case UNLOCK_IF_LEASE_EXPIRED -> new UnlockIfLeaseExpiredOperation();
+            default -> null;
         };
     }
 }

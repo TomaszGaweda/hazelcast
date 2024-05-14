@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -480,7 +480,7 @@ public class MapLoaderTest extends HazelcastTestSupport {
         final AtomicBoolean loadAllCalled = new AtomicBoolean();
         MapStoreConfig mapStoreConfig = new MapStoreConfig()
                 .setEnabled(true)
-                .setImplementation(new MapLoader<Object, Object>() {
+                .setImplementation(new MapLoader<>() {
                     @Override
                     public Object load(Object key) {
                         return null;
@@ -637,7 +637,7 @@ public class MapLoaderTest extends HazelcastTestSupport {
     }
 
     private MapStore<Integer, Integer> createMapLoader(final AtomicInteger loadAllCounter) {
-        return new MapStoreAdapter<Integer, Integer>() {
+        return new MapStoreAdapter<>() {
             @Override
             public Map<Integer, Integer> loadAll(Collection<Integer> keys) {
                 loadAllCounter.addAndGet(keys.size());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static java.lang.Character.isLowerCase;
-import static java.lang.Character.toLowerCase;
-
 /**
  * Utility class for Strings.
  */
@@ -42,7 +39,7 @@ public final class StringUtil {
     /**
      * Points to the System property 'line.separator'.
      */
-    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static final String LINE_SEPARATOR = System.lineSeparator();
 
     /**
      * LOCALE_INTERNAL is the default locale for string operations and number formatting. Initialized to
@@ -57,17 +54,6 @@ public final class StringUtil {
             = Pattern.compile("^(\\d+)\\.(\\d+)(\\.(\\d+))?(-\\w+(?:-\\d+)?)?(-SNAPSHOT)?$");
 
     private StringUtil() {
-    }
-
-    /**
-     * Creates a UTF8_CHARSET string from a byte array.
-     *
-     * @param bytes the byte array.
-     * @return the string created from the byte array.
-     */
-    public static String bytesToString(byte[] bytes) {
-
-        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     /**
@@ -143,27 +129,6 @@ public final class StringUtil {
             return s;
         }
         return s.toUpperCase(LOCALE_INTERNAL);
-    }
-
-    /**
-     * Converts the first character to lower case.
-     * <p>
-     * Empty strings are ignored.
-     *
-     * @param s the given string
-     * @return the converted string.
-     */
-    public static String lowerCaseFirstChar(String s) {
-        if (s.isEmpty()) {
-            return s;
-        }
-
-        char first = s.charAt(0);
-        if (isLowerCase(first)) {
-            return s;
-        }
-
-        return toLowerCase(first) + s.substring(1);
     }
 
     /**
@@ -288,7 +253,9 @@ public final class StringUtil {
 
 
     /**
-     * Trim whitespaces. This method (compared to {@link String#trim()}) doesn't limit to space character.
+     * Trim whitespaces using the more aggressive approach of {@link String#strip()}.
+     * This method removes leading and trailing whitespaces, including a broader set of Unicode whitespace characters,
+     * compared to {@link String#trim()}.
      *
      * @param input string to trim
      * @return {@code null} if provided value was {@code null}, input with removed leading and trailing whitespaces
@@ -297,7 +264,7 @@ public final class StringUtil {
         if (input == null) {
             return null;
         }
-        return input.replaceAll("^\\s+|\\s+$", "");
+        return input.strip();
     }
 
     /**
@@ -350,16 +317,13 @@ public final class StringUtil {
     }
 
     /**
-     * Returns true if two strings are equals ignoring the letter case in {@link #LOCALE_INTERNAL} locale.
-     *
      * @param str1 first string to compare
      * @param str2 second string to compare
-     * @return true if the strings are equals ignoring the case
+     * @return {@code true} if the two strings are equals ignoring the letter case in {@link #LOCALE_INTERNAL} locale.
      */
+    @SuppressWarnings("java:S4973")
     public static boolean equalsIgnoreCase(String str1, String str2) {
-        return (str1 == null || str2 == null)
-                ? false
-                : (str1 == str2 || lowerCaseInternal(str1).equals(lowerCaseInternal(str2)));
+        return (str1 != null && str2 != null) && (str1 == str2 || lowerCaseInternal(str1).equals(lowerCaseInternal(str2)));
     }
 
     /**

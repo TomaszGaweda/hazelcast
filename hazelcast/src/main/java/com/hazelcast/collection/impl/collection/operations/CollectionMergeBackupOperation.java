@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class CollectionMergeBackupOperation extends CollectionOperation implemen
     protected void readInternal(ObjectDataInput in) throws IOException {
         super.readInternal(in);
         int size = in.readInt();
-        backupItems = new ArrayList<CollectionItem>(size);
+        backupItems = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             CollectionItem backupItem = in.readObject();
             backupItems.add(backupItem);

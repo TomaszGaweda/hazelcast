@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import static com.hazelcast.internal.util.QuickMath.modPowerOfTwo;
 
 class JitterRecorder {
 
-    private final AtomicReferenceArray<Slot> slots = new AtomicReferenceArray<Slot>(CAPACITY);
+    private final AtomicReferenceArray<Slot> slots = new AtomicReferenceArray<>(CAPACITY);
 
     void recordPause(long startTimeMillis, long hiccupNanos) {
         Slot slot = getSlotForTimestamp(startTimeMillis);
@@ -36,7 +36,7 @@ class JitterRecorder {
         long firstBucket = getBucket(from);
         int slotIndex = toSlotIndex(firstBucket);
 
-        ArrayList<Slot> result = new ArrayList<Slot>();
+        ArrayList<Slot> result = new ArrayList<>();
 
         long minStartTime = firstBucket * AGGREGATION_INTERVAL_MILLIS;
         for (int i = 0; i < CAPACITY; i++) {

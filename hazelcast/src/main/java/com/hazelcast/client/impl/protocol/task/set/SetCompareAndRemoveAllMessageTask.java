@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.hazelcast.client.impl.protocol.task.set;
 
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.SetCompareAndRemoveAllCodec;
-import com.hazelcast.client.impl.protocol.task.AbstractPartitionMessageTask;
 import com.hazelcast.collection.impl.collection.operations.CollectionCompareAndRemoveOperation;
 import com.hazelcast.collection.impl.set.SetService;
 import com.hazelcast.instance.impl.Node;
@@ -37,7 +36,7 @@ import java.util.Set;
  * SetCompareAndRemoveAllMessageTask
  */
 public class SetCompareAndRemoveAllMessageTask
-        extends AbstractPartitionMessageTask<SetCompareAndRemoveAllCodec.RequestParameters> {
+        extends AbstractSetMessageTask<SetCompareAndRemoveAllCodec.RequestParameters> {
 
     public SetCompareAndRemoveAllMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
@@ -45,7 +44,7 @@ public class SetCompareAndRemoveAllMessageTask
 
     @Override
     protected Operation prepareOperation() {
-        Set<Data> values = new HashSet<Data>(parameters.values);
+        Set<Data> values = new HashSet<>(parameters.values);
         return new CollectionCompareAndRemoveOperation(parameters.name, false, values);
     }
 

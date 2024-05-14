@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class MockNodeContext implements NodeContext {
     private final List<String> nodeExtensionPriorityList;
 
     public MockNodeContext(TestNodeRegistry registry, Address thisAddress) {
-        this(registry, thisAddress, Collections.<Address>emptySet(), DefaultNodeContext.EXTENSION_PRIORITY_LIST);
+        this(registry, thisAddress, Collections.emptySet(), DefaultNodeContext.EXTENSION_PRIORITY_LIST);
     }
 
     protected MockNodeContext(

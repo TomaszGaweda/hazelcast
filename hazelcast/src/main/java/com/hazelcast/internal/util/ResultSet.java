@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class ResultSet extends AbstractSet<Map.Entry> {
     @Override
     public Iterator iterator() {
         if (entries == null) {
-            return Collections.EMPTY_LIST.iterator();
+            return Collections.emptyIterator();
         }
         return new ResultIterator();
     }
@@ -109,6 +109,7 @@ public class ResultSet extends AbstractSet<Map.Entry> {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean retainAll(Collection<?> coll) {
         throw new UnsupportedOperationException();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class BackupListenerLeakTest {
     }
 
     @Test
-    public void testBackupListenerIsNotRemoved_afterClientRestart() throws InterruptedException {
+    public void testBackupListenerIsNotRemoved_afterClientRestart() {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.getConnectionStrategyConfig().getConnectionRetryConfig().setClusterConnectTimeoutMillis(Long.MAX_VALUE);
         HazelcastInstance hazelcast = hazelcastFactory.newHazelcastInstance();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,10 @@ import com.hazelcast.ringbuffer.Ringbuffer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Jet is a component of Hazelcast to execute streaming or batch
@@ -154,8 +156,8 @@ public interface JetService {
      * #newLightJob(Pipeline, JobConfig)}.
      */
     @Nonnull
-    default Job newLightJob(@Nonnull Pipeline p) {
-        return newLightJob(p, new JobConfig());
+    default Job newLightJob(@Nonnull Pipeline pipeline) {
+        return newLightJob(pipeline, new JobConfig());
     }
 
     /**
@@ -189,7 +191,7 @@ public interface JetService {
      * You should not mutate the {@link JobConfig} or {@link Pipeline} instances
      * after submitting them to this method.
      */
-    Job newLightJob(@Nonnull Pipeline p, @Nonnull JobConfig config);
+    Job newLightJob(@Nonnull Pipeline pipeline, @Nonnull JobConfig config);
 
     /**
      * Submits a job defined in the Core API with a default config.
@@ -299,4 +301,63 @@ public interface JetService {
      */
     @Nonnull
     Collection<Observable<?>> getObservables();
+
+    /**
+     * Creates a {@code JobBuilder} for a new Jet job with {@link DAG} definition.
+     *
+     * @since 5.5
+     */
+    JobBuilder newJobBuilder(@Nonnull DAG dag);
+
+    /**
+     * Creates a {@code JobBuilder} for a new Jet job with {@link Pipeline} definition.
+     *
+     * @since 5.5
+     */
+    JobBuilder newJobBuilder(@Nonnull Pipeline pipeline);
+
+    /** @since 5.5  */
+    @NotThreadSafe
+    interface JobBuilder {
+
+        /**
+         * See {@link JobConfig} for details.
+         */
+        JobBuilder withConfig(@Nonnull JobConfig jobConfig);
+
+        /**
+         * Selects the members on which the job will run.
+         * <p>
+         * If there is no member matching the selector during submission, the
+         * submission will be successful, but the job will fail with a {@link
+         * RejectedExecutionException}. If the cluster topology changes during
+         * the job execution and there is no longer a matching member, the job
+         * execution will be delayed until at least one member satisfies the
+         * selector. The duration between checks is the same as in cluster
+         * safety and quorum checks, which is 2 seconds and not configurable.
+         *
+         * @see JetMemberSelector#ALL_LITE_MEMBERS
+         */
+        JobBuilder withMemberSelector(@Nonnull JetMemberSelector memberSelector);
+
+        /**
+         * See {@link #newLightJob(Pipeline, JobConfig)} for details.
+         */
+        JobBuilder asLightJob();
+
+        /**
+         * See {@link #newJob(Pipeline, JobConfig)} for details.
+         *
+         * @see #startIfAbsent()
+         */
+        Job start();
+
+        /**
+         * See {@link #newJobIfAbsent(Pipeline, JobConfig)} for details.
+         *
+         * @throws UnsupportedOperationException for light jobs
+         * @see #start()
+         */
+        Job startIfAbsent();
+    }
 }

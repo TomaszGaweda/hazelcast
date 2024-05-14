@@ -3,6 +3,8 @@ target/
 .idea/
 !.idea/icon.png
 !.idea/icon.svg
+.vscode/
+!.vscode/extensions.json
 .settings/
 .attach_pid*
 .classpath
@@ -26,6 +28,7 @@ reports/
 */src/test/resources/data/result*
 *.jfr
 .mvn/wrapper/maven-wrapper.jar
+.checkstyle
 
 # Hadoop files
 *.crc

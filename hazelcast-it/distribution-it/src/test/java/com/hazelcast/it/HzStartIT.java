@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.hazelcast.logging.Logger;
 import com.hazelcast.map.IMap;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
-import com.hazelcast.test.annotation.NightlyTest;
+import com.hazelcast.test.annotation.QuickTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(HazelcastSerialClassRunner.class)
-@Category(NightlyTest.class)
+@Category(QuickTest.class)
 public class HzStartIT extends HazelcastTestSupport {
 
     private static final ILogger log = Logger.getLogger(HzStartIT.class);
@@ -71,13 +71,15 @@ public class HzStartIT extends HazelcastTestSupport {
         if (client != null) {
             client.shutdown();
         }
-        log.info("Destroying Hazelcast process");
-        process.destroy();
-        boolean destroyed = process.waitFor(30, TimeUnit.SECONDS);
-        if (!destroyed) {
-            log.info("Hazelcast process not destroyed, trying Process#destroyForcibly()");
-            process.destroyForcibly()
-                   .waitFor();
+        if (process != null) {
+            log.info("Destroying Hazelcast process");
+            process.destroy();
+            boolean destroyed = process.waitFor(30, TimeUnit.SECONDS);
+            if (!destroyed) {
+                log.info("Hazelcast process not destroyed, trying Process#destroyForcibly()");
+                process.destroyForcibly()
+                       .waitFor();
+            }
         }
     }
 

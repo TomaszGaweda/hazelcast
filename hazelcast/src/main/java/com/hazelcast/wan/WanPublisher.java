@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,9 +67,30 @@ public interface WanPublisher<T> {
     void publishReplicationEvent(WanEvent<T> eventObject);
 
     /**
+     * Republishes the {@code eventObject} WAN replication event.
+     * Only used for data structures which have republishing enabled.
+     *
+     * @param eventObject the replication event for republishing
+     * @since 5.4
+     */
+    default void publishRepublishedReplicationEvent(WanEvent<T> eventObject) {
+        publishReplicationEvent(eventObject);
+    }
+
+    /**
      * Publish the {@code eventObject} WAN replication event backup.
      *
      * @param eventObject the replication backup event
      */
     void publishReplicationEventBackup(WanEvent<T> eventObject);
+
+    /**
+     * Republishes the {@code eventObject} WAN replication backup event.
+     * Only used for data structures which have republishing enabled.
+     *
+     * @param eventObject the replication backup event
+     */
+    default void publishRepublishedReplicationEventBackup(WanEvent<T> eventObject) {
+        publishReplicationEventBackup(eventObject);
+    }
 }

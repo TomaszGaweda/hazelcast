@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.hazelcast.client.map.impl.querycache;
 
 import com.hazelcast.client.test.TestHazelcastFactory;
-import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.map.QueryCache;
@@ -48,7 +47,6 @@ import static org.junit.Assert.assertTrue;
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class ClientQueryCacheEventHandlingTest extends HazelcastTestSupport {
 
-    @SuppressWarnings("unchecked")
     private static final Predicate<Integer, Integer> TRUE_PREDICATE = Predicates.alwaysTrue();
 
     private TestHazelcastFactory factory = new TestHazelcastFactory();
@@ -92,16 +90,10 @@ public class ClientQueryCacheEventHandlingTest extends HazelcastTestSupport {
 
     @Test
     public void testListenerRegistration() {
-        UUID addEntryListener = queryCache.addEntryListener(new EntryAddedListener<Integer, Integer>() {
-            @Override
-            public void entryAdded(EntryEvent<Integer, Integer> event) {
-            }
+        UUID addEntryListener = queryCache.addEntryListener((EntryAddedListener<Integer, Integer>) event -> {
         }, true);
 
-        UUID removeEntryListener = queryCache.addEntryListener(new EntryRemovedListener<Integer, Integer>() {
-            @Override
-            public void entryRemoved(EntryEvent<Integer, Integer> event) {
-            }
+        UUID removeEntryListener = queryCache.addEntryListener((EntryRemovedListener<Integer, Integer>) event -> {
         }, true);
 
         assertFalse(queryCache.removeEntryListener(UUID.randomUUID()));

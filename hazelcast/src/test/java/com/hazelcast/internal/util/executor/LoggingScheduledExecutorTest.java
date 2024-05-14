@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -218,9 +218,9 @@ public class LoggingScheduledExecutorTest extends HazelcastTestSupport {
 
     private static class TestLogger extends AbstractLogger {
 
-        private final AtomicReference<Throwable> throwableHolder = new AtomicReference<Throwable>();
-        private final AtomicReference<String> messageHolder = new AtomicReference<String>();
-        private final AtomicReference<Level> logLevelHolder = new AtomicReference<Level>();
+        private final AtomicReference<Throwable> throwableHolder = new AtomicReference<>();
+        private final AtomicReference<String> messageHolder = new AtomicReference<>();
+        private final AtomicReference<Level> logLevelHolder = new AtomicReference<>();
 
         @Override
         public void log(Level level, String message) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static com.hazelcast.jet.Util.idToString;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFine;
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class SnapshotPhase1Operation extends AsyncJobOperation {
 
@@ -39,9 +37,6 @@ public class SnapshotPhase1Operation extends AsyncJobOperation {
     public static volatile boolean postponeResponses;
 
     private static final int RETRY_MS = 100;
-    private static final CompletableFuture<SnapshotPhase1Result> EMPTY_RESULT =
-            completedFuture(new SnapshotPhase1Result(0, 0, 0, null));
-
     private long executionId;
     private long snapshotId;
     private String mapName;
@@ -72,8 +67,7 @@ public class SnapshotPhase1Operation extends AsyncJobOperation {
                 .exceptionally(exc -> new SnapshotPhase1Result(0, 0, 0, exc))
                 .thenApply(result -> {
                     if (result.getError() == null) {
-                        logFine(getLogger(),
-                                "Snapshot %s phase 1 for %s finished successfully on member",
+                        getLogger().fine("Snapshot %s phase 1 for %s finished successfully on member",
                                 snapshotId, ctx.jobNameAndExecutionId());
                     } else {
                         getLogger().warning(String.format("Snapshot %d phase 1 for %s finished with an error on member: " +
@@ -113,7 +107,7 @@ public class SnapshotPhase1Operation extends AsyncJobOperation {
         super.writeInternal(out);
         out.writeLong(executionId);
         out.writeLong(snapshotId);
-        out.writeUTF(mapName);
+        out.writeString(mapName);
         out.writeInt(flags);
     }
 
@@ -122,7 +116,7 @@ public class SnapshotPhase1Operation extends AsyncJobOperation {
         super.readInternal(in);
         executionId = in.readLong();
         snapshotId = in.readLong();
-        mapName = in.readUTF();
+        mapName = in.readString();
         flags = in.readInt();
     }
 
@@ -201,7 +195,7 @@ public class SnapshotPhase1Operation extends AsyncJobOperation {
             out.writeLong(numBytes);
             out.writeLong(numKeys);
             out.writeLong(numChunks);
-            out.writeUTF(error);
+            out.writeString(error);
         }
 
         @Override
@@ -209,7 +203,7 @@ public class SnapshotPhase1Operation extends AsyncJobOperation {
             numBytes = in.readLong();
             numKeys = in.readLong();
             numChunks = in.readLong();
-            error = in.readUTF();
+            error = in.readString();
         }
     }
 }

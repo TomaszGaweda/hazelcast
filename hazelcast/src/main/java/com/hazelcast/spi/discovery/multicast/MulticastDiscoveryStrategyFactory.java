@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class MulticastDiscoveryStrategyFactory implements DiscoveryStrategyFacto
     private static final Collection<PropertyDefinition> PROPERTY_DEFINITIONS;
 
     static {
-        List<PropertyDefinition> propertyDefinitions = new ArrayList<PropertyDefinition>();
+        List<PropertyDefinition> propertyDefinitions = new ArrayList<>();
         propertyDefinitions.add(MulticastProperties.GROUP);
         propertyDefinitions.add(MulticastProperties.PORT);
         propertyDefinitions.add(MulticastProperties.SAFE_SERIALIZATION);

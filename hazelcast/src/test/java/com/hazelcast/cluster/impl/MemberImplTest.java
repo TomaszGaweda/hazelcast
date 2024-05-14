@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ public class MemberImplTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testConstructor_withHazelcastInstance() throws Exception {
+    public void testConstructor_withHazelcastInstance() {
         UUID uuid = UuidUtil.newUnsecureUUID();
         MemberImpl member = new MemberImpl.Builder(address).version(MemberVersion.of("3.8.0"))
                 .localMember(true).uuid(uuid).instance(hazelcastInstance).build();
@@ -123,7 +123,7 @@ public class MemberImplTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testConstructor_withAttributes() throws Exception {
+    public void testConstructor_withAttributes() {
         Map<String, String> attributes = new HashMap<>();
         attributes.put("key1", "value");
         attributes.put("key2", "12345");
@@ -149,7 +149,7 @@ public class MemberImplTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testSetHazelcastInstance() throws Exception {
+    public void testSetHazelcastInstance() {
         MemberImpl member = new MemberImpl(address, MemberVersion.of("3.8.0"), true);
         assertNull(member.getLogger());
 
@@ -193,7 +193,7 @@ public class MemberImplTest extends HazelcastTestSupport {
 
     @Test
     public void testSerialization_whenMultiAddress() throws Exception {
-        Map<EndpointQualifier, Address> addressMap = new HashMap<EndpointQualifier, Address>();
+        Map<EndpointQualifier, Address> addressMap = new HashMap<>();
         addressMap.put(EndpointQualifier.MEMBER, address);
         addressMap.put(EndpointQualifier.REST, new Address("127.0.0.1", 8080));
         MemberImpl member = new MemberImpl.Builder(addressMap).version(MemberVersion.of("3.12.0")).build();

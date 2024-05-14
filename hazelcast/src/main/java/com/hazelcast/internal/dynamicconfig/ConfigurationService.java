@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ package com.hazelcast.internal.dynamicconfig;
 import com.hazelcast.config.CacheSimpleConfig;
 import com.hazelcast.config.CardinalityEstimatorConfig;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.DataConnectionConfig;
 import com.hazelcast.config.DurableExecutorConfig;
 import com.hazelcast.config.ExecutorConfig;
-import com.hazelcast.config.DataConnectionConfig;
 import com.hazelcast.config.FlakeIdGeneratorConfig;
-import com.hazelcast.config.InvalidConfigurationException;
 import com.hazelcast.config.ListConfig;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MultiMapConfig;
@@ -35,12 +34,15 @@ import com.hazelcast.config.RingbufferConfig;
 import com.hazelcast.config.ScheduledExecutorConfig;
 import com.hazelcast.config.SetConfig;
 import com.hazelcast.config.TopicConfig;
+import com.hazelcast.config.UserCodeNamespaceConfig;
 import com.hazelcast.config.WanReplicationConfig;
+import com.hazelcast.config.vector.VectorCollectionConfig;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Dynamic configurations.
@@ -58,9 +60,6 @@ public interface ConfigurationService {
      * Registers a dynamic configurations to all cluster members.
      *
      * @param config configuration to register
-     * @throws InvalidConfigurationException when static configuration already
-     *                                       contains the same config with the
-     *                                       same name
      */
     void broadcastConfig(IdentifiedDataSerializable config);
 
@@ -72,10 +71,23 @@ public interface ConfigurationService {
     void updateLicense(String licenseKey);
 
     /**
+     * Update the license for the cluster.
+     *
+     * @param licenseKey new license key to set
+     */
+    CompletableFuture<Void> updateLicenseAsync(String licenseKey);
+
+    /**
      * Update the member list of TCP-IP join config
      * @param memberList a new member list to set
      */
     void updateTcpIpConfigMemberList(List<String> memberList);
+
+    /**
+     * Update the member list of TCP-IP join config
+     * @param memberList a new member list to set
+     */
+    CompletableFuture<Void> updateTcpIpConfigMemberListAsync(List<String> memberList);
 
     /**
      * Persists any dynamically changeable sub configuration to this member's
@@ -389,4 +401,15 @@ public interface ConfigurationService {
      * @return registered WAN replication configurations keyed by configuration name
      */
     Map<String, WanReplicationConfig> getWanReplicationConfigs();
+
+    /**
+     * Returns all registered namespace configurations keyed by configuration name.
+     *
+     * @return Namespace configurations keyed by configuration name
+     */
+    Map<String, UserCodeNamespaceConfig> getNamespaceConfigs();
+
+    VectorCollectionConfig findVectorCollectionConfig(String name);
+
+    Map<String, VectorCollectionConfig> getVectorCollectionConfigs();
 }

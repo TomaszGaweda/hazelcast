@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public final class ClassNameFilterParser {
         Set<String> whitelistSet = parsePrefixes(whitelistedPrefixes);
         if (!whitelistSet.isEmpty()) {
             ClassWhitelistFilter whitelistFilter = new ClassWhitelistFilter(whitelistSet.toArray(new String[0]));
-            classFilter = new AndFilter<String>(classFilter, whitelistFilter);
+            classFilter = new AndFilter<>(classFilter, whitelistFilter);
         }
         return classFilter;
     }
@@ -58,7 +58,7 @@ public final class ClassNameFilterParser {
 
     private static Set<String> parsePrefixes(String prefixes) {
         if (prefixes == null) {
-            return new HashSet<String>();
+            return new HashSet<>();
         }
 
         prefixes = prefixes.trim();

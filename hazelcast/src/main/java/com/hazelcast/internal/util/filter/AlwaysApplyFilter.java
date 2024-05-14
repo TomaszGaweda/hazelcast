@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ public final class AlwaysApplyFilter<T> implements Filter<T> {
     }
 
     public static <T> AlwaysApplyFilter<T> newInstance() {
-        return new AlwaysApplyFilter<T>();
+        return new AlwaysApplyFilter<>();
     }
 
     @Override

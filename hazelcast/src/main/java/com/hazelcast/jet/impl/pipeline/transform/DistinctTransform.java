@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.hazelcast.jet.impl.pipeline.PipelineImpl.Context;
 import com.hazelcast.jet.impl.pipeline.Planner;
 import com.hazelcast.jet.impl.pipeline.Planner.PlannerVertex;
 
+import java.io.Serial;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import static com.hazelcast.jet.pipeline.ServiceFactories.nonSharedService;
 
 public class DistinctTransform<T, K> extends AbstractTransform {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final FunctionEx<? super T, ? extends K> keyFn;

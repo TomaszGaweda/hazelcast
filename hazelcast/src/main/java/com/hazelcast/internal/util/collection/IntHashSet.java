@@ -1,6 +1,6 @@
 /*
  * Original work Copyright 2015 Real Logic Ltd.
- * Modified work Copyright (c) 2015-2023, Hazelcast, Inc. All Rights Reserved.
+ * Modified work Copyright (c) 2015-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public final class IntHashSet implements Set<Integer> {
 
     @Override
     public boolean remove(final Object value) {
-        return value instanceof Integer && remove(((Integer) value).intValue());
+        return value instanceof Integer i && remove(i.intValue());
     }
 
     /**
@@ -142,7 +142,7 @@ public final class IntHashSet implements Set<Integer> {
 
     @Override
     public boolean contains(final Object value) {
-        return value instanceof Integer && contains(((Integer) value).intValue());
+        return value instanceof Integer i && contains(i.intValue());
     }
 
     public boolean contains(final int value) {
@@ -185,7 +185,7 @@ public final class IntHashSet implements Set<Integer> {
     }
 
     private <E extends Integer> boolean addAllCapture(final Collection<E> coll) {
-        final Predicate<E> p = new Predicate<E>() {
+        final Predicate<E> p = new Predicate<>() {
             @Override
             public boolean test(E x) {
                 return add(x);
@@ -349,8 +349,7 @@ public final class IntHashSet implements Set<Integer> {
             return true;
         }
 
-        if (other instanceof IntHashSet) {
-            final IntHashSet otherSet = (IntHashSet) other;
+        if (other instanceof IntHashSet otherSet) {
             return otherSet.missingValue == missingValue && otherSet.size() == size() && containsAll(otherSet);
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.mock;
 public class ClassDataProviderTest {
 
     @Test
-    public void givenProviderModeSetToOFF_whenMapClassContainsClass_thenReturnNull() throws Exception {
+    public void givenProviderModeSetToOFF_whenMapClassContainsClass_thenReturnNull() {
         UserCodeDeploymentConfig.ProviderMode providerMode = OFF;
         String className = "className";
         ClassSource classSource = newMockClassSource();
@@ -52,7 +52,7 @@ public class ClassDataProviderTest {
     }
 
     @Test
-    public void givenProviderModeSetToLOCAL_CLASSES_ONLY_whenMapClassContainsClass_thenReturnNull() throws Exception {
+    public void givenProviderModeSetToLOCAL_CLASSES_ONLY_whenMapClassContainsClass_thenReturnNull() {
         UserCodeDeploymentConfig.ProviderMode providerMode = LOCAL_CLASSES_ONLY;
         String className = "className";
         ClassSource classSource = newMockClassSource();
@@ -63,7 +63,7 @@ public class ClassDataProviderTest {
     }
 
     @Test
-    public void givenProviderModeSetToLOCAL_AND_CACHED_CLASSES_whenMapClassContainsClass_thenReturnIt() throws Exception {
+    public void givenProviderModeSetToLOCAL_AND_CACHED_CLASSES_whenMapClassContainsClass_thenReturnIt() {
         UserCodeDeploymentConfig.ProviderMode providerMode = LOCAL_AND_CACHED_CLASSES;
         String className = "className";
         ClassSource classSource = newMockClassSource();
@@ -76,8 +76,8 @@ public class ClassDataProviderTest {
     private ClassDataProvider createClassDataProvider(UserCodeDeploymentConfig.ProviderMode providerMode,
                                                       String className, ClassSource classSource, ClassLoader parent) {
         ILogger logger = mock(ILogger.class);
-        ConcurrentMap<String, ClassSource> classSourceMap = new ConcurrentHashMap<String, ClassSource>();
-        ConcurrentMap<String, ClassSource> clientClassSourceMap = new ConcurrentHashMap<String, ClassSource>();
+        ConcurrentMap<String, ClassSource> classSourceMap = new ConcurrentHashMap<>();
+        ConcurrentMap<String, ClassSource> clientClassSourceMap = new ConcurrentHashMap<>();
         classSourceMap.put(className, classSource);
         return new ClassDataProvider(providerMode, parent, classSourceMap, clientClassSourceMap, logger);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,13 +100,13 @@ public class ChildFirstClassLoaderTest {
 
     @Test
     public void parentMustNotBeNull() {
-        assertThatThrownBy(() -> new ChildFirstClassLoader(new URL[]{new URL("file:///somefile.jar")}, null))
+        assertThatThrownBy(() -> new ChildFirstClassLoader(new URL[]{Paths.get("somefile.jar").toUri().toURL()}, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void canLoadClassFromParentClassLoader() throws Exception {
-        cl = new ChildFirstClassLoader(new URL[]{new URL("file:///somefile.jar")}, ChildFirstClassLoader.class.getClassLoader());
+        cl = new ChildFirstClassLoader(new URL[]{Paths.get("somefile.jar").toUri().toURL()}, ChildFirstClassLoader.class.getClassLoader());
 
         Class<?> clazz = cl.loadClass(ChildFirstClassLoaderTest.class.getName());
         assertThat(clazz).isSameAs(this.getClass());

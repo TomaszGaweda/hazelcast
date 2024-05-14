@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class EncryptionReplacerTest extends AbstractPbeReplacerTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNoPasswordInputProvided() throws Exception {
+    public void testNoPasswordInputProvided() {
         EncryptionReplacer replacer = new EncryptionReplacer();
         Properties properties = new Properties();
         properties.setProperty(EncryptionReplacer.PROPERTY_PASSWORD_USER_PROPERTIES, "false");
@@ -110,7 +110,7 @@ public class EncryptionReplacerTest extends AbstractPbeReplacerTest {
     }
 
     @Test
-    public void testUserChanged() throws Exception {
+    public void testUserChanged() {
         assumeDefaultAlgorithmsSupported();
         AbstractPbeReplacer replacer = createAndInitReplacer(new Properties());
         userNameProperty.setOrClearProperty("somebodyElse");

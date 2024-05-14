@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.map.impl.MapService;
 import com.hazelcast.map.impl.MapServiceContext;
 import com.hazelcast.map.impl.nearcache.MapNearCacheManager;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -60,12 +59,7 @@ public class MemberMapMetaDataGeneratorTest extends HazelcastTestSupport {
         map.put(1, 1);
 
         final MetaDataGenerator metaDataGenerator = getMetaDataGenerator(member);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertNotNull(metaDataGenerator.getSequenceGenerators().get(MAP_NAME));
-            }
-        });
+        assertTrueEventually(() -> assertNotNull(metaDataGenerator.getSequenceGenerators().get(MAP_NAME)));
 
         map.destroy();
 
@@ -81,12 +75,7 @@ public class MemberMapMetaDataGeneratorTest extends HazelcastTestSupport {
         map.put(1, 1);
 
         final MetaDataGenerator metaDataGenerator = getMetaDataGenerator(member);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertNull(metaDataGenerator.getSequenceGenerators().get(MAP_NAME));
-            }
-        });
+        assertTrueEventually(() -> assertNull(metaDataGenerator.getSequenceGenerators().get(MAP_NAME)));
 
         map.destroy();
 

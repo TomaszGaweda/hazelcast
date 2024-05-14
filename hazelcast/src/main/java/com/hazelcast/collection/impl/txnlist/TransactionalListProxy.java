@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public class TransactionalListProxy<E>
         extends AbstractTransactionalCollectionProxy<ListService, E>
         implements TransactionalList<E> {
 
-    private final LinkedList<CollectionItem> list = new LinkedList<CollectionItem>();
+    private final LinkedList<CollectionItem> list = new LinkedList<>();
 
     public TransactionalListProxy(String name, Transaction tx, NodeEngine nodeEngine, ListService service) {
         super(name, tx, nodeEngine, service);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class JsonGetterContext {
 
     public JsonGetterContext(String attributePath) {
         this.pathCursor = JsonPathCursor.createCursor(attributePath);
-        patternListHolder = new ThreadLocal<WeightedEvictableList<JsonPattern>>();
+        patternListHolder = new ThreadLocal<>();
     }
 
     public List<WeightedItem<JsonPattern>> getPatternListSnapshot() {
@@ -54,7 +54,7 @@ public class JsonGetterContext {
     private WeightedEvictableList<JsonPattern> getPatternList() {
         WeightedEvictableList<JsonPattern> list = patternListHolder.get();
         if (list == null) {
-            list = new WeightedEvictableList<JsonPattern>(PATTERN_CACHE_MAX_SIZE, PATTERN_CACHE_MAX_VOTES);
+            list = new WeightedEvictableList<>(PATTERN_CACHE_MAX_SIZE, PATTERN_CACHE_MAX_VOTES);
             patternListHolder.set(list);
         }
         return list;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,8 +85,8 @@ public final class ItemsByTag {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ItemsByTag
-                && Objects.equals(this.map, ((ItemsByTag) o).map);
+        return o instanceof ItemsByTag tag
+                && Objects.equals(this.map, tag.map);
     }
 
     @Override

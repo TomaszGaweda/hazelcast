@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,10 @@ public final class PredicateUtils {
      * @see OrResultSet#estimatedSize()
      */
     public static int estimatedSizeOf(Collection<QueryableEntry> result) {
-        if (result instanceof AndResultSet) {
-            return ((AndResultSet) result).estimatedSize();
-        } else if (result instanceof OrResultSet) {
-            return ((OrResultSet) result).estimatedSize();
+        if (result instanceof AndResultSet set) {
+            return set.estimatedSize();
+        } else if (result instanceof OrResultSet set) {
+            return set.estimatedSize();
         }
         return result.size();
     }
@@ -71,8 +71,8 @@ public final class PredicateUtils {
     }
 
     public static PagingPredicateImpl unwrapPagingPredicate(Predicate predicate) {
-        if (predicate instanceof PagingPredicateImpl) {
-            return (PagingPredicateImpl) predicate;
+        if (predicate instanceof PagingPredicateImpl impl) {
+            return impl;
         }
 
         Predicate unwrappedPredicate = ((PartitionPredicate) predicate).getTarget();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,8 @@ import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.QuickTest;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.util.concurrent.CompletionStage;
@@ -59,9 +57,6 @@ public class RingbufferTest extends HazelcastTestSupport {
     private HazelcastInstance server;
     private Ringbuffer<String> clientRingbuffer;
     private Ringbuffer<String> serverRingbuffer;
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void init() {
@@ -198,7 +193,7 @@ public class RingbufferTest extends HazelcastTestSupport {
         Future<Long> f = clientRingbuffer.addAsync("foo", OVERWRITE).toCompletableFuture();
         Long result = f.get();
 
-        assertEquals(new Long(serverRingbuffer.headSequence()), result);
+        assertEquals(Long.valueOf(serverRingbuffer.headSequence()), result);
         assertEquals("foo", serverRingbuffer.readOne(0));
         assertEquals(0, serverRingbuffer.headSequence());
         assertEquals(0, serverRingbuffer.tailSequence());
@@ -209,7 +204,7 @@ public class RingbufferTest extends HazelcastTestSupport {
         Future<Long> f = clientRingbuffer.addAllAsync(asList("foo", "bar"), OVERWRITE).toCompletableFuture();
         Long result = f.get();
 
-        assertEquals(new Long(serverRingbuffer.tailSequence()), result);
+        assertEquals(Long.valueOf(serverRingbuffer.tailSequence()), result);
         assertEquals("foo", serverRingbuffer.readOne(0));
         assertEquals("bar", serverRingbuffer.readOne(1));
         assertEquals(0, serverRingbuffer.headSequence());

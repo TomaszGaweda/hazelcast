@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -52,8 +53,8 @@ import static org.mockito.Mockito.when;
 public class WaitSetTest {
 
     private ILogger logger = Logger.getLogger(WaitSetTest.class);
-    private ConcurrentMap<WaitNotifyKey, WaitSet> waitSetMap = new ConcurrentHashMap<WaitNotifyKey, WaitSet>();
-    private Queue<WaitSetEntry> delayQueue = new LinkedBlockingQueue<WaitSetEntry>();
+    private ConcurrentMap<WaitNotifyKey, WaitSet> waitSetMap = new ConcurrentHashMap<>();
+    private Queue<WaitSetEntry> delayQueue = new LinkedBlockingQueue<>();
     private NodeEngine nodeEngine;
     private OperationService operationService;
 
@@ -204,7 +205,7 @@ public class WaitSetTest {
 
     private static void assertCancelled(WaitSet waitSet, BlockedOperation operation, Exception cause) {
         WaitSetEntry entry = waitSet.find(operation);
-        assertEquals(null, entry.cancelResponse);
+        assertNull(entry.cancelResponse);
     }
 
     private static BlockedOperation newBlockingOperationWithCallerUuid(UUID callerUuid) {

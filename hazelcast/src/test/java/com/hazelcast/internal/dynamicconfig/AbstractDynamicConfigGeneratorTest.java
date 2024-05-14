@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,9 @@ import com.hazelcast.config.WanQueueFullBehavior;
 import com.hazelcast.config.WanReplicationConfig;
 import com.hazelcast.config.WanReplicationRef;
 import com.hazelcast.config.properties.PropertyDefinition;
+import com.hazelcast.config.vector.Metric;
+import com.hazelcast.config.vector.VectorCollectionConfig;
+import com.hazelcast.config.vector.VectorTestHelper;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.map.MapStore;
 import com.hazelcast.map.MapStoreFactory;
@@ -112,6 +115,7 @@ import static com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig.T
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -178,6 +182,19 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
                 .setProperty("key", "value");
 
         testMap(mapStoreConfig);
+    }
+
+    @Test
+    public void testMapWithNamespace() {
+        MapConfig expectedConfig = newMapConfig()
+                .setName("testMapWithNamespace")
+                .setUserCodeNamespace("ns1");
+        Config config = new Config()
+                .addMapConfig(expectedConfig);
+
+        Config decConfig = getNewConfigViaGenerator(config);
+        MapConfig actualConfig = decConfig.getMapConfig("testMapWithNamespace");
+        assertEquals(expectedConfig, actualConfig);
     }
 
     @Test
@@ -327,7 +344,8 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
                 .setWriteThrough(true)
                 .setPartitionLostListenerConfigs(singletonList(
                         new CachePartitionLostListenerConfig("partitionLostListener")))
-                .setSplitBrainProtectionName("testSplitBrainProtection");
+                .setSplitBrainProtectionName("testSplitBrainProtection")
+                .setUserCodeNamespace("test-ns");
 
         expectedConfig.getMergePolicyConfig().setPolicy("HigherHitsMergePolicy").setBatchSize(99);
         expectedConfig.setDisablePerEntryInvalidationEvents(true);
@@ -490,7 +508,8 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
                 .setBinary(true)
                 .setStatisticsEnabled(true)
                 .setSplitBrainProtectionName("splitBrainProtection")
-                .setEntryListenerConfigs(singletonList(new EntryListenerConfig("java.Listener", true, true)));
+                .setEntryListenerConfigs(singletonList(new EntryListenerConfig("java.Listener", true, true)))
+                .setUserCodeNamespace("ns1");
 
         Config config = new Config()
                 .addMultiMapConfig(expectedConfig);
@@ -534,6 +553,7 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
                 .setSplitBrainProtectionName("splitBrainProtection")
                 .setMergePolicyConfig(mergePolicyConfig)
                 .setInMemoryFormat(InMemoryFormat.NATIVE)
+                .setUserCodeNamespace("ns1")
                 .addEntryListenerConfig(new EntryListenerConfig("com.hazelcast.entrylistener", false, false))
                 .addEntryListenerConfig(new EntryListenerConfig("com.hazelcast.entrylistener2", true, false));
 
@@ -654,6 +674,7 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
                 .setReadBatchSize(10)
                 .setTopicOverloadPolicy(TopicOverloadPolicy.BLOCK)
                 .setStatisticsEnabled(true)
+                .setUserCodeNamespace("ns1")
                 .setMessageListenerConfigs(singletonList(new ListenerConfig("foo.bar.Listener")));
 
         cfg.addReliableTopicConfig(expectedConfig);
@@ -672,7 +693,8 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
                 .setStatisticsEnabled(true)
                 .setPoolSize(10)
                 .setQueueCapacity(100)
-                .setSplitBrainProtectionName("splitBrainProtection");
+                .setSplitBrainProtectionName("splitBrainProtection")
+                .setUserCodeNamespace("ns1");
 
         Config config = new Config()
                 .addExecutorConfig(expectedConfig);
@@ -693,7 +715,8 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
                 .setCapacity(100)
                 .setDurability(2)
                 .setStatisticsEnabled(false)
-                .setSplitBrainProtectionName("splitBrainProtection");
+                .setSplitBrainProtectionName("splitBrainProtection")
+                .setUserCodeNamespace("ns1");
 
         Config config = new Config()
                 .addDurableExecutorConfig(expectedConfig);
@@ -719,7 +742,8 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
                         .setPoolSize(3)
                         .setSplitBrainProtectionName("splitBrainProtection")
                         .setMergePolicyConfig(new MergePolicyConfig("JediPolicy", 23))
-                        .setStatisticsEnabled(false);
+                        .setStatisticsEnabled(false)
+                        .setUserCodeNamespace("ns1");
 
         cfg.addScheduledExecutorConfig(scheduledExecutorConfig);
 
@@ -918,6 +942,28 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
         assertEquals(expectedConfig, actualConfig);
     }
 
+    @Test
+    public void testVectorCollection() {
+        String vectorCollection = "vector-collection-1";
+        VectorCollectionConfig originVectorCollectionConfig = VectorTestHelper.buildVectorCollectionConfig(
+                vectorCollection,
+                "index-1",
+                2,
+                Metric.COSINE,
+                10,
+                11,
+                true
+        );
+
+        Config config = new Config()
+                .addVectorCollectionConfig(originVectorCollectionConfig);
+
+        Config decConfig = getNewConfigViaGenerator(config);
+
+        VectorCollectionConfig actual = decConfig.getVectorCollectionConfigOrNull(vectorCollection);
+        assertThat(actual).usingRecursiveComparison().isEqualTo(originVectorCollectionConfig);
+    }
+
     // UTILITY - GENERATOR
 
     protected abstract Config getNewConfigViaGenerator(Config config);
@@ -1060,7 +1106,8 @@ public abstract class AbstractDynamicConfigGeneratorTest extends HazelcastTestSu
                 .setInMemoryFormat(InMemoryFormat.BINARY)
                 .setRingbufferStoreConfig(ringbufferStoreConfig)
                 .setSplitBrainProtectionName("splitBrainProtection")
-                .setMergePolicyConfig(mergePolicyConfig);
+                .setMergePolicyConfig(mergePolicyConfig)
+                .setUserCodeNamespace("ns1");
 
         Config config = new Config().addRingBufferConfig(expectedConfig);
 

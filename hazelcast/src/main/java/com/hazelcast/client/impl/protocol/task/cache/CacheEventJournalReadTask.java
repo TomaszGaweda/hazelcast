@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ public class CacheEventJournalReadTask<K, V, T>
 
     public CacheEventJournalReadTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
+        setNamespaceAware();
     }
 
     @Override
@@ -78,7 +79,7 @@ public class CacheEventJournalReadTask<K, V, T>
     protected ClientMessage encodeResponse(Object response) {
         // we are not deserializing the whole content, only the enclosing portable. The actual items remain un
         final ReadResultSetImpl resultSet = nodeEngine.getSerializationService().toObject(response);
-        final List<Data> items = new ArrayList<Data>(resultSet.size());
+        final List<Data> items = new ArrayList<>(resultSet.size());
         final long[] seqs = new long[resultSet.size()];
         final Data[] dataItems = resultSet.getDataItems();
 

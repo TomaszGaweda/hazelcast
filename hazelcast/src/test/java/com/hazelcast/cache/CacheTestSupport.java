@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public abstract class CacheTestSupport extends HazelcastTestSupport {
     }
 
     protected <K, V> CacheConfig<K, V> createCacheConfig() {
-        CacheConfig<K, V> cacheConfig = new CacheConfig<K, V>();
+        CacheConfig<K, V> cacheConfig = new CacheConfig<>();
         cacheConfig.setInMemoryFormat(InMemoryFormat.BINARY);
         cacheConfig.setStatisticsEnabled(true);
         return cacheConfig;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,9 +122,12 @@ public class HadoopFileSourceFactory implements FileSourceFactory {
         );
     }
 
+    @SuppressWarnings("AnonInnerLength")
     private static <T> ConsumerEx<Configuration> configureFn(
             FileSourceConfiguration<T> fsc, JobConfigurer configurer, FileFormat<T> fileFormat) {
-        return new ConsumerEx<Configuration>() {
+        return new ConsumerEx<>() {
+
+            private static final long serialVersionUID = 1L;
 
             @Override
             public void acceptEx(Configuration configuration) throws Exception {

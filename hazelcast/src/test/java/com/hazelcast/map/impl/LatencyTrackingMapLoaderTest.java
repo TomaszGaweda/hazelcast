@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class LatencyTrackingMapLoaderTest extends HazelcastTestSupport {
         hz = createHazelcastInstance();
         plugin = new StoreLatencyPlugin(getNodeEngineImpl(hz));
         delegate = mock(MapLoader.class);
-        cacheLoader = new LatencyTrackingMapLoader<String, String>(delegate, plugin, NAME);
+        cacheLoader = new LatencyTrackingMapLoader<>(delegate, plugin, NAME);
     }
 
     @Test
@@ -74,7 +74,7 @@ public class LatencyTrackingMapLoaderTest extends HazelcastTestSupport {
     @Test
     public void loadAll() {
         Collection<String> keys = asList("key1", "key2");
-        Map<String, String> values = new HashMap<String, String>();
+        Map<String, String> values = new HashMap<>();
         values.put("key1", "value1");
         values.put("key2", "value2");
 

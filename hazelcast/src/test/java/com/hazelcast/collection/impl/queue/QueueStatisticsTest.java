@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,8 +152,7 @@ public class QueueStatisticsTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testAge()
-            throws InterruptedException {
+    public void testAge() {
         IQueue<VersionedObject<String>> queue = newQueue();
         queue.offer(new VersionedObject<>("maxAgeItem", 0));
         queue.offer(new VersionedObject<>("minAgeItem", 1));

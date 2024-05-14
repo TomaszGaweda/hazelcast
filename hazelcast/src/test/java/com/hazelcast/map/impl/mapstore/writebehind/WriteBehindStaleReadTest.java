@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,12 +87,12 @@ public class WriteBehindStaleReadTest extends HazelcastTestSupport {
 
         CountDownLatch waitAllWriteOperations;
         CountDownLatch waitForSecondStoreOperation;
-        AtomicReference<Object> valueAfterMapGet = new AtomicReference<Object>();
+        AtomicReference<Object> valueAfterMapGet = new AtomicReference<>();
 
         private AtomicInteger countAdd = new AtomicInteger();
 
         public WaitingMapStore() {
-            store = new ConcurrentHashMap<K, V>();
+            store = new ConcurrentHashMap<>();
         }
 
         @Override

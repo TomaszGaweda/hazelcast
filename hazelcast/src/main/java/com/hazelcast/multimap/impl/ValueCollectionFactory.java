@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,9 +77,9 @@ public final class ValueCollectionFactory {
     public static <T> Collection<T> createCollection(MultiMapConfig.ValueCollectionType collectionType, int initialCapacity) {
         switch (collectionType) {
             case SET:
-                return initialCapacity <= 0 ? new HashSet<T>() : SetUtil.<T>createHashSet(initialCapacity);
+                return initialCapacity <= 0 ? new HashSet<>() : SetUtil.createHashSet(initialCapacity);
             case LIST:
-                return new LinkedList<T>();
+                return new LinkedList<>();
             default:
                 throw new IllegalArgumentException("[" + collectionType + "] is not a known MultiMapConfig.ValueCollectionType!");
         }

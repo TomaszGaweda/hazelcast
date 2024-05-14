@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.jsfr.json.path.JsonPath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -237,6 +238,7 @@ public class JsonValueFunction<T> extends VariExpressionWithType<T> {
         }
     }
 
+    @Serial
     private void readObject(ObjectInputStream stream) throws ClassNotFoundException, IOException {
         stream.defaultReadObject();
         if (this.constantPathCache == null) {

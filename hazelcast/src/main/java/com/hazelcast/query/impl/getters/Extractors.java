@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.hazelcast.query.impl.getters;
 
 import com.hazelcast.config.AttributeConfig;
 import com.hazelcast.core.HazelcastJsonValue;
+import com.hazelcast.internal.namespace.NamespaceUtil;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.InternalSerializationService;
 import com.hazelcast.internal.serialization.impl.compact.CompactGenericRecord;
@@ -64,7 +65,7 @@ public final class Extractors {
             Supplier<GetterCache> getterCacheSupplier
     ) {
         this.extractors = attributeConfigs == null
-                ? Collections.<String, ValueExtractor>emptyMap()
+                ? Collections.emptyMap()
                 : instantiateExtractors(attributeConfigs, classLoader);
         this.getterCache = getterCacheSupplier.get();
         this.argumentsParser = new DefaultArgumentParser();
@@ -83,7 +84,8 @@ public final class Extractors {
             try {
                 // For CompactGetter and PortableGetter metadata is a boolean
                 // indicating whether lazy deserialization should be used or not.
-                return getter.getValue(targetObject, attributeName, metadata);
+                return NamespaceUtil.callWithOwnClassLoader(getter,
+                        () -> getter.getValue(targetObject, attributeName, metadata));
             } catch (Exception ex) {
                 throw new QueryException(ex);
             }
@@ -110,8 +112,8 @@ public final class Extractors {
                 return targetData;
             }
         }
-        if (target instanceof Data) {
-            targetData = (Data) target;
+        if (target instanceof Data data) {
+            targetData = data;
             if (targetData.isPortable() || targetData.isJson() || targetData.isCompact()) {
                 return targetData;
             } else {
@@ -140,8 +142,8 @@ public final class Extractors {
         if (valueExtractor != null) {
             Object arguments = argumentsParser.parse(extractArgumentsFromAttributeName(attributeName));
             return new ExtractorGetter(ss, valueExtractor, arguments);
-        } else if (targetObject instanceof Data) {
-            return instantiateGetterForData((Data) targetObject);
+        } else if (targetObject instanceof Data data) {
+            return instantiateGetterForData(data);
         } else if (targetObject instanceof HazelcastJsonValue) {
             return JsonGetter.INSTANCE;
         } else if (targetObject instanceof PortableGenericRecord) {

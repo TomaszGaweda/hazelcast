@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,14 +54,14 @@ public class OperationParkerImpl implements OperationParker, LiveOperationsTrack
 
     private static final long FIRST_WAIT_TIME = 1000;
 
-    private final ConcurrentMap<WaitNotifyKey, WaitSet> waitSetMap = new ConcurrentHashMap<WaitNotifyKey, WaitSet>(100);
+    private final ConcurrentMap<WaitNotifyKey, WaitSet> waitSetMap = new ConcurrentHashMap<>(100);
     private final DelayQueue delayQueue = new DelayQueue();
     private final ExecutorService expirationExecutor;
     private final Future expirationTaskFuture;
     private final NodeEngineImpl nodeEngine;
     private final ILogger logger;
     private final ConstructorFunction<WaitNotifyKey, WaitSet> waitSetConstructor
-            = new ConstructorFunction<WaitNotifyKey, WaitSet>() {
+            = new ConstructorFunction<>() {
         @Override
         public WaitSet createNew(WaitNotifyKey key) {
             return new WaitSet(logger, nodeEngine, waitSetMap, delayQueue);

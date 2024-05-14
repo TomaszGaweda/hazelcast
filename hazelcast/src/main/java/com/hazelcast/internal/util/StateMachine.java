@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import static com.hazelcast.internal.util.Preconditions.checkState;
  */
 public class StateMachine<T extends Enum<T>> {
 
-    private Map<T, Set<T>> transitions = new HashMap<T, Set<T>>();
+    private Map<T, Set<T>> transitions = new HashMap<>();
     private T currentState;
 
     public StateMachine(T initialState) {
@@ -39,7 +39,7 @@ public class StateMachine<T extends Enum<T>> {
     }
 
     public static <T extends Enum<T>> StateMachine<T> of(T initialState) {
-        return new StateMachine<T>(initialState);
+        return new StateMachine<>(initialState);
     }
 
     /**

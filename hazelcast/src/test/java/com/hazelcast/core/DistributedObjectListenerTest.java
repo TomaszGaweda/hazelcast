@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,17 +47,14 @@ public class DistributedObjectListenerTest extends HazelcastTestSupport {
         instance.addDistributedObjectListener(new EventCountListener());
         IMap<Object, Object> map = instance.getMap(randomString());
         map.destroy();
-        AssertTask task = new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                Assert.assertEquals(1, EventCountListener.createdCount.get());
-                Assert.assertEquals(1, EventCountListener.destroyedCount.get());
-                Collection<DistributedObject> distributedObjects = instance.getDistributedObjects()
-                        .stream()
-                        .filter(obj -> !obj.getName().startsWith(JobRepository.INTERNAL_JET_OBJECTS_PREFIX))
-                        .collect(Collectors.toList());
-                Assert.assertTrue(distributedObjects.isEmpty());
-            }
+        AssertTask task = () -> {
+            Assert.assertEquals(1, EventCountListener.createdCount.get());
+            Assert.assertEquals(1, EventCountListener.destroyedCount.get());
+            Collection<DistributedObject> distributedObjects = instance.getDistributedObjects()
+                    .stream()
+                    .filter(obj -> !obj.getName().startsWith(JobRepository.INTERNAL_JET_OBJECTS_PREFIX))
+                    .collect(Collectors.toList());
+            Assert.assertTrue(distributedObjects.isEmpty());
         };
         assertTrueEventually(task, 5);
         assertTrueAllTheTime(task, 3);

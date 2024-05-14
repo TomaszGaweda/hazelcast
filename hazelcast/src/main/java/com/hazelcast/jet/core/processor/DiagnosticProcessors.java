@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,22 +58,22 @@ public final class DiagnosticProcessors {
      */
     @SuppressWarnings("checkstyle:ReturnCount")
     public static final FunctionEx<Object, String> PEEK_DEFAULT_TO_STRING = o -> {
-        if (o instanceof Object[]) {
-            return Arrays.deepToString((Object[]) o);
-        } else if (o instanceof byte[]) {
-            return Arrays.toString((byte[]) o);
-        } else if (o instanceof short[]) {
-            return Arrays.toString((short[]) o);
-        } else if (o instanceof int[]) {
-            return Arrays.toString((int[]) o);
-        } else if (o instanceof long[]) {
-            return Arrays.toString((long[]) o);
-        } else if (o instanceof float[]) {
-            return Arrays.toString((float[]) o);
-        } else if (o instanceof double[]) {
-            return Arrays.toString((double[]) o);
-        } else if (o instanceof boolean[]) {
-            return Arrays.toString((boolean[]) o);
+        if (o instanceof Object[] objectArray) {
+            return Arrays.deepToString(objectArray);
+        } else if (o instanceof byte[] byteArray) {
+            return Arrays.toString(byteArray);
+        } else if (o instanceof short[] shortArray) {
+            return Arrays.toString(shortArray);
+        } else if (o instanceof int[] intArray) {
+            return Arrays.toString(intArray);
+        } else if (o instanceof long[] longArray) {
+            return Arrays.toString(longArray);
+        } else if (o instanceof float[] floatArray) {
+            return Arrays.toString(floatArray);
+        } else if (o instanceof double[] doubleArray) {
+            return Arrays.toString(doubleArray);
+        } else if (o instanceof boolean[] booleanArray) {
+            return Arrays.toString(booleanArray);
         } else {
             return Objects.toString(o);
         }
@@ -183,7 +183,8 @@ public final class DiagnosticProcessors {
             @Nonnull PredicateEx<T> shouldLogFn,
             @Nonnull SupplierEx<Processor> wrapped
     ) {
-        return () -> new PeekWrappedP<>(wrapped.get(), toStringFn, shouldLogFn, true, false, false);
+        return  wrapped.andThen(p ->
+                new PeekWrappedP<>(p, toStringFn, shouldLogFn, true, false, false));
     }
 
     /**
@@ -241,7 +242,7 @@ public final class DiagnosticProcessors {
      * data, but this wrapper only logs the regular data. See {@link
      * #peekSnapshotP(FunctionEx, PredicateEx, ProcessorMetaSupplier)
      * peekSnapshot()}.
-     *
+     * <p>
      * <h4>Logging of Watermarks</h4>
      *
      * There are two kinds of watermarks:<ol>
@@ -301,7 +302,8 @@ public final class DiagnosticProcessors {
             @Nonnull FunctionEx<? super T, ? extends CharSequence> toStringFn,
             @Nonnull PredicateEx<? super T> shouldLogFn,
             @Nonnull SupplierEx<Processor> wrapped) {
-        return () -> new PeekWrappedP<>(wrapped.get(), toStringFn, shouldLogFn, false, true, false);
+        return wrapped.andThen(p ->
+                new PeekWrappedP<>(p, toStringFn, shouldLogFn, false, true, false));
     }
 
     /**
@@ -402,7 +404,8 @@ public final class DiagnosticProcessors {
             @Nonnull FunctionEx<? super Entry<K, V>, ? extends CharSequence> toStringFn,
             @Nonnull PredicateEx<? super Entry<K, V>> shouldLogFn,
             @Nonnull SupplierEx<Processor> wrapped) {
-        return () -> new PeekWrappedP<>(wrapped.get(), toStringFn, shouldLogFn, false, false, true);
+        return wrapped.andThen(p ->
+                new PeekWrappedP<>(p, toStringFn, shouldLogFn, false, false, true));
     }
 
     /**

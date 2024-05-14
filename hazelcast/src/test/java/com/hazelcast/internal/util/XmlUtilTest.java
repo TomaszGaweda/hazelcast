@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class XmlUtilTest {
     }
 
     @Test
-    public void testFormat() throws Exception {
+    public void testFormat() {
         assertEquals("<a> <b>c</b></a>", format("<a><b>c</b></a>", 1).replaceAll("[\r\n]", ""));
         assertEquals("<a>   <b>c</b></a>", format("<a><b>c</b></a>", 3).replaceAll("[\r\n]", ""));
         assertEquals("<a><b>c</b></a>", format("<a><b>c</b></a>", -21));
@@ -117,7 +117,7 @@ public class XmlUtilTest {
     }
 
     @Test
-    public void testGetTransformerFactory() throws Exception {
+    public void testGetTransformerFactory() {
         TransformerFactory transformerFactory = XmlUtil.getTransformerFactory();
         assertNotNull(transformerFactory);
         assertThrows(IllegalArgumentException.class, () -> XmlUtil.setAttribute(transformerFactory, "test://no-such-property"));
@@ -157,7 +157,7 @@ public class XmlUtilTest {
     }
 
     @Test
-    public void testGetXmlInputFactory() throws Exception {
+    public void testGetXmlInputFactory() {
         XMLInputFactory xmlInputFactory = XmlUtil.getXMLInputFactory();
         assertNotNull(xmlInputFactory);
         // check if the XXE protection is enabled

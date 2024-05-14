@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -194,8 +194,8 @@ public abstract class OperationRunner {
             if (callStatus.ordinal() == OFFLOAD_ORDINAL) {
                 Offload offload = (Offload) callStatus;
                 offload.init(nodeEngine, asyncOperations);
-                if (op instanceof StepAwareOperation && op instanceof BackupOperation) {
-                    ((StepAwareOperation<?>) op).setBackupOpAfterRun(backupOpAfterRun);
+                if (op instanceof StepAwareOperation stepAwareOperation && op instanceof BackupOperation) {
+                    stepAwareOperation.setBackupOpAfterRun(backupOpAfterRun);
                 }
                 offload.start();
             }

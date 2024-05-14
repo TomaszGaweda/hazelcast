@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+  ~ Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
     <parent>
         <groupId>com.hazelcast</groupId>
         <artifactId>hazelcast-root</artifactId>
-        <version>5.4.0-SNAPSHOT</version>
+        <version>5.5.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -33,8 +33,7 @@
         <!-- needed for CheckStyle -->
         <main.basedir>${project.parent.basedir}</main.basedir>
 
-        <maven-artifact.version>3.9.5</maven-artifact.version>
-        <hazelcast-hibernate5.version>2.0.0</hazelcast-hibernate5.version>
+        <maven-artifact.version>3.9.6</maven-artifact.version>
     </properties>
 
     <dependencies>
@@ -84,14 +83,14 @@
         </dependency>
         <dependency>
             <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast-hibernate5</artifactId>
-            <version>${hazelcast-hibernate5.version}</version>
+            <artifactId>hazelcast-hibernate53</artifactId>
+            <version>5.1.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>5.0.9.Final</version>
+            <version>6.5.0.Final</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -104,12 +103,19 @@
 
     <profiles>
         <profile>
-            <id>spring-5</id>
+            <id>spring-6</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <org.springframework.version>5.3.30</org.springframework.version>
+                <org.springframework.version>6.1.6</org.springframework.version>
+                <javax.annotation.version>1.3.2</javax.annotation.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>spring-5</id>
+            <properties>
+                <org.springframework.version>5.3.34</org.springframework.version>
                 <javax.annotation.version>1.3.2</javax.annotation.version>
             </properties>
             <dependencies>
@@ -117,21 +123,6 @@
                     <groupId>javax.annotation</groupId>
                     <artifactId>javax.annotation-api</artifactId>
                     <version>${javax.annotation.version}</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>spring-4</id>
-            <properties>
-                <org.springframework.version>4.3.23.RELEASE</org.springframework.version>
-                <jsr250.api.version>1.0</jsr250.api.version>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>jsr250-api</artifactId>
-                    <version>${jsr250.api.version}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

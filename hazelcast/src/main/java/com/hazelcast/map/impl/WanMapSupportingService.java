@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,10 +51,10 @@ class WanMapSupportingService implements WanSupportingService {
 
     @Override
     public void onReplicationEvent(InternalWanEvent event, WanAcknowledgeType acknowledgeType) {
-        if (event instanceof WanMapAddOrUpdateEvent) {
-            handleAddOrUpdate((WanMapAddOrUpdateEvent) event);
-        } else if (event instanceof WanMapRemoveEvent) {
-            handleRemove((WanMapRemoveEvent) event);
+        if (event instanceof WanMapAddOrUpdateEvent updateEvent) {
+            handleAddOrUpdate(updateEvent);
+        } else if (event instanceof WanMapRemoveEvent removeEvent) {
+            handleRemove(removeEvent);
         }
     }
 

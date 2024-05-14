@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package com.hazelcast.internal.serialization.impl;
 import com.hazelcast.client.HazelcastClientNotActiveException;
 import com.hazelcast.core.HazelcastException;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
+import com.hazelcast.function.BiConsumerEx;
+import com.hazelcast.function.FunctionEx;
 import com.hazelcast.instance.impl.OutOfMemoryErrorDispatcher;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.InternalSerializationService;
@@ -54,9 +56,10 @@ import java.util.Set;
 
 import static com.hazelcast.internal.util.MapUtil.createHashMap;
 
+@SuppressWarnings("checkstyle:ClassFanOutComplexity")
 public final class SerializationUtil {
 
-    static final PartitioningStrategy EMPTY_PARTITIONING_STRATEGY = new EmptyPartitioningStrategy();
+    static final PartitioningStrategy<?> EMPTY_PARTITIONING_STRATEGY = new EmptyPartitioningStrategy();
 
     private SerializationUtil() {
     }
@@ -92,38 +95,38 @@ public final class SerializationUtil {
     }
 
     static RuntimeException handleException(Throwable e) {
-        if (e instanceof OutOfMemoryError) {
-            OutOfMemoryErrorDispatcher.onOutOfMemory((OutOfMemoryError) e);
-            throw (Error) e;
+        if (e instanceof OutOfMemoryError error) {
+            OutOfMemoryErrorDispatcher.onOutOfMemory(error);
+            throw error;
         }
-        if (e instanceof Error) {
-            throw (Error) e;
+        if (e instanceof Error error) {
+            throw error;
         }
-        if (e instanceof HazelcastSerializationException) {
-            return (HazelcastSerializationException) e;
+        if (e instanceof HazelcastSerializationException exception) {
+            return exception;
         }
-        if (e instanceof HazelcastInstanceNotActiveException) {
-            return (RuntimeException) e;
+        if (e instanceof HazelcastInstanceNotActiveException exception) {
+            return exception;
         }
-        if (e instanceof HazelcastClientNotActiveException) {
-            return (RuntimeException) e;
+        if (e instanceof HazelcastClientNotActiveException exception) {
+            return exception;
         }
         return new HazelcastSerializationException(e);
     }
 
     static RuntimeException handleSerializeException(Object rootObject, Throwable e) {
-        if (e instanceof OutOfMemoryError) {
-            OutOfMemoryErrorDispatcher.onOutOfMemory((OutOfMemoryError) e);
-            throw (Error) e;
+        if (e instanceof OutOfMemoryError error) {
+            OutOfMemoryErrorDispatcher.onOutOfMemory(error);
+            throw error;
         }
-        if (e instanceof Error) {
-            throw (Error) e;
+        if (e instanceof Error error) {
+            throw error;
         }
-        if (e instanceof HazelcastInstanceNotActiveException) {
-            return (RuntimeException) e;
+        if (e instanceof HazelcastInstanceNotActiveException exception) {
+            return exception;
         }
-        if (e instanceof HazelcastClientNotActiveException) {
-            return (RuntimeException) e;
+        if (e instanceof HazelcastClientNotActiveException exception) {
+            return exception;
         }
         String clazz = rootObject == null ? "null" : rootObject.getClass().getName();
         return new HazelcastSerializationException("Failed to serialize '" + clazz + '\'', e);
@@ -131,10 +134,10 @@ public final class SerializationUtil {
 
     public static SerializerAdapter createSerializerAdapter(Serializer serializer) {
         final SerializerAdapter s;
-        if (serializer instanceof StreamSerializer) {
-            s = new StreamSerializerAdapter((StreamSerializer) serializer);
-        } else if (serializer instanceof ByteArraySerializer) {
-            s = new ByteArraySerializerAdapter((ByteArraySerializer) serializer);
+        if (serializer instanceof StreamSerializer streamSerializer) {
+            s = new StreamSerializerAdapter(streamSerializer);
+        } else if (serializer instanceof ByteArraySerializer arraySerializer) {
+            s = new ByteArraySerializerAdapter(arraySerializer);
         } else {
             throw new IllegalArgumentException("Serializer " + serializer.getClass().getName()
                     + " must be an instance of either StreamSerializer or ByteArraySerializer");
@@ -142,11 +145,11 @@ public final class SerializationUtil {
         return s;
     }
 
-    static void getInterfaces(Class clazz, Set<Class> interfaces) {
-        final Class[] classes = clazz.getInterfaces();
+    static void getInterfaces(Class<?> clazz, Set<Class<?>> interfaces) {
+        final var classes = clazz.getInterfaces();
         if (classes.length > 0) {
             Collections.addAll(interfaces, classes);
-            for (Class cl : classes) {
+            for (Class<?> cl : classes) {
                 getInterfaces(cl, interfaces);
             }
         }
@@ -156,10 +159,10 @@ public final class SerializationUtil {
         return -typeId;
     }
 
+    @SuppressWarnings("removal")
     public static int getPortableVersion(Portable portable, int defaultVersion) {
         int version = defaultVersion;
-        if (portable instanceof VersionedPortable) {
-            VersionedPortable versionedPortable = (VersionedPortable) portable;
+        if (portable instanceof VersionedPortable versionedPortable) {
             version = versionedPortable.getClassVersion();
             if (version < 0) {
                 throw new IllegalArgumentException("Version cannot be negative!");
@@ -177,14 +180,14 @@ public final class SerializationUtil {
     }
 
     public static InputStream convertToInputStream(DataInput in, int offset) {
-        if (!(in instanceof ByteArrayObjectDataInput)) {
+        if (!(in instanceof ByteArrayObjectDataInput byteArrayInput)) {
             throw new HazelcastSerializationException("Cannot convert " + in.getClass().getName() + " to input stream");
         }
-        ByteArrayObjectDataInput byteArrayInput = (ByteArrayObjectDataInput) in;
         return new ByteArrayInputStream(byteArrayInput.data, offset, byteArrayInput.size - offset);
     }
 
     @SerializableByConvention
+    @SuppressWarnings("rawtypes")
     private static class EmptyPartitioningStrategy implements PartitioningStrategy {
         public Object getPartitionKey(Object key) {
             return null;
@@ -233,6 +236,20 @@ public final class SerializationUtil {
         assert size == k : "Map has been updated during serialization! Initial size: " + size + ", written size: " + k;
     }
 
+    public static <V> void writeMapStringKey(@Nonnull Map<String, V> map, ObjectDataOutput out,
+                                             BiConsumerEx<ObjectDataOutput, V> valueWriter) throws IOException {
+        int size = map.size();
+        out.writeInt(size);
+
+        int k = 0;
+        for (Map.Entry<String, V> entry : map.entrySet()) {
+            out.writeString(entry.getKey());
+            valueWriter.accept(out, entry.getValue());
+            k++;
+        }
+        assert size == k : "Map has been updated during serialization! Initial size: " + size + ", written size: " + k;
+    }
+
     /**
      * Reads a map written by {@link #writeNullableMap(Map, ObjectDataOutput)}. The map itself
      * may be {@code null}. No guarantee is provided about the type of Map returned or its suitability
@@ -272,6 +289,19 @@ public final class SerializationUtil {
         for (int i = 0; i < size; i++) {
             String key = in.readString();
             V value = in.readObject();
+            map.put(key, value);
+        }
+        return map;
+    }
+
+    @Nonnull
+    public static <V> Map<String, V> readMapStringKey(ObjectDataInput in,
+                                                      FunctionEx<ObjectDataInput, V> valueReader) throws IOException {
+        int size = in.readInt();
+        Map<String, V> map = createHashMap(size);
+        for (int i = 0; i < size; i++) {
+            String key = in.readString();
+            V value = valueReader.apply(in);
             map.put(key, value);
         }
         return map;
@@ -348,10 +378,6 @@ public final class SerializationUtil {
 
     /**
      * Writes a nullable {@link PartitionIdSet} to the given data output.
-     *
-     * @param partitionIds
-     * @param out
-     * @throws IOException
      */
     public static void writeNullablePartitionIdSet(PartitionIdSet partitionIds, ObjectDataOutput out) throws IOException {
         if (partitionIds == null) {
@@ -449,7 +475,7 @@ public final class SerializationUtil {
     }
 
     public static boolean isClassStaticAndSerializable(Object object) {
-        Class clazz = object.getClass();
+        Class<?> clazz = object.getClass();
         boolean isStatic = !clazz.isSynthetic() && !clazz.isAnonymousClass() && !clazz.isLocalClass();
         if (!isStatic) {
             return false;
@@ -474,15 +500,11 @@ public final class SerializationUtil {
 
     public static Boolean readNullableBoolean(ObjectDataInput in) throws IOException {
         byte b = in.readByte();
-        switch (b) {
-            case Byte.MAX_VALUE:
-                return null;
-            case 0:
-                return Boolean.FALSE;
-            case 1:
-                return Boolean.TRUE;
-            default:
-                throw new IllegalStateException("Unexpected value " + b + " while reading nullable boolean.");
-        }
+        return switch (b) {
+            case Byte.MAX_VALUE -> null;
+            case 0 -> Boolean.FALSE;
+            case 1 -> Boolean.TRUE;
+            default -> throw new IllegalStateException("Unexpected value " + b + " while reading nullable boolean.");
+        };
     }
 }

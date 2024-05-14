@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@ public class HazelcastStarterUtils {
     private static final ILogger LOGGER = Logger.getLogger(HazelcastStarterUtils.class);
 
     public static RuntimeException rethrowGuardianException(Throwable t) {
-        if (t instanceof RuntimeException) {
-            throw (RuntimeException) t;
+        if (t instanceof RuntimeException exception) {
+            throw exception;
         }
         throw new GuardianException(t);
     }
@@ -191,13 +191,13 @@ public class HazelcastStarterUtils {
     public static Collection<Object> newCollectionFor(Class<?> type) {
         if (Set.class.isAssignableFrom(type)) {
             // original set might be ordered
-            return new LinkedHashSet<Object>();
+            return new LinkedHashSet<>();
         } else if (List.class.isAssignableFrom(type)) {
-            return new ArrayList<Object>();
+            return new ArrayList<>();
         } else if (Queue.class.isAssignableFrom(type)) {
-            return new ConcurrentLinkedQueue<Object>();
+            return new ConcurrentLinkedQueue<>();
         } else if (Collection.class.isAssignableFrom(type)) {
-            return new LinkedList<Object>();
+            return new LinkedList<>();
         } else {
             throw new UnsupportedOperationException("Cannot locate collection type for " + type);
         }

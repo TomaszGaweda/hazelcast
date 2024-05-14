@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,16 +25,12 @@ import com.hazelcast.map.impl.MapService;
 import com.hazelcast.map.impl.proxy.MapProxyImpl;
 import com.hazelcast.map.listener.EntryAddedListener;
 import com.hazelcast.map.listener.EntryLoadedListener;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
-import com.hazelcast.transaction.TransactionException;
 import com.hazelcast.transaction.TransactionalMap;
-import com.hazelcast.transaction.TransactionalTask;
-import com.hazelcast.transaction.TransactionalTaskContext;
 import com.hazelcast.internal.util.UuidUtil;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -185,12 +181,7 @@ public class InterceptorTest extends HazelcastTestSupport {
         map.put(1, value);
 
         final String expectedValue = StringUtil.upperCaseInternal(value);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(expectedValue, listener.getAddedValue());
-            }
-        }, 15);
+        assertTrueEventually(() -> assertEquals(expectedValue, listener.getAddedValue()), 15);
     }
 
     @Test
@@ -207,12 +198,7 @@ public class InterceptorTest extends HazelcastTestSupport {
         map.executeOnKeys(keys, new EntryPutProcessor("foo"));
 
         final String expectedValue = StringUtil.upperCaseInternal(value);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(expectedValue, listener.getAddedValue());
-            }
-        }, 15);
+        assertTrueEventually(() -> assertEquals(expectedValue, listener.getAddedValue()), 15);
     }
 
     @Test
@@ -227,12 +213,7 @@ public class InterceptorTest extends HazelcastTestSupport {
         map.executeOnKey(1, new EntryPutProcessor("foo"));
 
         final String expectedValue = StringUtil.upperCaseInternal(value);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(expectedValue, listener.getAddedValue());
-            }
-        }, 15);
+        assertTrueEventually(() -> assertEquals(expectedValue, listener.getAddedValue()), 15);
     }
 
     @Test
@@ -254,12 +235,7 @@ public class InterceptorTest extends HazelcastTestSupport {
         keys.add(1);
         map.loadAll(keys, false);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals("FOO-1", listener.getLoadedValue());
-            }
-        }, 15);
+        assertTrueEventually(() -> assertEquals("FOO-1", listener.getLoadedValue()), 15);
     }
 
     @Test
@@ -299,15 +275,12 @@ public class InterceptorTest extends HazelcastTestSupport {
         map.addInterceptor(new NegativePutInterceptor());
 
         final int count = 1000;
-        hz2.executeTransaction(new TransactionalTask<Object>() {
-            @Override
-            public Object execute(TransactionalTaskContext context) throws TransactionException {
-                TransactionalMap<Object, Object> txMap = context.getMap(name);
-                for (int i = 1; i <= count; i++) {
-                    txMap.set(i, i);
-                }
-                return null;
+        hz2.executeTransaction(context -> {
+            TransactionalMap<Object, Object> txMap = context.getMap(name);
+            for (int i = 1; i <= count; i++) {
+                txMap.set(i, i);
             }
+            return null;
         });
         waitAllForSafeState(hz1, hz2);
 

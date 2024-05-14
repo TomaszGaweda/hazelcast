@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ public class TransactionLogTest {
     }
 
     @Test
-    public void prepare_partitionSpecificRecord() throws Exception {
+    public void prepare_partitionSpecificRecord() {
         OperationService operationService = mock(OperationService.class);
         NodeEngine nodeEngine = mock(NodeEngine.class);
         when(nodeEngine.getOperationService()).thenReturn(operationService);
@@ -124,7 +124,7 @@ public class TransactionLogTest {
     }
 
     @Test
-    public void rollback_partitionSpecificRecord() throws Exception {
+    public void rollback_partitionSpecificRecord() {
         OperationService operationService = mock(OperationService.class);
         NodeEngine nodeEngine = mock(NodeEngine.class);
         when(nodeEngine.getOperationService()).thenReturn(operationService);
@@ -144,7 +144,7 @@ public class TransactionLogTest {
     }
 
     @Test
-    public void commit_partitionSpecificRecord() throws Exception {
+    public void commit_partitionSpecificRecord() {
         OperationService operationService = mock(OperationService.class);
         NodeEngine nodeEngine = mock(NodeEngine.class);
         when(nodeEngine.getOperationService()).thenReturn(operationService);
@@ -235,7 +235,7 @@ public class TransactionLogTest {
         }
 
         @Override
-        public void run() throws Exception {
+        public void run() {
         }
 
         @Override
@@ -246,7 +246,7 @@ public class TransactionLogTest {
 
     private static class DummyTargetOperation extends Operation {
         @Override
-        public void run() throws Exception {
+        public void run() {
         }
 
         @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -230,6 +230,7 @@ public final class PartitionReplicaSyncRequestOffloadable
                                 // operations while preparing replication operations
                                 if (!trySetMigratingFlag()) {
                                     sendRetryResponse();
+                                    return;
                                 }
 
                                 try {
@@ -298,5 +299,11 @@ public final class PartitionReplicaSyncRequestOffloadable
         } catch (InterruptedException | ExecutionException e) {
             throw sneakyThrow(peel(e));
         }
+    }
+
+    @Override
+    protected void toString(StringBuilder sb) {
+        super.toString(sb);
+        sb.append(", [real]partitionId=").append(partitionId);
     }
 }

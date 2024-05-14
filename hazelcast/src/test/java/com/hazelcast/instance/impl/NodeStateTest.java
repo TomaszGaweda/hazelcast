@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class NodeStateTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void multipleShutdowns_Allowed() throws InterruptedException {
+    public void multipleShutdowns_Allowed() {
         TestHazelcastInstanceFactory factory = createHazelcastInstanceFactory();
         HazelcastInstance hz = factory.newHazelcastInstance();
         Node node = getNode(hz);
@@ -92,11 +92,7 @@ public class NodeStateTest extends HazelcastTestSupport {
 
         Thread[] shutdownThreads = new Thread[3];
         for (int i = 0; i < shutdownThreads.length; i++) {
-            Thread thread = new Thread() {
-                public void run() {
-                    node.shutdown(false);
-                }
-            };
+            Thread thread = new Thread(() -> node.shutdown(false));
             thread.start();
             shutdownThreads[i] = thread;
         }
@@ -107,7 +103,7 @@ public class NodeStateTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void shouldReject_NormalOperationInvocation_whilePassive() throws Exception {
+    public void shouldReject_NormalOperationInvocation_whilePassive() {
         InvocationTask task = nodeEngine -> {
             Future<Object> future = nodeEngine.getOperationService()
                     .invokeOnPartition(null, new DummyOperation(), 1);
@@ -124,7 +120,7 @@ public class NodeStateTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void shouldReject_NormalOperationExecution_whilePassive() throws Exception {
+    public void shouldReject_NormalOperationExecution_whilePassive() {
         InvocationTask task = nodeEngine -> {
             final CountDownLatch latch = new CountDownLatch(1);
             Operation op = new DummyOperation() {
@@ -147,7 +143,7 @@ public class NodeStateTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void shouldAllow_AllowedOperationInvocation_whilePassive() throws Exception {
+    public void shouldAllow_AllowedOperationInvocation_whilePassive() {
         InvocationTask task = nodeEngine -> {
             Future<Object> future = nodeEngine.getOperationService()
                     .invokeOnTarget(null, new DummyAllowedDuringPassiveStateOperation(), nodeEngine.getThisAddress());
@@ -158,12 +154,12 @@ public class NodeStateTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void shouldAllow_AllowedOperationExecution_whilePassive() throws Exception {
+    public void shouldAllow_AllowedOperationExecution_whilePassive() {
         InvocationTask task = nodeEngine -> {
             final CountDownLatch latch = new CountDownLatch(1);
             Operation op = new DummyAllowedDuringPassiveStateOperation() {
                 @Override
-                public void afterRun() throws Exception {
+                public void afterRun() {
                     latch.countDown();
                 }
 
@@ -180,7 +176,7 @@ public class NodeStateTest extends HazelcastTestSupport {
         testInvocation_whileClusterPassive(task);
     }
 
-    private void testInvocation_whileClusterPassive(InvocationTask invocationTask) throws Exception {
+    private void testInvocation_whileClusterPassive(InvocationTask invocationTask) {
         TestHazelcastInstanceFactory factory = createHazelcastInstanceFactory();
         final HazelcastInstance hz = factory.newHazelcastInstance();
         final Node node = getNode(hz);
@@ -204,13 +200,13 @@ public class NodeStateTest extends HazelcastTestSupport {
 
     private static class DummyOperation extends Operation {
         @Override
-        public void run() throws Exception {
+        public void run() {
         }
     }
 
     private static class DummyAllowedDuringPassiveStateOperation extends Operation implements AllowedDuringPassiveState {
         @Override
-        public void run() throws Exception {
+        public void run() {
         }
     }
 }

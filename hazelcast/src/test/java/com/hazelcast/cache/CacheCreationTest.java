@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,8 @@ import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.SlowTest;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import javax.cache.Cache;
@@ -62,8 +60,6 @@ public class CacheCreationTest extends HazelcastTestSupport {
 
     private static final int THREAD_COUNT = 4;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void jsrSetup() {
@@ -127,14 +123,11 @@ public class CacheCreationTest extends HazelcastTestSupport {
 
         final CountDownLatch latch = new CountDownLatch(THREAD_COUNT);
         for (int i = 0; i < THREAD_COUNT; i++) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    CachingProvider cachingProvider = createCachingProvider(getDeclarativeConfig());
-                    Cache<Object, Object> cache = cachingProvider.getCacheManager().getCache("xmlCache");
-                    cache.get(1);
-                    latch.countDown();
-                }
+            executorService.execute(() -> {
+                CachingProvider cachingProvider = createCachingProvider(getDeclarativeConfig());
+                Cache<Object, Object> cache = cachingProvider.getCacheManager().getCache("xmlCache");
+                cache.get(1);
+                latch.countDown();
             });
         }
         assertOpenEventually(latch);
@@ -148,14 +141,11 @@ public class CacheCreationTest extends HazelcastTestSupport {
         final CountDownLatch latch = new CountDownLatch(THREAD_COUNT);
         for (int i = 0; i < THREAD_COUNT; i++) {
             final String cacheName = "xmlCache" + i;
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    CachingProvider cachingProvider = createCachingProvider(getDeclarativeConfig());
-                    Cache<Object, Object> cache = cachingProvider.getCacheManager().getCache(cacheName);
-                    cache.get(1);
-                    latch.countDown();
-                }
+            executorService.execute(() -> {
+                CachingProvider cachingProvider = createCachingProvider(getDeclarativeConfig());
+                Cache<Object, Object> cache = cachingProvider.getCacheManager().getCache(cacheName);
+                cache.get(1);
+                latch.countDown();
             });
         }
         assertOpenEventually(latch);
@@ -168,8 +158,8 @@ public class CacheCreationTest extends HazelcastTestSupport {
         CachingProvider cachingProvider = createCachingProvider(config);
         CacheManager defaultCacheManager = cachingProvider.getCacheManager();
 
-        thrown.expect(IllegalArgumentException.class);
-        defaultCacheManager.getCache("test");
+        assertThrows(IllegalArgumentException.class,
+                () -> defaultCacheManager.getCache("test"));
     }
 
     @Test
@@ -177,8 +167,8 @@ public class CacheCreationTest extends HazelcastTestSupport {
         CachingProvider cachingProvider = createCachingProvider(createBasicConfig());
         CacheManager defaultCacheManager = cachingProvider.getCacheManager();
 
-        thrown.expect(IllegalArgumentException.class);
-        defaultCacheManager.createCache("test", createInvalidCacheConfig());
+        assertThrows(IllegalArgumentException.class, () ->
+                defaultCacheManager.createCache("test", createInvalidCacheConfig()));
     }
 
     @Test
@@ -186,8 +176,7 @@ public class CacheCreationTest extends HazelcastTestSupport {
         System.setProperty("hazelcast.config", "classpath:test-hazelcast-invalid-cache.xml");
         CachingProvider cachingProvider = Caching.getCachingProvider();
 
-        thrown.expect(CacheException.class);
-        cachingProvider.getCacheManager();
+        assertThrows(CacheException.class, cachingProvider::getCacheManager);
     }
 
     @Test

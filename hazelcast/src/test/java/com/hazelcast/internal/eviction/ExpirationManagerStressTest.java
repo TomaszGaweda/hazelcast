@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,53 +43,44 @@ public class ExpirationManagerStressTest extends HazelcastTestSupport {
         final ExpirationManager expirationManager = getExpirationManager(createHazelcastInstance());
 
         final AtomicBoolean stop = new AtomicBoolean(false);
-        LinkedList<Thread> threads = new LinkedList<Thread>();
+        LinkedList<Thread> threads = new LinkedList<>();
 
         for (int j = 0; j < 2; j++) {
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    while (!stop.get()) {
-                        ClusterState[] states = ClusterState.values();
-                        for (final ClusterState state : states) {
-                            expirationManager.onClusterStateChange(state);
-                        }
-                        expirationManager.onClusterStateChange(ClusterState.ACTIVE);
+            Thread thread = new Thread(() -> {
+                while (!stop.get()) {
+                    ClusterState[] states = ClusterState.values();
+                    for (final ClusterState state : states) {
+                        expirationManager.onClusterStateChange(state);
                     }
+                    expirationManager.onClusterStateChange(ClusterState.ACTIVE);
                 }
-            };
+            });
 
             threads.add(thread);
         }
 
         for (int i = 0; i < 2; i++) {
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    while (!stop.get()) {
-                        LifecycleEvent.LifecycleState[] lifecycleStates = LifecycleEvent.LifecycleState.values();
-                        for (final LifecycleEvent.LifecycleState lifecycleState : lifecycleStates) {
-                            expirationManager.stateChanged(new LifecycleEvent(lifecycleState));
-                        }
-                        expirationManager.stateChanged(new LifecycleEvent(LifecycleEvent.LifecycleState.MERGED));
+            Thread thread = new Thread(() -> {
+                while (!stop.get()) {
+                    LifecycleEvent.LifecycleState[] lifecycleStates = LifecycleEvent.LifecycleState.values();
+                    for (final LifecycleEvent.LifecycleState lifecycleState : lifecycleStates) {
+                        expirationManager.stateChanged(new LifecycleEvent(lifecycleState));
                     }
+                    expirationManager.stateChanged(new LifecycleEvent(LifecycleEvent.LifecycleState.MERGED));
                 }
-            };
+            });
 
             threads.add(thread);
         }
 
         for (int i = 0; i < 2; i++) {
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    while (!stop.get()) {
-                        expirationManager.scheduleExpirationTask();
-                        expirationManager.unscheduleExpirationTask();
-                        expirationManager.scheduleExpirationTask();
-                    }
+            Thread thread = new Thread(() -> {
+                while (!stop.get()) {
+                    expirationManager.scheduleExpirationTask();
+                    expirationManager.unscheduleExpirationTask();
+                    expirationManager.scheduleExpirationTask();
                 }
-            };
+            });
 
             threads.add(thread);
         }

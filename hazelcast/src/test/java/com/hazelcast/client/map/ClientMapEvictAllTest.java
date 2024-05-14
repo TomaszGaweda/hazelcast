@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,11 @@ import static org.junit.Assert.assertFalse;
 public class ClientMapEvictAllTest extends AbstractClientMapTest {
 
     @Test
-    public void evictAll_firesEvent() throws Exception {
+    public void evictAll_firesEvent() {
         final String mapName = randomMapName();
         final IMap<Object, Object> map = client.getMap(mapName);
         final CountDownLatch evictedEntryCount = new CountDownLatch(3);
-        map.addEntryListener(new EntryAdapter<Object, Object>() {
+        map.addEntryListener(new EntryAdapter<>() {
             @Override
             public void mapEvicted(MapEvent event) {
                 final int affected = event.getNumberOfEntriesAffected();
@@ -66,7 +66,7 @@ public class ClientMapEvictAllTest extends AbstractClientMapTest {
         final String mapName = randomMapName();
         final IMap<Object, Object> map = client.getMap(mapName);
         final CountDownLatch eventCount = new CountDownLatch(2);
-        map.addEntryListener(new EntryAdapter<Object, Object>() {
+        map.addEntryListener(new EntryAdapter<>() {
             @Override
             public void mapEvicted(MapEvent event) {
                 eventCount.countDown();

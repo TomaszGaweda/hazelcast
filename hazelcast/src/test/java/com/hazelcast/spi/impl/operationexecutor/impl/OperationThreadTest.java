@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.spi.impl.PartitionSpecificRunnable;
 import com.hazelcast.spi.impl.operationexecutor.OperationRunner;
 import com.hazelcast.spi.impl.operationexecutor.OperationRunnerFactory;
 import com.hazelcast.spi.impl.operationservice.Operation;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -61,12 +60,7 @@ public class OperationThreadTest extends OperationExecutorImpl_AbstractTest {
 
         executor.accept(packet);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(oldCount + 1, OutOfMemoryErrorDispatcher.getOutOfMemoryErrorCount());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(oldCount + 1, OutOfMemoryErrorDispatcher.getOutOfMemoryErrorCount()));
     }
 
     @Test
@@ -131,29 +125,21 @@ public class OperationThreadTest extends OperationExecutorImpl_AbstractTest {
 
         initExecutor();
 
-        if (task instanceof Operation) {
-            executor.execute((Operation) task);
-        } else if (task instanceof PartitionSpecificRunnable) {
-            executor.execute((PartitionSpecificRunnable) task);
-        } else if (task instanceof Packet) {
-            executor.accept((Packet) task);
+        if (task instanceof Operation operation) {
+            executor.execute(operation);
+        } else if (task instanceof PartitionSpecificRunnable runnable) {
+            executor.execute(runnable);
+        } else if (task instanceof Packet packet) {
+            executor.accept(packet);
         } else {
             fail("invalid task!");
         }
 
-        final Runnable emptyRunnable = new Runnable() {
-            @Override
-            public void run() {
-            }
+        final Runnable emptyRunnable = () -> {
         };
         executor.executeOnPartitionThreads(emptyRunnable);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(0, executor.getPriorityQueueSize());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(0, executor.getPriorityQueueSize()));
     }
 
     private PartitionOperationThread createNewOperationThread(OperationQueue mockOperationQueue) {

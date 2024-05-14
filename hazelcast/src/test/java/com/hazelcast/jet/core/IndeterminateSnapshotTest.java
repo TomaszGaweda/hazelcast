@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1307,7 +1307,7 @@ public class IndeterminateSnapshotTest {
 
         @Override
         protected void restoreFromSnapshot(@Nonnull Object key, @Nonnull Object value) {
-            if (key instanceof BroadcastKey && ((BroadcastKey<?>) key).key().equals(globalIndex)) {
+            if (key instanceof BroadcastKey broadcastKey && broadcastKey.key().equals(globalIndex)) {
                 restoredCounters.put(globalIndex, (Integer) value);
                 // Note that counter will not be incremented before first snapshot after restore.
                 // snapshotCounter can be less than snapshot id if some snapshots are lost.

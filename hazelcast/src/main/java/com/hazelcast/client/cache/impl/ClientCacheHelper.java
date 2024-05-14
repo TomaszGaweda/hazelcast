@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ final class ClientCacheHelper {
     static void enableStatisticManagementOnNodes(HazelcastClientInstanceImpl client, String cacheName,
                                                  boolean statOrMan, boolean enabled) {
         Collection<Member> members = client.getClientClusterService().getMemberList();
-        Collection<Future> futures = new ArrayList<Future>();
+        Collection<Future> futures = new ArrayList<>();
         for (Member member : members) {
             try {
                 UUID uuid = member.getUuid();

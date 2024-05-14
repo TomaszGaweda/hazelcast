@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public final class AddressHelper {
         if (possiblePort == -1) {
             possiblePort = INITIAL_FIRST_PORT;
         }
-        LinkedList<Address> addressList = new LinkedList<Address>();
+        LinkedList<Address> addressList = new LinkedList<>();
 
         if (inetAddress == null) {
             for (int i = 0; i < portTryCount; i++) {
@@ -90,8 +90,8 @@ public final class AddressHelper {
             for (int i = 0; i < portTryCount; i++) {
                 addressList.add(new Address(scopedAddress, inetAddress, possiblePort + i));
             }
-        } else if (inetAddress instanceof Inet6Address) {
-            Collection<Inet6Address> possibleInetAddresses = getPossibleInetAddressesFor((Inet6Address) inetAddress);
+        } else if (inetAddress instanceof Inet6Address address) {
+            Collection<Inet6Address> possibleInetAddresses = getPossibleInetAddressesFor(address);
             for (Inet6Address inet6Address : possibleInetAddresses) {
                 for (int i = 0; i < portTryCount; i++) {
                     addressList.add(new Address(scopedAddress, inet6Address, possiblePort + i));

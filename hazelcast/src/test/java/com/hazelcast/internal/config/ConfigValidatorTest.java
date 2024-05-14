@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.hazelcast.internal.config;
 
+import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.config.CacheSimpleConfig;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.EvictionConfig;
@@ -25,11 +26,9 @@ import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.config.NativeMemoryConfig;
 import com.hazelcast.config.cp.CPSubsystemConfig;
-import com.hazelcast.logging.ILogger;
 import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.merge.HigherHitsMergePolicy;
 import com.hazelcast.spi.merge.SplitBrainMergePolicyProvider;
-import com.hazelcast.spi.properties.HazelcastProperties;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -45,6 +44,7 @@ import static com.hazelcast.config.InMemoryFormat.NATIVE;
 import static com.hazelcast.config.InMemoryFormat.OBJECT;
 import static com.hazelcast.internal.config.ConfigValidator.checkCPSubsystemConfig;
 import static com.hazelcast.internal.config.ConfigValidator.checkCacheConfig;
+import static com.hazelcast.internal.config.ConfigValidator.checkClientNetworkConfig;
 import static com.hazelcast.internal.config.ConfigValidator.checkMapConfig;
 import static com.hazelcast.internal.config.ConfigValidator.checkNearCacheNativeMemoryConfig;
 import static org.mockito.Mockito.when;
@@ -53,23 +53,16 @@ import static org.mockito.Mockito.when;
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class ConfigValidatorTest extends HazelcastTestSupport {
 
-    private HazelcastProperties properties;
-    private NativeMemoryConfig nativeMemoryConfig;
     private SplitBrainMergePolicyProvider splitBrainMergePolicyProvider;
-    private ILogger logger;
 
     @Before
     public void setUp() {
         Config config = new Config();
-        nativeMemoryConfig = config.getNativeMemoryConfig();
         NodeEngine nodeEngine = Mockito.mock(NodeEngine.class);
         when(nodeEngine.getConfigClassLoader()).thenReturn(config.getClassLoader());
 
         splitBrainMergePolicyProvider = new SplitBrainMergePolicyProvider(config.getClassLoader());
         when(nodeEngine.getSplitBrainMergePolicyProvider()).thenReturn(splitBrainMergePolicyProvider);
-
-        properties = nodeEngine.getProperties();
-        logger = nodeEngine.getLogger(MapConfig.class);
     }
 
     @Test
@@ -79,18 +72,18 @@ public class ConfigValidatorTest extends HazelcastTestSupport {
 
     @Test
     public void checkMapConfig_BINARY() {
-        checkMapConfig(getMapConfig(BINARY), nativeMemoryConfig, splitBrainMergePolicyProvider, properties, logger);
+        checkMapConfig(new Config(), getMapConfig(BINARY), splitBrainMergePolicyProvider);
     }
 
     @Test(expected = InvalidConfigurationException.class)
     public void checkMapConfig_fails_with_merge_policy_which_requires_per_entry_stats_enabled() {
-        checkMapConfig(getMapConfig(BINARY).setPerEntryStatsEnabled(false),
-                nativeMemoryConfig, splitBrainMergePolicyProvider, properties, logger);
+        checkMapConfig(new Config(), getMapConfig(BINARY).setPerEntryStatsEnabled(false),
+                splitBrainMergePolicyProvider);
     }
 
     @Test
     public void checkMapConfig_OBJECT() {
-        checkMapConfig(getMapConfig(OBJECT), nativeMemoryConfig, splitBrainMergePolicyProvider, properties, logger);
+        checkMapConfig(new Config(), getMapConfig(OBJECT), splitBrainMergePolicyProvider);
     }
 
     /**
@@ -98,7 +91,7 @@ public class ConfigValidatorTest extends HazelcastTestSupport {
      */
     @Test(expected = InvalidConfigurationException.class)
     public void checkMapConfig_NATIVE() {
-        checkMapConfig(getMapConfig(NATIVE), nativeMemoryConfig, splitBrainMergePolicyProvider, properties, logger);
+        checkMapConfig(new Config(), getMapConfig(NATIVE), splitBrainMergePolicyProvider);
     }
 
     /**
@@ -106,7 +99,7 @@ public class ConfigValidatorTest extends HazelcastTestSupport {
      */
     @Test(expected = InvalidConfigurationException.class)
     public void checkMapConfig_TieredStore() {
-        checkMapConfig(getMapConfig(true), nativeMemoryConfig, splitBrainMergePolicyProvider, properties, logger);
+        checkMapConfig(new Config(), getMapConfig(true), splitBrainMergePolicyProvider);
     }
 
     private MapConfig getMapConfig(InMemoryFormat inMemoryFormat) {
@@ -207,5 +200,32 @@ public class ConfigValidatorTest extends HazelcastTestSupport {
         config.setSessionTimeToLiveSeconds(10);
 
         checkCPSubsystemConfig(config);
+    }
+
+    @Test(expected = InvalidConfigurationException.class)
+    public void testValidationFails_whenSubsetRoutingEnabledAndSmartRoutingEnabled() {
+        ClientConfig config = new ClientConfig();
+        config.getNetworkConfig().getSubsetRoutingConfig().setEnabled(true);
+        config.getNetworkConfig().setSmartRouting(true);
+
+        checkClientNetworkConfig(config.getNetworkConfig());
+    }
+
+    @Test
+    public void testValidationPass_whenSubsetRoutingEnabledAndSmartRoutingDisabled() {
+        ClientConfig config = new ClientConfig();
+        config.getNetworkConfig().getSubsetRoutingConfig().setEnabled(true);
+        config.getNetworkConfig().setSmartRouting(false);
+
+        checkClientNetworkConfig(config.getNetworkConfig());
+    }
+
+    @Test
+    public void testValidationPass_whenSubsetRoutingDisabledAndSmartRoutingEnabled() {
+        ClientConfig config = new ClientConfig();
+        config.getNetworkConfig().getSubsetRoutingConfig().setEnabled(false);
+        config.getNetworkConfig().setSmartRouting(true);
+
+        checkClientNetworkConfig(config.getNetworkConfig());
     }
 }

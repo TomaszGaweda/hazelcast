@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import com.hazelcast.jet.retry.RetryStrategies;
 import com.hazelcast.jet.test.IgnoreInJenkinsOnWindows;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -33,6 +31,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static com.hazelcast.jet.cdc.MySQLTestUtils.getMySqlConnection;
 import static org.testcontainers.containers.MySQLContainer.MYSQL_PORT;
 
 @Category({ParallelJVMTest.class, IgnoreInJenkinsOnWindows.class})
@@ -50,13 +49,6 @@ public abstract class AbstractMySqlCdcIntegrationTest extends AbstractCdcIntegra
                     .withPassword("mysqlpw")
     );
 
-    @BeforeClass
-    public static void ignoreOnJdk15OrHigher() {
-        Assume.assumeFalse("https://github.com/hazelcast/hazelcast-jet/issues/2623, " +
-                        "https://github.com/hazelcast/hazelcast/issues/18800",
-                System.getProperty("java.version").matches("^1[56].*"));
-    }
-
     protected MySqlCdcSources.Builder sourceBuilder(String name) {
         return MySqlCdcSources.mysql(name)
                 .setDatabaseAddress(mysql.getHost())
@@ -67,6 +59,7 @@ public abstract class AbstractMySqlCdcIntegrationTest extends AbstractCdcIntegra
                 .setReconnectBehavior(RetryStrategies.indefinitely(1000));
     }
 
+    @SuppressWarnings("SqlSourceToSinkFlow")
     protected void createDb(String database) throws SQLException {
         String jdbcUrl = "jdbc:mysql://" + mysql.getHost() + ":" + mysql.getMappedPort(MYSQL_PORT) + "/";
         try (Connection connection = getMySqlConnection(jdbcUrl, "root", "mysqlpw")) {

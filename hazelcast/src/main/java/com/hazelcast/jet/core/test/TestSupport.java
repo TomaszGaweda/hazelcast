@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,7 +201,7 @@ public final class TestSupport {
     private static final long BLOCKING_TIME_LIMIT_MS_WARN = 10000;
 
     private static final LoggingServiceImpl LOGGING_SERVICE = new LoggingServiceImpl(
-            "test-group", null, BuildInfoProvider.getBuildInfo(), true, null);
+            "test-group", null, BuildInfoProvider.getBuildInfo(), true, false, null);
 
     static {
         try {
@@ -607,7 +607,7 @@ public final class TestSupport {
 
     private void run() {
         // filter null items from testEvents. They are there only to affect the number of ordinals. See class javadoc.
-        testEvents.removeIf(event -> event instanceof ItemWithOrdinal && ((ItemWithOrdinal) event).item == null);
+        testEvents.removeIf(event -> event instanceof ItemWithOrdinal iwo && iwo.item == null);
 
         boolean isAfterProcessorAssertion = false;
         for (TestEventInt e : testEvents) {
@@ -998,9 +998,8 @@ public final class TestSupport {
 
     private void initProcessor(Processor processor, TestOutbox outbox) {
         SerializationService serializationService;
-        if (hazelcastInstance != null && hazelcastInstance instanceof SerializationServiceSupport) {
-            SerializationServiceSupport impl = (SerializationServiceSupport) hazelcastInstance;
-            serializationService = impl.getSerializationService();
+        if (hazelcastInstance != null && hazelcastInstance instanceof SerializationServiceSupport support) {
+            serializationService = support.getSerializationService();
         } else {
             serializationService = new DefaultSerializationServiceBuilder()
                     .setManagedContext(e -> e)
@@ -1021,8 +1020,8 @@ public final class TestSupport {
         if (jobConfig != null) {
             context.setJobConfig(jobConfig);
         }
-        if (processor instanceof SerializationServiceAware) {
-            ((SerializationServiceAware) processor).setSerializationService(serializationService);
+        if (processor instanceof SerializationServiceAware aware) {
+            aware.setSerializationService(serializationService);
         }
         try {
             processor.init(outbox, context);
@@ -1094,8 +1093,8 @@ public final class TestSupport {
     private static String listToString(List<?> list) {
         return list.stream()
                 .map(obj -> {
-                    if (obj instanceof Object[]) {
-                        return Arrays.toString((Object[]) obj);
+                    if (obj instanceof Object[] objects) {
+                        return Arrays.toString(objects);
                     }
                     return String.valueOf(obj);
                 })

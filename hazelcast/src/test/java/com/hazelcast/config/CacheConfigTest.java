@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig.TimedExp
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.JarUtil;
@@ -106,7 +105,7 @@ public class CacheConfigTest extends HazelcastTestSupport {
         Config config = new XmlConfigBuilder(configUrl2).build();
 
         CacheSimpleConfig simpleConfig = config.getCacheConfig("cache3");
-        CacheConfig<Object, String> cacheConfig = new CacheConfig<Object, String>(simpleConfig);
+        CacheConfig<Object, String> cacheConfig = new CacheConfig<>(simpleConfig);
 
         Factory<CacheWriter<? super Object, ? super String>> writerFactory = cacheConfig.getCacheWriterFactory();
         CacheWriter<? super Object, ? super String> cacheWriter = writerFactory.create();
@@ -609,12 +608,7 @@ public class CacheConfigTest extends HazelcastTestSupport {
         final HazelcastInstance instance2 = instanceFactory.newHazelcastInstance(config);
         final ICacheService cacheService2 = getCacheService(instance2);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertNotNull(cacheService2.getCacheConfig(fullCacheName));
-            }
-        });
+        assertTrueEventually(() -> assertNotNull(cacheService2.getCacheConfig(fullCacheName)));
     }
 
     public static class EntryListenerFactory implements Factory<EntryListener> {
@@ -691,7 +685,7 @@ public class CacheConfigTest extends HazelcastTestSupport {
 
         @Override
         public Map<K, String> loadAll(Iterable<? extends K> keys) throws CacheLoaderException {
-            Map<K, String> result = new HashMap<K, String>();
+            Map<K, String> result = new HashMap<>();
             for (K key : keys) {
                 result.put(key, String.valueOf(key));
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,8 @@ public class DefaultSerializationServiceBuilder implements SerializationServiceB
     protected HazelcastInstance hazelcastInstance;
     protected CompactSerializationConfig compactSerializationConfig;
     protected Supplier<RuntimeException> notActiveExceptionSupplier;
-    protected ClassNameFilter classNameFilter;
+    protected ClassNameFilter classNameSerializationFilter;
+
     protected SchemaService schemaService;
     protected boolean isCompatibility;
 
@@ -124,7 +125,7 @@ public class DefaultSerializationServiceBuilder implements SerializationServiceB
         allowUnsafe = config.isAllowUnsafe();
         allowOverrideDefaultSerializers = config.isAllowOverrideDefaultSerializers();
         JavaSerializationFilterConfig filterConfig = config.getJavaSerializationFilterConfig();
-        classNameFilter = filterConfig == null ? null : new SerializationClassNameFilter(filterConfig);
+        classNameSerializationFilter = filterConfig == null ? null : new SerializationClassNameFilter(filterConfig);
         compactSerializationConfig = config.getCompactSerializationConfig();
         return this;
     }
@@ -254,8 +255,8 @@ public class DefaultSerializationServiceBuilder implements SerializationServiceB
                     }
                 }
 
-                if (serializer instanceof HazelcastInstanceAware) {
-                    ((HazelcastInstanceAware) serializer).setHazelcastInstance(hazelcastInstance);
+                if (serializer instanceof HazelcastInstanceAware aware) {
+                    aware.setHazelcastInstance(hazelcastInstance);
                 }
 
                 ((AbstractSerializationService) ss)
@@ -300,7 +301,7 @@ public class DefaultSerializationServiceBuilder implements SerializationServiceB
                     .withEnableCompression(enableCompression)
                     .withEnableSharedObject(enableSharedObject)
                     .withNotActiveExceptionSupplier(notActiveExceptionSupplier)
-                    .withClassNameFilter(classNameFilter)
+                    .withClassNameFilter(classNameSerializationFilter)
                     .withCheckClassDefErrors(checkClassDefErrors)
                     .withAllowOverrideDefaultSerializers(allowOverrideDefaultSerializers)
                     .withCompactSerializationConfig(compactSerializationConfig)
@@ -323,13 +324,13 @@ public class DefaultSerializationServiceBuilder implements SerializationServiceB
             Class serializationType = entry.getKey();
             Object value = entry.getValue();
             Serializer serializer;
-            if (value instanceof SerializerHook) {
-                serializer = ((SerializerHook) value).createSerializer();
+            if (value instanceof SerializerHook hook) {
+                serializer = hook.createSerializer(ss);
             } else {
                 serializer = (Serializer) value;
             }
-            if (value instanceof HazelcastInstanceAware) {
-                ((HazelcastInstanceAware) value).setHazelcastInstance(hazelcastInstance);
+            if (value instanceof HazelcastInstanceAware aware) {
+                aware.setHazelcastInstance(hazelcastInstance);
             }
             if (ClassLoaderUtil.isInternalType(value.getClass())) {
                 ((AbstractSerializationService) ss).safeRegister(serializationType, serializer);
@@ -371,8 +372,8 @@ public class DefaultSerializationServiceBuilder implements SerializationServiceB
         buildDataSerializableFactories(dataSerializableFactories, config, cl);
 
         for (DataSerializableFactory f : dataSerializableFactories.values()) {
-            if (f instanceof HazelcastInstanceAware) {
-                ((HazelcastInstanceAware) f).setHazelcastInstance(hazelcastInstance);
+            if (f instanceof HazelcastInstanceAware aware) {
+                aware.setHazelcastInstance(hazelcastInstance);
             }
         }
     }
@@ -422,8 +423,8 @@ public class DefaultSerializationServiceBuilder implements SerializationServiceB
         PortableFactoriesHelper.buildPortableFactories(portableFactories, config, cl);
 
         for (PortableFactory f : portableFactories.values()) {
-            if (f instanceof HazelcastInstanceAware) {
-                ((HazelcastInstanceAware) f).setHazelcastInstance(hazelcastInstance);
+            if (f instanceof HazelcastInstanceAware aware) {
+                aware.setHazelcastInstance(hazelcastInstance);
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,7 +166,7 @@ public class MembershipUpdateTest extends HazelcastTestSupport {
 
         Config config = getConfigWithService(new PostJoinAwareServiceImpl(latch), PostJoinAwareServiceImpl.SERVICE_NAME);
 
-        AtomicReferenceArray<HazelcastInstance> instances = new AtomicReferenceArray<HazelcastInstance>(6);
+        AtomicReferenceArray<HazelcastInstance> instances = new AtomicReferenceArray<>(6);
         for (int i = 0; i < instances.length(); i++) {
             int ix = i;
             spawn(() -> instances.set(ix, factory.newHazelcastInstance(config)));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class HazelcastXAStressTest extends HazelcastTestSupport {
 
     private HazelcastInstance instance;
 
-    private static Xid createXid() throws InterruptedException {
+    private static Xid createXid() {
         return new XID(randomString(), "test");
     }
 
@@ -54,7 +54,7 @@ public class HazelcastXAStressTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testCommitConcurrently() throws InterruptedException, XAException {
+    public void testCommitConcurrently() {
         int count = 10000;
         String name = randomString();
         ExecutorService executorService = Executors.newFixedThreadPool(5);
@@ -97,14 +97,11 @@ public class HazelcastXAStressTest extends HazelcastTestSupport {
                 TransactionalMap<Object, Object> map = context.getMap(name);
                 map.put(i, i);
                 xaResource.end(xid, XAResource.TMSUCCESS);
-                executorServiceForCommit.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            xaResource.commit(xid, true);
-                        } catch (XAException e) {
-                            e.printStackTrace();
-                        }
+                executorServiceForCommit.execute(() -> {
+                    try {
+                        xaResource.commit(xid, true);
+                    } catch (XAException e) {
+                        e.printStackTrace();
                     }
                 });
             } catch (Exception e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class HashUtilTest extends HazelcastTestSupport {
         new Random().nextBytes(data);
         ByteBuffer dataBuffer = ByteBuffer.wrap(data);
 
-        HashUtil.LoadStrategy<byte[]> byteArrayLoadStrategy = new HashUtil.LoadStrategy<byte[]>() {
+        HashUtil.LoadStrategy<byte[]> byteArrayLoadStrategy = new HashUtil.LoadStrategy<>() {
 
             @Override
             public int getInt(byte[] buf, long offset) {
@@ -68,7 +68,7 @@ public class HashUtilTest extends HazelcastTestSupport {
             }
 
         };
-        HashUtil.LoadStrategy<ByteBuffer> byteBufferLoadStrategy = new HashUtil.LoadStrategy<ByteBuffer>() {
+        HashUtil.LoadStrategy<ByteBuffer> byteBufferLoadStrategy = new HashUtil.LoadStrategy<>() {
 
             @Override
             public int getInt(ByteBuffer buf, long offset) {

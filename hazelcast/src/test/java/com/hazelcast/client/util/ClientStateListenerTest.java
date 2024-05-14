@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.test.ClientTestSupport;
 import com.hazelcast.client.test.TestHazelcastFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -138,7 +137,7 @@ public class ClientStateListenerTest extends ClientTestSupport {
     }
 
     @Test(timeout = MINUTE * 10)
-    public void testClientReconnectModeAsyncConnectedMultipleThreads() throws InterruptedException {
+    public void testClientReconnectModeAsyncConnectedMultipleThreads() {
         int numThreads = 10;
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
@@ -155,23 +154,20 @@ public class ClientStateListenerTest extends ClientTestSupport {
 
         List<Future<?>> futures = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
-            futures.add(executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        assertTrue(listener.awaitDisconnected());
-                    } catch (InterruptedException e) {
-                        fail("Should not be interrupted");
-                    }
-
-                    assertFalse(listener.isConnected());
-
-                    assertFalse(listener.isShutdown());
-
-                    assertTrue(listener.isStarted());
-
-                    assertEquals(CLIENT_DISCONNECTED, listener.getCurrentState());
+            futures.add(executor.submit(() -> {
+                try {
+                    assertTrue(listener.awaitDisconnected());
+                } catch (InterruptedException e) {
+                    fail("Should not be interrupted");
                 }
+
+                assertFalse(listener.isConnected());
+
+                assertFalse(listener.isShutdown());
+
+                assertTrue(listener.isStarted());
+
+                assertEquals(CLIENT_DISCONNECTED, listener.getCurrentState());
             }));
         }
 
@@ -182,23 +178,20 @@ public class ClientStateListenerTest extends ClientTestSupport {
 
         futures.clear();
         for (int i = 0; i < numThreads; i++) {
-            futures.add(executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        listener.awaitConnected();
-                    } catch (InterruptedException e) {
-                        fail("Should not be interrupted");
-                    }
-
-                    assertTrue(listener.isConnected());
-
-                    assertFalse(listener.isShutdown());
-
-                    assertTrue(listener.isStarted());
-
-                    assertEquals(CLIENT_CONNECTED, listener.getCurrentState());
+            futures.add(executor.submit(() -> {
+                try {
+                    listener.awaitConnected();
+                } catch (InterruptedException e) {
+                    fail("Should not be interrupted");
                 }
+
+                assertTrue(listener.isConnected());
+
+                assertFalse(listener.isShutdown());
+
+                assertTrue(listener.isStarted());
+
+                assertEquals(CLIENT_CONNECTED, listener.getCurrentState());
             }));
         }
 
@@ -224,13 +217,7 @@ public class ClientStateListenerTest extends ClientTestSupport {
 
         assertFalse(listener.isConnected());
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run()
-                    throws Exception {
-                assertEquals(SHUTDOWN, listener.getCurrentState());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(SHUTDOWN, listener.getCurrentState()));
 
         assertFalse(listener.isStarted());
     }

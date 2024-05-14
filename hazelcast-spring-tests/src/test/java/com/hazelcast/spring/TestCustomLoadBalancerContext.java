@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-
-import javax.annotation.Resource;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,10 +39,10 @@ import static org.junit.Assert.assertTrue;
 @Category(QuickTest.class)
 public class TestCustomLoadBalancerContext {
 
-    @Resource(name = "client1")
+    @Autowired
     private HazelcastClientProxy client1;
 
-    @Resource(name = "client2")
+    @Autowired
     private HazelcastClientProxy client2;
 
     @BeforeClass

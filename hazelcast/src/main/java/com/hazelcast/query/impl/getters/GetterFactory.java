@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,8 +65,7 @@ public final class GetterFactory {
             if (currentObject == null) {
                 return NULL_GETTER;
             }
-            if (currentObject instanceof MultiResult) {
-                MultiResult multiResult = (MultiResult) currentObject;
+            if (currentObject instanceof MultiResult multiResult) {
                 elementType = deduceElementType(multiResult, reader);
             } else {
                 Collection collection = unwrapIfOptional(reader.read(currentObject));
@@ -88,8 +87,8 @@ public final class GetterFactory {
     }
 
     private static Class deduceOptionalType(Object object, Reader reader) throws Exception {
-        if (object instanceof MultiResult) {
-            for (Object result : ((MultiResult) object).getResults()) {
+        if (object instanceof MultiResult multiResult) {
+            for (Object result : multiResult.getResults()) {
                 if (result == null) {
                     continue;
                 }

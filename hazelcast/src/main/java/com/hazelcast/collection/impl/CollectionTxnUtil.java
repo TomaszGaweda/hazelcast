@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,11 +61,10 @@ public final class CollectionTxnUtil {
     }
 
     public static List<Operation> run(List<Operation> operationList) throws Exception {
-        List<Operation> backupList = new LinkedList<Operation>();
+        List<Operation> backupList = new LinkedList<>();
         for (Operation operation : operationList) {
             operation.run();
-            if (operation instanceof BackupAwareOperation) {
-                BackupAwareOperation backupAwareOperation = (BackupAwareOperation) operation;
+            if (operation instanceof BackupAwareOperation backupAwareOperation) {
                 if (backupAwareOperation.shouldBackup()) {
                     backupList.add(backupAwareOperation.getBackupOperation());
                 }
@@ -89,7 +88,7 @@ public final class CollectionTxnUtil {
 
     public static List<Operation> read(ObjectDataInput in) throws IOException {
         int size = in.readInt();
-        List<Operation> operationList = new ArrayList<Operation>(size);
+        List<Operation> operationList = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             Operation operation = in.readObject();
             operationList.add(operation);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,7 @@ class AdvancedNetworkAddressPicker
         this.advancedNetworkConfig = config.getAdvancedNetworkConfig();
 
         for (EndpointConfig endpointConfig : advancedNetworkConfig.getEndpointConfigs().values()) {
-            if (endpointConfig instanceof ServerSocketEndpointConfig) {
-                ServerSocketEndpointConfig serverSocketEndpointConfig = (ServerSocketEndpointConfig) endpointConfig;
+            if (endpointConfig instanceof ServerSocketEndpointConfig serverSocketEndpointConfig) {
                 EndpointQualifier endpointQualifier = serverSocketEndpointConfig.getQualifier();
                 TcpIpConfig tcpIpConfig = advancedNetworkConfig.getJoin().getTcpIpConfig();
                 InterfacesConfig interfacesConfig = serverSocketEndpointConfig.getInterfaces();

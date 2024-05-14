@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,8 +82,7 @@ public final class GenericRecordQueryReader implements ValueReader {
     private void read(String path, Consumer consumer) {
         try {
             Object result = read(path);
-            if (result instanceof MultiResult) {
-                MultiResult multiResult = (MultiResult) result;
+            if (result instanceof MultiResult multiResult) {
                 for (Object singleResult : multiResult.getResults()) {
                     consumer.accept(singleResult);
                 }
@@ -97,6 +96,7 @@ public final class GenericRecordQueryReader implements ValueReader {
         }
     }
 
+    @SuppressWarnings({"CyclomaticComplexity", "MethodLength", "NPathComplexity"})
     public Object read(String fieldPath) throws IOException {
         if (fieldPath == null) {
             throw new IllegalArgumentException("field path can not be null");
@@ -210,8 +210,7 @@ public final class GenericRecordQueryReader implements ValueReader {
                 Object leaves = readLeaf(record, fieldName);
                 if (leaves == null) {
                     multiResult.setNullOrEmptyTarget(true);
-                } else if (leaves instanceof Object[]) {
-                    Object[] array = (Object[]) leaves;
+                } else if (leaves instanceof Object[] array) {
                     if (array.length == 0) {
                         multiResult.setNullOrEmptyTarget(true);
                         continue;

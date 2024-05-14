@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,16 +61,16 @@ public class ConcurrentConveyorTest {
     OneToOneConcurrentArrayQueue<Item> defaultQ;
     ConcurrentConveyor<Item> conveyor;
 
-    private final List<Item> batch = new ArrayList<Item>(QUEUE_CAPACITY);
+    private final List<Item> batch = new ArrayList<>(QUEUE_CAPACITY);
 
     @Before
     public void before() {
         queueCount = 2;
-        defaultQ = new OneToOneConcurrentArrayQueue<Item>(QUEUE_CAPACITY);
+        defaultQ = new OneToOneConcurrentArrayQueue<>(QUEUE_CAPACITY);
 
         QueuedPipe<Item>[] qs = new QueuedPipe[queueCount];
         qs[0] = defaultQ;
-        qs[1] = new OneToOneConcurrentArrayQueue<Item>(QUEUE_CAPACITY);
+        qs[1] = new OneToOneConcurrentArrayQueue<>(QUEUE_CAPACITY);
         conveyor = concurrentConveyor(doneItem, qs);
     }
 
@@ -280,18 +280,16 @@ public class ConcurrentConveyorTest {
         final AtomicBoolean flag = new AtomicBoolean();
         final CountDownLatch latch = new CountDownLatch(1);
 
-        new Thread() {
-            public void run() {
-                // when
-                conveyor.backpressureOn();
-                latch.countDown();
-                parkNanos(MILLISECONDS.toNanos(10));
+        new Thread(() -> {
+            // when
+            conveyor.backpressureOn();
+            latch.countDown();
+            parkNanos(MILLISECONDS.toNanos(10));
 
-                // then
-                assertFalse(flag.get());
-                conveyor.backpressureOff();
-            }
-        }.start();
+            // then
+            assertFalse(flag.get());
+            conveyor.backpressureOff();
+        }).start();
 
         latch.await();
         conveyor.submit(defaultQ, item1);
@@ -304,18 +302,16 @@ public class ConcurrentConveyorTest {
         final AtomicBoolean flag = new AtomicBoolean();
         final CountDownLatch latch = new CountDownLatch(1);
 
-        new Thread() {
-            public void run() {
-                // when
-                conveyor.drainerArrived();
-                latch.countDown();
-                parkNanos(MILLISECONDS.toNanos(10));
+        new Thread(() -> {
+            // when
+            conveyor.drainerArrived();
+            latch.countDown();
+            parkNanos(MILLISECONDS.toNanos(10));
 
-                // then
-                assertFalse(flag.get());
-                conveyor.drainerDone();
-            }
-        }.start();
+            // then
+            assertFalse(flag.get());
+            conveyor.drainerDone();
+        }).start();
 
         latch.await();
         conveyor.awaitDrainerGone();

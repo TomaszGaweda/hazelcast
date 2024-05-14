@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ import static com.hazelcast.internal.util.MapUtil.createHashMap;
  * @param <K> the key type for this {@code IMap} proxy.
  * @param <V> the value type for this {@code IMap} proxy.
  */
+@SuppressWarnings("MethodCount")
 public class NearCachedMapProxyImpl<K, V> extends MapProxyImpl<K, V> {
 
     private final ClusterService clusterService;
@@ -649,8 +650,8 @@ public class NearCachedMapProxyImpl<K, V> extends MapProxyImpl<K, V> {
         public void onInvalidate(Invalidation invalidation) {
             assert invalidation != null;
 
-            if (invalidation instanceof BatchNearCacheInvalidation) {
-                List<Invalidation> batch = ((BatchNearCacheInvalidation) invalidation).getInvalidations();
+            if (invalidation instanceof BatchNearCacheInvalidation cacheInvalidation) {
+                List<Invalidation> batch = cacheInvalidation.getInvalidations();
                 for (Invalidation single : batch) {
                     handleInternal(single);
                 }

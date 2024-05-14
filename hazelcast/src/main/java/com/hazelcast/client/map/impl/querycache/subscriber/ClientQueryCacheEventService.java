@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class ClientQueryCacheEventService implements QueryCacheEventService {
     private static final int EVENT_QUEUE_TIMEOUT_MILLIS = 500;
 
     private static final ConstructorFunction<String, QueryCacheToListenerMapper> REGISTRY_CONSTRUCTOR =
-            new ConstructorFunction<String, QueryCacheToListenerMapper>() {
+            new ConstructorFunction<>() {
                 @Override
                 public QueryCacheToListenerMapper createNew(String arg) {
                     return new QueryCacheToListenerMapper();
@@ -91,7 +91,7 @@ public class ClientQueryCacheEventService implements QueryCacheEventService {
         this.listenerService = listenerService;
         this.serializationService = client.getSerializationService();
         this.executor = listenerService.getEventExecutor();
-        this.registrations = new ConcurrentHashMap<String, QueryCacheToListenerMapper>();
+        this.registrations = new ConcurrentHashMap<>();
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class OnJoinRegistrationOperation extends Operation implements Identified
         super.readInternal(in);
         int len = in.readInt();
         if (len > 0) {
-            registrations = new ArrayList<Registration>(len);
+            registrations = new ArrayList<>(len);
             for (int i = 0; i < len; i++) {
                 Registration reg = new Registration();
                 registrations.add(reg);

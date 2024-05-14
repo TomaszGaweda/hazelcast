@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,9 +117,9 @@ public abstract class BaseSingleValueIndexStore extends BaseIndexStore {
         if (newValue == NonTerminalJsonValue.INSTANCE) {
             return;
         }
-        if (newValue instanceof MultiResult) {
+        if (newValue instanceof MultiResult result) {
             multiResultHasToDetectDuplicates = true;
-            List<?> results = ((MultiResult<?>) newValue).getResults();
+            List<?> results = result.getResults();
             for (Object o : results) {
                 Comparable<?> sanitizedValue = sanitizeValue(o);
                 Object oldValue = insertInternal(sanitizedValue, queryableEntry);
@@ -140,8 +140,8 @@ public abstract class BaseSingleValueIndexStore extends BaseIndexStore {
         if (oldValue == NonTerminalJsonValue.INSTANCE) {
             return;
         }
-        if (oldValue instanceof MultiResult) {
-            List<?> results = ((MultiResult<?>) oldValue).getResults();
+        if (oldValue instanceof MultiResult result) {
+            List<?> results = result.getResults();
             for (Object o : results) {
                 Comparable<?> sanitizedValue = sanitizeValue(o);
                 Object removedValue = removeInternal(sanitizedValue, recordKey);

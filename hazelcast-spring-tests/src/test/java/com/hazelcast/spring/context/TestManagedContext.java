@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
-import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -48,10 +47,10 @@ import static org.junit.Assert.assertTrue;
 @Category(QuickTest.class)
 public class TestManagedContext {
 
-    @Resource(name = "instance1")
+    @Autowired
     private HazelcastInstance instance1;
 
-    @Resource(name = "instance2")
+    @Autowired
     private HazelcastInstance instance2;
 
     @Autowired
@@ -102,7 +101,7 @@ public class TestManagedContext {
     @Test
     public void testRunnableTask() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<Throwable> error = new AtomicReference<Throwable>();
+        final AtomicReference<Throwable> error = new AtomicReference<>();
 
         instance1.getExecutorService("test").submitToMember(new SomeRunnableTask(),
                 instance2.getCluster().getLocalMember(), new ExecutionCallback() {

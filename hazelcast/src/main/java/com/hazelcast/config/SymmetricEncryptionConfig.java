@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,14 @@ public class SymmetricEncryptionConfig
     public static final String DEFAULT_SYMMETRIC_ALGORITHM = "PBEWithMD5AndDES";
 
     /**
-     * Default symmetric encryption password
+     * Default symmetric encryption password used in Hazelcast before version 5.5.
      */
     public static final String DEFAULT_SYMMETRIC_PASSWORD = "thepassword";
 
     private static final int DEFAULT_ITERATION_COUNT = 19;
 
     private int iterationCount = DEFAULT_ITERATION_COUNT;
-    private String password = DEFAULT_SYMMETRIC_PASSWORD;
+    private String password;
     private byte[] key;
 
     public SymmetricEncryptionConfig() {

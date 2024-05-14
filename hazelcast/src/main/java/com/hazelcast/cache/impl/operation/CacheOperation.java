@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,8 @@ import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.internal.util.ExceptionUtil;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 
+import javax.annotation.Nullable;
+
 import static com.hazelcast.cache.impl.CacheEntryViews.createDefaultEntryView;
 import static com.hazelcast.internal.util.ToHeapDataConverter.toHeapData;
 
@@ -51,9 +53,9 @@ public abstract class CacheOperation extends AbstractNamedOperation
         implements PartitionAwareOperation, ServiceNamespaceAware, IdentifiedDataSerializable {
 
     protected transient boolean dontCreateCacheRecordStoreIfNotExist;
-    protected transient ICacheService cacheService;
     protected transient ICacheRecordStore recordStore;
     protected transient CacheWanEventPublisher wanEventPublisher;
+    protected transient @Nullable String namespace;
 
     protected CacheOperation() {
     }
@@ -74,9 +76,9 @@ public abstract class CacheOperation extends AbstractNamedOperation
 
     @Override
     public final void beforeRun() throws Exception {
-        cacheService = getService();
+        ICacheService cacheService = getService();
         try {
-            recordStore = getOrCreateStoreIfAllowed();
+            recordStore = getOrCreateStoreIfAllowed(cacheService);
         } catch (CacheNotExistsException e) {
             dispose();
             rethrowOrSwallowIfBackup(e);
@@ -90,7 +92,18 @@ public abstract class CacheOperation extends AbstractNamedOperation
             cacheService.doPrepublicationChecks(name);
         }
 
+        // Setup Namespace awareness
+        CacheConfig config = cacheService.getCacheConfig(name);
+        namespace = config == null ? null : config.getUserCodeNamespace();
+        getNodeEngine().getNamespaceService().setupNamespace(namespace);
+
         beforeRunInternal();
+    }
+
+    @Override
+    public void afterRun() throws Exception {
+        // Cleanup Namespace awareness
+        getNodeEngine().getNamespaceService().setupNamespace(namespace);
     }
 
     /**
@@ -107,12 +120,12 @@ public abstract class CacheOperation extends AbstractNamedOperation
         }
     }
 
-    private ICacheRecordStore getOrCreateStoreIfAllowed() {
+    private ICacheRecordStore getOrCreateStoreIfAllowed(ICacheService service) {
         if (dontCreateCacheRecordStoreIfNotExist) {
-            return cacheService.getRecordStore(name, getPartitionId());
+            return service.getRecordStore(name, getPartitionId());
         }
 
-        return cacheService.getOrCreateRecordStore(name, getPartitionId());
+        return service.getOrCreateRecordStore(name, getPartitionId());
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,9 +54,7 @@ import static org.junit.Assert.assertEquals;
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class QueryCacheTest extends AbstractQueryCacheTestSupport {
 
-    @SuppressWarnings("unchecked")
     private static final Predicate<Integer, Employee> TRUE_PREDICATE = Predicates.alwaysTrue();
-    @SuppressWarnings("unchecked")
     private static final Predicate<Integer, Integer> SQL_PREDICATE = Predicates.sql("this > 20");
 
     private static final Predicate<Integer, Employee> PAGING_PREDICATE = Predicates.pagingPredicate(1);
@@ -144,7 +142,7 @@ public class QueryCacheTest extends AbstractQueryCacheTestSupport {
 
         populateMap(map, 1000);
 
-        IFunction evictAll = (ignored) -> {
+        IFunction<Object, Object> evictAll = (ignored) -> {
             map.evictAll();
             return null;
         };
@@ -159,7 +157,7 @@ public class QueryCacheTest extends AbstractQueryCacheTestSupport {
 
         populateMap(map, 1000);
 
-        IFunction clear = (ignored) -> {
+        IFunction<Object, Object> clear = (ignored) -> {
             map.clear();
             return null;
         };
@@ -279,7 +277,6 @@ public class QueryCacheTest extends AbstractQueryCacheTestSupport {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void testQueryCache(boolean includeValue) {
         QueryCacheConfig queryCacheConfig = new QueryCacheConfig(cacheName);
         queryCacheConfig.setIncludeValue(includeValue);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.hazelcast.internal.eviction;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastTestSupport;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,7 +56,7 @@ public abstract class AbstractExpirationManagerTest extends HazelcastTestSupport
     }
 
     @Test
-    public void testTaskPeriodSeconds_throwsIllegalArgumentException_whenNotPositive() throws Exception {
+    public void testTaskPeriodSeconds_throwsIllegalArgumentException_whenNotPositive() {
         String previous = getProperty(taskPeriodSecondsPropName());
         try {
             setProperty(taskPeriodSecondsPropName(), valueOf(0));
@@ -207,12 +206,9 @@ public abstract class AbstractExpirationManagerTest extends HazelcastTestSupport
         node.getCluster().changeClusterState(PASSIVE);
         node.getCluster().changeClusterState(ACTIVE);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                int expirationCount = expirationCounter.get();
-                assertEquals(format("Expecting 1 expiration but found:%d", expirationCount), 1, expirationCount);
-            }
+        assertTrueEventually(() -> {
+            int expirationCount = expirationCounter.get();
+            assertEquals(format("Expecting 1 expiration but found:%d", expirationCount), 1, expirationCount);
         });
     }
 

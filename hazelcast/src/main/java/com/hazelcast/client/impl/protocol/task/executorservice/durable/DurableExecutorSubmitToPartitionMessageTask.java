@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.hazelcast.client.impl.protocol.task.executorservice.durable;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.DurableExecutorSubmitToPartitionCodec;
 import com.hazelcast.client.impl.protocol.task.AbstractPartitionMessageTask;
+import com.hazelcast.config.DurableExecutorConfig;
 import com.hazelcast.durableexecutor.impl.operations.TaskOperation;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.nio.Connection;
@@ -40,6 +41,7 @@ public class DurableExecutorSubmitToPartitionMessageTask
 
     public DurableExecutorSubmitToPartitionMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
+        setNamespaceAware();
     }
 
     @Override
@@ -50,8 +52,8 @@ public class DurableExecutorSubmitToPartitionMessageTask
             Subject subject = endpoint.getSubject();
             Object taskObject = serializationService.toObject(parameters.callable);
             Callable callable;
-            if (taskObject instanceof Runnable) {
-                callable = securityContext.createSecureCallable(subject, (Runnable) taskObject);
+            if (taskObject instanceof Runnable runnable) {
+                callable = securityContext.createSecureCallable(subject, runnable);
             } else {
                 callable = securityContext.createSecureCallable(subject, (Callable<? extends Object>) taskObject);
             }
@@ -94,5 +96,11 @@ public class DurableExecutorSubmitToPartitionMessageTask
     @Override
     public Object[] getParameters() {
         return null;
+    }
+
+    @Override
+    protected String getUserCodeNamespace() {
+        DurableExecutorConfig config = nodeEngine.getConfig().findDurableExecutorConfig(parameters.name);
+        return config == null ? null : config.getUserCodeNamespace();
     }
 }

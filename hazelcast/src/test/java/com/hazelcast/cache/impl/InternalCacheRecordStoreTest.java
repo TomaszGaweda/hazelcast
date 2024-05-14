@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,9 +83,9 @@ public class InternalCacheRecordStoreTest extends CacheTestSupport {
 
         CacheConfig<Integer, String> config = createCacheConfig();
         CacheFromDifferentNodesTest.SimpleEntryListener<Integer, String> listener =
-                new CacheFromDifferentNodesTest.SimpleEntryListener<Integer, String>();
+                new CacheFromDifferentNodesTest.SimpleEntryListener<>();
         MutableCacheEntryListenerConfiguration<Integer, String> listenerConfiguration =
-                new MutableCacheEntryListenerConfiguration<Integer, String>(
+                new MutableCacheEntryListenerConfiguration<>(
                         FactoryBuilder.factoryOf(listener), null, true, true);
 
         config.addCacheEntryListenerConfiguration(listenerConfiguration);

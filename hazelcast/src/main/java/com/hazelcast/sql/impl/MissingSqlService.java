@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.hazelcast.sql.impl;
 
+import com.hazelcast.internal.serialization.ReflectionClassNameFilter;
 import com.hazelcast.jet.impl.exception.JetDisabledException;
 import com.hazelcast.jet.impl.util.Util;
 import com.hazelcast.sql.HazelcastSqlException;
@@ -96,6 +97,11 @@ public class MissingSqlService implements InternalSqlService {
         throw throwDisabled();
     }
 
+    @Override
+    public ReflectionClassNameFilter getReflectionClassNameFilter() {
+        throw throwDisabled();
+    }
+
     private RuntimeException throwDisabled() {
         if (!isJetEnabled) {
             throw new JetDisabledException(Util.JET_IS_DISABLED_MESSAGE);
@@ -106,5 +112,10 @@ public class MissingSqlService implements InternalSqlService {
                 "Cannot execute SQL query because \"hazelcast-sql\" module is not on the classpath",
                 null,
                 null);
+    }
+
+    @Override
+    public Object getOptimizer() {
+        throw throwDisabled();
     }
 }

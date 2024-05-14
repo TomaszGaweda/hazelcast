@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,40 +80,36 @@ public class SimpleMapTestFromClient {
         System.out.println(" Remove Percentage: " + (100 - (putPercentage + getPercentage)));
         ExecutorService es = Executors.newFixedThreadPool(threadCount);
         for (int i = 0; i < threadCount; i++) {
-            es.submit(new Runnable() {
-                public void run() {
-                    IMap<String, Object> map = client.getMap("default");
-                    while (true) {
-                        int key = (int) (Math.random() * entryCount);
-                        int operation = ((int) (Math.random() * 100));
-                        if (operation < getPercentage) {
-                            map.get(String.valueOf(key));
-                            stats.gets.incrementAndGet();
-                        } else if (operation < getPercentage + putPercentage) {
-                            map.put(String.valueOf(key), new byte[valueSize]);
-                            stats.puts.incrementAndGet();
-                        } else {
-                            map.remove(String.valueOf(key));
-                            stats.removes.incrementAndGet();
-                        }
+            es.submit((Runnable) () -> {
+                IMap<String, Object> map = client.getMap("default");
+                while (true) {
+                    int key = (int) (Math.random() * entryCount);
+                    int operation = ((int) (Math.random() * 100));
+                    if (operation < getPercentage) {
+                        map.get(String.valueOf(key));
+                        stats.gets.incrementAndGet();
+                    } else if (operation < getPercentage + putPercentage) {
+                        map.put(String.valueOf(key), new byte[valueSize]);
+                        stats.puts.incrementAndGet();
+                    } else {
+                        map.remove(String.valueOf(key));
+                        stats.removes.incrementAndGet();
                     }
                 }
             });
         }
-        Executors.newSingleThreadExecutor().submit(new Runnable() {
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(statsSeconds * 1000);
-                        System.out.println("cluster size:"
-                                + client.getCluster().getMembers().size());
-                        Stats currentStats = stats.getAndReset();
-                        System.out.println(currentStats);
-                        System.out.println("Operations per Second: " + currentStats.total()
-                                / statsSeconds);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+        Executors.newSingleThreadExecutor().submit((Runnable) () -> {
+            while (true) {
+                try {
+                    Thread.sleep(statsSeconds * 1000);
+                    System.out.println("cluster size:"
+                            + client.getCluster().getMembers().size());
+                    Stats currentStats = stats.getAndReset();
+                    System.out.println(currentStats);
+                    System.out.println("Operations per Second: " + currentStats.total()
+                            / statsSeconds);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });

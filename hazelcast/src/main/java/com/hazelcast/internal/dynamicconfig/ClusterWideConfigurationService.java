@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package com.hazelcast.internal.dynamicconfig;
 
+import com.hazelcast.cache.impl.CacheService;
+import com.hazelcast.cache.impl.ICacheService;
 import com.hazelcast.config.CacheSimpleConfig;
 import com.hazelcast.config.CardinalityEstimatorConfig;
 import com.hazelcast.config.Config;
@@ -38,11 +40,15 @@ import com.hazelcast.config.RingbufferConfig;
 import com.hazelcast.config.ScheduledExecutorConfig;
 import com.hazelcast.config.SetConfig;
 import com.hazelcast.config.TopicConfig;
+import com.hazelcast.config.UserCodeNamespaceAwareConfig;
+import com.hazelcast.config.UserCodeNamespaceConfig;
 import com.hazelcast.config.WanReplicationConfig;
+import com.hazelcast.config.vector.VectorCollectionConfig;
 import com.hazelcast.core.HazelcastException;
 import com.hazelcast.internal.cluster.ClusterService;
 import com.hazelcast.internal.cluster.ClusterVersionListener;
 import com.hazelcast.internal.management.operation.UpdateTcpIpMemberListOperation;
+import com.hazelcast.internal.namespace.NamespaceUtil;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.internal.services.CoreService;
@@ -51,6 +57,7 @@ import com.hazelcast.internal.services.PreJoinAwareService;
 import com.hazelcast.internal.services.SplitBrainHandlerService;
 import com.hazelcast.internal.util.FutureUtil;
 import com.hazelcast.logging.ILogger;
+import com.hazelcast.map.impl.MapService;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.spi.impl.InternalCompletableFuture;
 import com.hazelcast.spi.impl.NodeEngine;
@@ -66,13 +73,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
+import java.util.function.BiFunction;
 
 import static com.hazelcast.internal.cluster.Versions.V4_0;
 import static com.hazelcast.internal.cluster.Versions.V5_2;
 import static com.hazelcast.internal.cluster.Versions.V5_4;
+import static com.hazelcast.internal.cluster.Versions.V5_5;
 import static com.hazelcast.internal.config.ConfigUtils.lookupByPattern;
 import static com.hazelcast.internal.util.FutureUtil.waitForever;
 import static com.hazelcast.internal.util.InvocationUtil.invokeOnStableClusterSerial;
@@ -121,6 +131,8 @@ public class ClusterWideConfigurationService implements
     private final ConcurrentMap<String, FlakeIdGeneratorConfig> flakeIdGeneratorConfigs = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, DataConnectionConfig> dataConnectionConfigs = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, WanReplicationConfig> wanReplicationConfigs = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, UserCodeNamespaceConfig> namespaceConfigs = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, VectorCollectionConfig> vectorCollectionConfigs = new ConcurrentHashMap<>();
 
     private final ConfigPatternMatcher configPatternMatcher;
 
@@ -144,6 +156,8 @@ public class ClusterWideConfigurationService implements
             pnCounterConfigs,
             dataConnectionConfigs,
             wanReplicationConfigs,
+            namespaceConfigs,
+            vectorCollectionConfigs,
     };
 
     private volatile Version version;
@@ -209,12 +223,16 @@ public class ClusterWideConfigurationService implements
 
     @Override
     public void broadcastConfig(IdentifiedDataSerializable config) {
-        InternalCompletableFuture<Object> future = broadcastConfigAsync(config);
-        future.joinInternal();
+        broadcastConfigAsync(config).joinInternal();
     }
 
     @Override
     public void updateLicense(String licenseKey) {
+        throw new UnsupportedOperationException("Updating the license requires Hazelcast Enterprise");
+    }
+
+    @Override
+    public CompletableFuture<Void> updateLicenseAsync(String licenseKey) {
         throw new UnsupportedOperationException("Updating the license requires Hazelcast Enterprise");
     }
 
@@ -229,17 +247,20 @@ public class ClusterWideConfigurationService implements
     }
 
     public InternalCompletableFuture<Object> broadcastConfigAsync(IdentifiedDataSerializable config) {
+        return broadcastConfigAsync(config, AddDynamicConfigOperationSupplier::new);
+    }
+
+    public InternalCompletableFuture<Object> broadcastConfigAsync(IdentifiedDataSerializable config,
+                                                                  BiFunction<ClusterService, IdentifiedDataSerializable,
+                                                                  DynamicConfigOperationSupplier> dynamicConfigOpGenerator) {
         checkConfigVersion(config);
         // we create a defensive copy as local operation execution might use a fast-path
         // and avoid config serialization altogether.
         // we certainly do not want the dynamic config service to reference object a user can mutate
         IdentifiedDataSerializable clonedConfig = cloneConfig(config);
         ClusterService clusterService = nodeEngine.getClusterService();
-        return invokeOnStableClusterSerial(
-                nodeEngine,
-                new AddDynamicConfigOperationSupplier(clusterService, clonedConfig),
-                CONFIG_PUBLISH_MAX_ATTEMPT_COUNT
-        );
+        return invokeOnStableClusterSerial(nodeEngine, dynamicConfigOpGenerator.apply(clusterService, clonedConfig),
+                CONFIG_PUBLISH_MAX_ATTEMPT_COUNT);
     }
 
     private void checkConfigVersion(IdentifiedDataSerializable config) {
@@ -248,7 +269,7 @@ public class ClusterWideConfigurationService implements
         Version introducedIn = CONFIG_TO_VERSION.get(configClass);
         if (currentClusterVersion.isLessThan(introducedIn)) {
             throw new UnsupportedOperationException(format("Config '%s' is available since version '%s'. "
-                            + "Current cluster version '%s' does not allow dynamically adding '%1$s'.",
+                            + "Current cluster version '%s' does not allow dynamically modifying '%1$s'.",
                     configClass.getSimpleName(),
                     introducedIn.toString(),
                     currentClusterVersion
@@ -259,13 +280,17 @@ public class ClusterWideConfigurationService implements
     private IdentifiedDataSerializable cloneConfig(IdentifiedDataSerializable config) {
         SerializationService serializationService = nodeEngine.getSerializationService();
         Data data = serializationService.toData(config);
+        // Certain configs can contain definitions for UDFs (such as ItemListenerConfig), so
+        //     we should wrap the deserialization in Namespace awareness where applicable
+        if (config instanceof UserCodeNamespaceAwareConfig nsAware) {
+            return NamespaceUtil.callWithNamespace(nodeEngine, nsAware.getUserCodeNamespace(),
+                    () -> serializationService.toObject(data));
+        }
         return serializationService.toObject(data);
     }
 
-
     /**
-     * Register a dynamic configuration in a local member. When a dynamic configuration with the same name already
-     * exists then this call has no effect.
+     * Register a dynamic configuration in a local member.
      *
      * @param newConfig       Configuration to register.
      * @param configCheckMode behaviour when a config is detected
@@ -275,75 +300,69 @@ public class ClusterWideConfigurationService implements
     @SuppressWarnings("checkstyle:methodlength")
     public void registerConfigLocally(IdentifiedDataSerializable newConfig, ConfigCheckMode configCheckMode) {
         IdentifiedDataSerializable currentConfig;
-        if (newConfig instanceof MultiMapConfig) {
-            MultiMapConfig multiMapConfig = (MultiMapConfig) newConfig;
+        if (newConfig instanceof MultiMapConfig multiMapConfig) {
             currentConfig = multiMapConfigs.putIfAbsent(multiMapConfig.getName(), multiMapConfig);
-        } else if (newConfig instanceof MapConfig) {
-            MapConfig newMapConfig = (MapConfig) newConfig;
+        } else if (newConfig instanceof MapConfig newMapConfig) {
             currentConfig = mapConfigs.putIfAbsent(newMapConfig.getName(), newMapConfig);
             if (currentConfig == null) {
-                listener.onConfigRegistered(newMapConfig);
+                UserCodeNamespaceConfig namespace = findPersistableNamespaceConfig(newMapConfig.getUserCodeNamespace());
+                listener.onConfigRegistered(newMapConfig, namespace);
             }
-        } else if (newConfig instanceof CardinalityEstimatorConfig) {
-            CardinalityEstimatorConfig cardinalityEstimatorConfig = (CardinalityEstimatorConfig) newConfig;
+        } else if (newConfig instanceof CardinalityEstimatorConfig cardinalityEstimatorConfig) {
             currentConfig = cardinalityEstimatorConfigs.putIfAbsent(
                     cardinalityEstimatorConfig.getName(),
                     cardinalityEstimatorConfig
             );
-        } else if (newConfig instanceof RingbufferConfig) {
-            RingbufferConfig ringbufferConfig = (RingbufferConfig) newConfig;
+        } else if (newConfig instanceof RingbufferConfig ringbufferConfig) {
             currentConfig = ringbufferConfigs.putIfAbsent(ringbufferConfig.getName(), ringbufferConfig);
-        } else if (newConfig instanceof ListConfig) {
-            ListConfig listConfig = (ListConfig) newConfig;
+        } else if (newConfig instanceof ListConfig listConfig) {
             currentConfig = listConfigs.putIfAbsent(listConfig.getName(), listConfig);
-        } else if (newConfig instanceof SetConfig) {
-            SetConfig setConfig = (SetConfig) newConfig;
+        } else if (newConfig instanceof SetConfig setConfig) {
             currentConfig = setConfigs.putIfAbsent(setConfig.getName(), setConfig);
-        } else if (newConfig instanceof ReplicatedMapConfig) {
-            ReplicatedMapConfig replicatedMapConfig = (ReplicatedMapConfig) newConfig;
+        } else if (newConfig instanceof ReplicatedMapConfig replicatedMapConfig) {
             currentConfig = replicatedMapConfigs.putIfAbsent(replicatedMapConfig.getName(), replicatedMapConfig);
-        } else if (newConfig instanceof TopicConfig) {
-            TopicConfig topicConfig = (TopicConfig) newConfig;
+        } else if (newConfig instanceof TopicConfig topicConfig) {
             currentConfig = topicConfigs.putIfAbsent(topicConfig.getName(), topicConfig);
-        } else if (newConfig instanceof ExecutorConfig) {
-            ExecutorConfig executorConfig = (ExecutorConfig) newConfig;
+        } else if (newConfig instanceof ExecutorConfig executorConfig) {
             currentConfig = executorConfigs.putIfAbsent(executorConfig.getName(), executorConfig);
-        } else if (newConfig instanceof DurableExecutorConfig) {
-            DurableExecutorConfig durableExecutorConfig = (DurableExecutorConfig) newConfig;
+        } else if (newConfig instanceof DurableExecutorConfig durableExecutorConfig) {
             currentConfig = durableExecutorConfigs.putIfAbsent(durableExecutorConfig.getName(), durableExecutorConfig);
-        } else if (newConfig instanceof ScheduledExecutorConfig) {
-            ScheduledExecutorConfig scheduledExecutorConfig = (ScheduledExecutorConfig) newConfig;
+        } else if (newConfig instanceof ScheduledExecutorConfig scheduledExecutorConfig) {
             currentConfig = scheduledExecutorConfigs.putIfAbsent(scheduledExecutorConfig.getName(), scheduledExecutorConfig);
-        } else if (newConfig instanceof QueueConfig) {
-            QueueConfig queueConfig = (QueueConfig) newConfig;
+        } else if (newConfig instanceof QueueConfig queueConfig) {
             currentConfig = queueConfigs.putIfAbsent(queueConfig.getName(), queueConfig);
-        } else if (newConfig instanceof ReliableTopicConfig) {
-            ReliableTopicConfig reliableTopicConfig = (ReliableTopicConfig) newConfig;
+        } else if (newConfig instanceof ReliableTopicConfig reliableTopicConfig) {
             currentConfig = reliableTopicConfigs.putIfAbsent(reliableTopicConfig.getName(), reliableTopicConfig);
-        } else if (newConfig instanceof CacheSimpleConfig) {
-            CacheSimpleConfig cacheSimpleConfig = (CacheSimpleConfig) newConfig;
+        } else if (newConfig instanceof CacheSimpleConfig cacheSimpleConfig) {
             currentConfig = cacheSimpleConfigs.putIfAbsent(cacheSimpleConfig.getName(), cacheSimpleConfig);
             if (currentConfig == null) {
-                listener.onConfigRegistered(cacheSimpleConfig);
+                UserCodeNamespaceConfig namespace = findPersistableNamespaceConfig(cacheSimpleConfig.getUserCodeNamespace());
+                listener.onConfigRegistered(cacheSimpleConfig, namespace);
             }
-        } else if (newConfig instanceof FlakeIdGeneratorConfig) {
-            FlakeIdGeneratorConfig config = (FlakeIdGeneratorConfig) newConfig;
+        } else if (newConfig instanceof FlakeIdGeneratorConfig config) {
             currentConfig = flakeIdGeneratorConfigs.putIfAbsent(config.getName(), config);
-        } else if (newConfig instanceof PNCounterConfig) {
-            PNCounterConfig config = (PNCounterConfig) newConfig;
+        } else if (newConfig instanceof PNCounterConfig config) {
             currentConfig = pnCounterConfigs.putIfAbsent(config.getName(), config);
-        } else if (newConfig instanceof DataConnectionConfig) {
-            DataConnectionConfig config = (DataConnectionConfig) newConfig;
+        } else if (newConfig instanceof DataConnectionConfig config) {
             currentConfig = dataConnectionConfigs.putIfAbsent(config.getName(), config);
             if (currentConfig == null) {
                 nodeEngine.getDataConnectionService().createConfigDataConnection(config);
             }
-        } else if (newConfig instanceof WanReplicationConfig) {
-            WanReplicationConfig config = (WanReplicationConfig) newConfig;
+        } else if (newConfig instanceof WanReplicationConfig config) {
             currentConfig = wanReplicationConfigs.putIfAbsent(config.getName(), config);
             if (currentConfig == null) {
                 nodeEngine.getWanReplicationService().addWanReplicationConfig(config);
             }
+        } else if (newConfig instanceof UserCodeNamespaceConfig config) {
+            // Deliberately overwrite existing
+            currentConfig = namespaceConfigs.put(config.getName(), config);
+            // ensure that the namespace is registered and added to the config.
+            nodeEngine.getNamespaceService().addNamespaceConfig(nodeEngine.getConfig().getNamespacesConfig(), config);
+            if (isNamespaceReferencedWithHRPersistence(nodeEngine, config)) {
+                listener.onConfigRegistered(config);
+            }
+        } else if (newConfig instanceof VectorCollectionConfig newVectorCollectionConfig) {
+            currentConfig = vectorCollectionConfigs.putIfAbsent(newVectorCollectionConfig.getName(), newVectorCollectionConfig);
         } else {
             throw new UnsupportedOperationException("Unsupported config type: " + newConfig);
         }
@@ -375,6 +394,43 @@ public class ClusterWideConfigurationService implements
             }
         }
     }
+
+    /**
+     * Retrieve a namespace from the list of dynamically added or updated
+     * namespaces.
+     * <p>
+     * Only those namespaces that are not statically configured should be
+     * persisted for hot restart enabled data structures.
+     *
+     * @param name namespace name.
+     * @return the {@code UserCodeNamespaceConfig} or {@code null} if not found.
+     */
+    private UserCodeNamespaceConfig findPersistableNamespaceConfig(String name) {
+        if (name == null) {
+            return null;
+        }
+        return namespaceConfigs.get(name);
+    }
+
+    /**
+     * Checks if the given namespace is referenced by a hot restart enabled
+     * data structure.
+     *
+     * @param nodeEngine the node engine.
+     * @param namespace  the namespace.
+     * @return {@code true} if the namespace is referenced by a hot restart
+     * enabled data structure, {@code false} otherwise.
+     */
+    private boolean isNamespaceReferencedWithHRPersistence(NodeEngine nodeEngine, UserCodeNamespaceConfig namespace) {
+        CacheService cacheService = nodeEngine.getServiceOrNull(ICacheService.SERVICE_NAME);
+        if (cacheService == null) {
+            return MapService.isNamespaceReferencedWithHotRestart(nodeEngine, namespace.getName());
+        } else {
+            return MapService.isNamespaceReferencedWithHotRestart(nodeEngine, namespace.getName())
+                    || cacheService.isNamespaceReferencedWithHotRestart(namespace.getName());
+        }
+    }
+
 
     @Override
     public void persist(Object subConfig) {
@@ -566,6 +622,21 @@ public class ClusterWideConfigurationService implements
     }
 
     @Override
+    public Map<String, UserCodeNamespaceConfig> getNamespaceConfigs() {
+        return namespaceConfigs;
+    }
+
+    @Override
+    public VectorCollectionConfig findVectorCollectionConfig(String name) {
+        return lookupByPattern(configPatternMatcher, vectorCollectionConfigs, name);
+    }
+
+    @Override
+    public Map<String, VectorCollectionConfig> getVectorCollectionConfigs() {
+        return vectorCollectionConfigs;
+    }
+
+    @Override
     public Runnable prepareMergeRunnable() {
         IdentifiedDataSerializable[] allConfigurations = collectAllDynamicConfigs();
         if (noConfigurationExist(allConfigurations)) {
@@ -575,11 +646,15 @@ public class ClusterWideConfigurationService implements
     }
 
     @Override
-    public void updateTcpIpConfigMemberList(List<String> memberList) {
-        invokeOnStableClusterSerial(
+    public CompletableFuture<Void> updateTcpIpConfigMemberListAsync(List<String> memberList) {
+        return invokeOnStableClusterSerial(
                 nodeEngine,
-                () -> new UpdateTcpIpMemberListOperation(memberList), CONFIG_PUBLISH_MAX_ATTEMPT_COUNT
-        ).join();
+                () -> new UpdateTcpIpMemberListOperation(memberList), CONFIG_PUBLISH_MAX_ATTEMPT_COUNT);
+    }
+
+    @Override
+    public void updateTcpIpConfigMemberList(List<String> memberList) {
+        updateTcpIpConfigMemberListAsync(memberList).join();
     }
 
     public static class Merger implements Runnable {
@@ -631,6 +706,8 @@ public class ClusterWideConfigurationService implements
         configToVersion.put(MerkleTreeConfig.class, V4_0);
         configToVersion.put(DataConnectionConfig.class, V5_2);
         configToVersion.put(WanReplicationConfig.class, V5_4);
+        configToVersion.put(UserCodeNamespaceConfig.class, V5_4);
+        configToVersion.put(VectorCollectionConfig.class, V5_5);
 
         return Collections.unmodifiableMap(configToVersion);
     }

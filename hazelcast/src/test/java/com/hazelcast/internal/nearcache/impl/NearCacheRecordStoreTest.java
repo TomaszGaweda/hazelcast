@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.hazelcast.config.InMemoryFormat;
 import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.internal.nearcache.NearCacheRecordStore;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelParametersRunnerFactory;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -77,12 +76,7 @@ public class NearCacheRecordStoreTest extends NearCacheRecordStoreTestSupport {
 
     @Test
     public void statsCalculated() {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                statsCalculated(inMemoryFormat);
-            }
-        });
+        assertTrueEventually(() -> statsCalculated(inMemoryFormat));
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.services.NodeAware;
 import com.hazelcast.spring.context.SpringAware;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Resource;
 import javax.cache.configuration.Factory;
 import javax.cache.event.CacheEntryListener;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,7 +36,7 @@ public class JCacheCacheEntryListenerFactory implements Factory<CacheEntryListen
 
     public static JCacheCacheEntryListenerFactory instance;
 
-    @Resource(name = "dummy")
+    @Autowired
     private IJCacheDummyBean dummyBean;
 
     public JCacheCacheEntryListenerFactory() {

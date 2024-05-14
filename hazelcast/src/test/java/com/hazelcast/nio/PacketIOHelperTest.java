@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ package com.hazelcast.nio;
 import com.hazelcast.internal.nio.Packet;
 import com.hazelcast.internal.nio.PacketIOHelper;
 import com.hazelcast.internal.serialization.InternalSerializationService;
+import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.internal.serialization.SerializationServiceBuilder;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
+import com.hazelcast.internal.serialization.impl.SerializationConcurrencyTest;
 import com.hazelcast.nio.serialization.Portable;
 import com.hazelcast.nio.serialization.PortableFactory;
-import com.hazelcast.internal.serialization.impl.SerializationConcurrencyTest;
-import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.QuickTest;
@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,7 +42,6 @@ import static com.hazelcast.internal.serialization.impl.SerializationConcurrency
 import static com.hazelcast.internal.serialization.impl.SerializationConcurrencyTest.Person;
 import static com.hazelcast.internal.serialization.impl.SerializationConcurrencyTest.PortableAddress;
 import static com.hazelcast.internal.serialization.impl.SerializationConcurrencyTest.PortablePerson;
-import static com.hazelcast.internal.util.JVMUtil.upcast;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -90,23 +88,23 @@ public class PacketIOHelperTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testPacketWriteRead() throws IOException {
+    public void testPacketWriteRead() {
         testPacketWriteRead(person);
     }
 
     @Test
-    public void testPacketWriteRead_usingPortable() throws IOException {
+    public void testPacketWriteRead_usingPortable() {
         testPacketWriteRead(portablePerson);
     }
 
-    private void testPacketWriteRead(Object originalObject) throws IOException {
+    private void testPacketWriteRead(Object originalObject) {
         InternalSerializationService ss = createSerializationServiceBuilder().build();
         byte[] originalPayload = ss.toBytes(originalObject);
 
         ByteBuffer buffer = ByteBuffer.allocate(originalPayload.length * 2);
         Packet originalPacket = new Packet(originalPayload);
         assertTrue(packetWriter.writeTo(originalPacket, buffer));
-        upcast(buffer).flip();
+        buffer.flip();
 
         SerializationService ss2 = createSerializationServiceBuilder().build();
         Packet clonedPacket = packetReader.readFrom(buffer);
@@ -133,9 +131,9 @@ public class PacketIOHelperTest extends HazelcastTestSupport {
         boolean writeCompleted;
         do {
             writeCompleted = packetWriter.writeTo(originalPacket, bb);
-            upcast(bb).flip();
+            bb.flip();
             clonedPacket = packetReader.readFrom(bb);
-            upcast(bb).clear();
+            bb.clear();
         } while (!writeCompleted);
 
         assertNotNull(clonedPacket);
@@ -145,7 +143,7 @@ public class PacketIOHelperTest extends HazelcastTestSupport {
 
     @Test
     public void lotsOfPackets() {
-        List<Packet> originalPackets = new LinkedList<Packet>();
+        List<Packet> originalPackets = new LinkedList<>();
         Random random = new Random();
         for (int k = 0; k < 1000; k++) {
             byte[] bytes = generateRandomString(random.nextInt(1000) + 8).getBytes();
@@ -160,9 +158,9 @@ public class PacketIOHelperTest extends HazelcastTestSupport {
             boolean writeCompleted;
             do {
                 writeCompleted = packetWriter.writeTo(originalPacket, bb);
-                upcast(bb).flip();
+                bb.flip();
                 clonedPacket = packetReader.readFrom(bb);
-                upcast(bb).clear();
+                bb.clear();
             } while (!writeCompleted);
 
             assertNotNull(clonedPacket);
@@ -181,7 +179,7 @@ public class PacketIOHelperTest extends HazelcastTestSupport {
         boolean written = packetWriter.writeTo(originalPacket, bb);
         assertTrue(written);
 
-        upcast(bb).flip();
+        bb.flip();
 
         Packet clonedPacket = packetReader.readFrom(bb);
         assertNotNull(clonedPacket);

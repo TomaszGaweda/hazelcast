@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.hazelcast.cluster.ClusterState;
 import com.hazelcast.core.HazelcastException;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.internal.partition.impl.InternalPartitionServiceImpl;
+import com.hazelcast.internal.partition.impl.MigrationManager;
 import com.hazelcast.internal.partition.impl.PartitionReplicaStateChecker;
 import com.hazelcast.internal.partition.impl.PartitionStateManager;
 import com.hazelcast.internal.partition.operation.FetchPartitionStateOperation;
@@ -30,6 +31,7 @@ import com.hazelcast.internal.services.ManagedService;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public interface InternalPartitionService extends IPartitionService, ManagedService, GracefulShutdownAwareService {
 
@@ -138,4 +140,14 @@ public interface InternalPartitionService extends IPartitionService, ManagedServ
 
     @Nullable
     PartitionTableView getLeftMemberSnapshot(UUID uuid);
+
+    boolean onDemote(long timeout, TimeUnit unit);
+
+    PartitionStateManager getPartitionStateManager();
+
+    MigrationManager getMigrationManager();
+
+    boolean isFetchMostRecentPartitionTableTaskRequired();
+
+    boolean isLocalMemberMaster();
 }

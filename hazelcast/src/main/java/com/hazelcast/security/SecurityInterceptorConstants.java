@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public final class SecurityInterceptorConstants {
     public static final String LOAD_ALL = "loadAll";
     public static final String ENABLE_MANAGEMENT = "enableManagement";
     public static final String PUT_ALL = "putAll";
+    public static final String PUT_ALL_WITH_METADATA = "putAllWithMetadata";
     public static final String PUT_IF_ABSENT = "putIfAbsent";
     public static final String PUT = "put";
     public static final String GET_AND_PUT = "getAndPut";
@@ -182,6 +183,11 @@ public final class SecurityInterceptorConstants {
     public static final String GET_DISTRIBUTED_OBJECTS = "getDistributedObjects";
     public static final String ADD_DISTRIBUTED_OBJECT_LISTENER = "addDistributedObjectListener";
     public static final String REMOVE_DISTRIBUTED_OBJECT_LISTENER = "removeDistributedObjectListener";
+    public static final String COMPARE_AND_SET = "compareAndSet";
+    public static final String FETCH_ENTRY_VIEWS = "fetchEntryViews";
+    public static final String END_ENTRYVIEW_ITERATION = "endEntryViewIteration";
+    public static final String ADD_NAMESPACE_CONFIG = "addNamespaceConfig";
+    public static final String ADD_VECTOR_COLLECTION_CONFIG = "addVectorCollectionConfig";
 
     private SecurityInterceptorConstants() {
     }

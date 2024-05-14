@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@
 
 package com.hazelcast.aws;
 
-import com.hazelcast.core.HazelcastException;
 import com.hazelcast.spi.utils.RestClient;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.time.Instant;
@@ -83,13 +82,9 @@ final class AwsRequestUtils {
 
     private static String urlEncode(String string) {
         String encoded;
-        try {
-            encoded = URLEncoder.encode(string, "UTF-8")
-                    .replace("+", "%20")
-                    .replace("*", "%2A");
-        } catch (UnsupportedEncodingException e) {
-            throw new HazelcastException(e);
-        }
+        encoded = URLEncoder.encode(string, StandardCharsets.UTF_8)
+                .replace("+", "%20")
+                .replace("*", "%2A");
         return encoded;
     }
 

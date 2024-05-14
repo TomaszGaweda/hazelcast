@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 
 package com.hazelcast.config;
 
+import com.hazelcast.client.impl.protocol.util.PropertiesUtil;
+
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.Properties;
 
 import static com.hazelcast.internal.util.Preconditions.checkNotNull;
 
@@ -36,9 +37,7 @@ public final class SSLConfig extends AbstractFactoryWithPropertiesConfig<SSLConf
         factoryImplementation = sslConfig.factoryImplementation;
         setEnabled(sslConfig.isEnabled());
         factoryClassName = sslConfig.getFactoryClassName();
-        Properties properties = new Properties();
-        properties.putAll(sslConfig.getProperties());
-        setProperties(properties);
+        setProperties(PropertiesUtil.clone(sslConfig.getProperties()));
     }
 
     /**

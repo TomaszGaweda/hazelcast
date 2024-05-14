@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import javax.sql.DataSource;
 import javax.sql.PooledConnection;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
+import java.io.Serial;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -77,6 +78,11 @@ public final class WriteJdbcP<T> extends XaSinkProcessorBase {
     private int idleCount;
     private boolean supportsBatch;
     private int batchCount;
+
+    static {
+        // workaround for https://github.com/hazelcast/hazelcast-jet/issues/2603
+        DriverManager.getDrivers();
+    }
 
     public WriteJdbcP(
             @Nonnull String updateQuery,
@@ -131,6 +137,9 @@ public final class WriteJdbcP<T> extends XaSinkProcessorBase {
         // #connectAndPrepareStatement() instance method.
         return ProcessorMetaSupplier.preferLocalParallelismOne(
                 new ProcessorSupplier() {
+                    @Serial
+                    private static final long serialVersionUID = 1L;
+
                     private transient CommonDataSource dataSource;
 
                     @Override
@@ -140,8 +149,8 @@ public final class WriteJdbcP<T> extends XaSinkProcessorBase {
 
                     @Override
                     public void close(Throwable error) throws Exception {
-                        if (dataSource instanceof AutoCloseable) {
-                            ((AutoCloseable) dataSource).close();
+                        if (dataSource instanceof AutoCloseable autoCloseable) {
+                            autoCloseable.close();
                         }
                     }
 
@@ -177,8 +186,6 @@ public final class WriteJdbcP<T> extends XaSinkProcessorBase {
     @Override
     public void init(@Nonnull Outbox outbox, @Nonnull Context context) throws Exception {
         super.init(outbox, context);
-        // workaround for https://github.com/hazelcast/hazelcast-jet/issues/2603
-        DriverManager.getDrivers();
         logger = context.logger();
         this.context = context;
         connectAndPrepareStatement();
@@ -254,11 +261,11 @@ public final class WriteJdbcP<T> extends XaSinkProcessorBase {
                 // we never ignore errors in ex-once mode
                 assert idleCount == 0 : "idleCount=" + idleCount;
                 setXaResource(xaConnection.getXAResource());
-            } else if (dataSource instanceof DataSource) {
-                connection = ((DataSource) dataSource).getConnection();
-            } else if (dataSource instanceof XADataSource) {
+            } else if (dataSource instanceof DataSource source) {
+                connection = source.getConnection();
+            } else if (dataSource instanceof XADataSource source) {
                 logger.warning("Using " + XADataSource.class.getName() + " when no XA transactions are needed");
-                XAConnection xaConnection = ((XADataSource) dataSource).getXAConnection();
+                XAConnection xaConnection = source.getXAConnection();
                 connection = xaConnection.getConnection();
             } else {
                 throw new JetException("The dataSource implements neither " + DataSource.class.getName() + " nor "
@@ -346,6 +353,7 @@ public final class WriteJdbcP<T> extends XaSinkProcessorBase {
 
     static class WriteJdbcSupplier<T> implements ProcessorSupplier {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private final String dataConnectionName;

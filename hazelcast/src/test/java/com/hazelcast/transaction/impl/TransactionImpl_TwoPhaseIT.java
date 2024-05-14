@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.util.UuidUtil;
 import com.hazelcast.spi.impl.NodeEngineImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.QuickTest;
@@ -204,12 +203,7 @@ public class TransactionImpl_TwoPhaseIT extends HazelcastTestSupport {
 
         assertCommitted(tx);
         // it can take some time because the transaction doesn't sync on purging the backups.
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertNoBackupLogOnRemote(tx);
-            }
-        });
+        assertTrueEventually(() -> assertNoBackupLogOnRemote(tx));
         record1.assertPrepareCalled().assertCommitCalled().assertRollbackNotCalled();
         record2.assertPrepareCalled().assertCommitCalled().assertRollbackNotCalled();
     }
@@ -285,12 +279,7 @@ public class TransactionImpl_TwoPhaseIT extends HazelcastTestSupport {
 
         assertRolledBack(tx);
         // it can take some time because the transaction doesn't sync on purging the backups.
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertNoBackupLogOnRemote(tx);
-            }
-        });
+        assertTrueEventually(() -> assertNoBackupLogOnRemote(tx));
         record1.assertPrepareCalled().assertCommitNotCalled().assertRollbackCalled();
         record2.assertPrepareCalled().assertCommitNotCalled().assertRollbackCalled();
     }
@@ -331,13 +320,7 @@ public class TransactionImpl_TwoPhaseIT extends HazelcastTestSupport {
 
         cluster[0].shutdown();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run()
-                    throws Exception {
-                assertFalse(remoteTxService.txBackupLogs.containsKey(tx.getTxnId()));
-            }
-        });
+        assertTrueEventually(() -> assertFalse(remoteTxService.txBackupLogs.containsKey(tx.getTxnId())));
     }
 
     @Override

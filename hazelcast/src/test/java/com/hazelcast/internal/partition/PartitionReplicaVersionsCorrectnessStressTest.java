@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,10 +86,10 @@ public class PartitionReplicaVersionsCorrectnessStressTest extends AbstractParti
     public NodeLeaveType nodeLeaveType;
 
     @Test(timeout = TEST_TIMEOUT_SECONDS * 1000)
-    public void testReplicaVersionsWhenNodesCrashSimultaneously() throws InterruptedException {
+    public void testReplicaVersionsWhenNodesCrashSimultaneously() {
         List<HazelcastInstance> instances = getCreatedInstancesShuffledAfterWarmedUp();
 
-        List<HazelcastInstance> instancesCopy = new ArrayList<HazelcastInstance>(instances);
+        List<HazelcastInstance> instancesCopy = new ArrayList<>(instances);
         List<HazelcastInstance> terminatingInstances = instancesCopy.subList(0, numberOfNodesToStop);
         List<HazelcastInstance> survivingInstances = instancesCopy.subList(numberOfNodesToStop, instances.size());
         populateMaps(survivingInstances.get(0));
@@ -112,8 +112,7 @@ public class PartitionReplicaVersionsCorrectnessStressTest extends AbstractParti
                                          List<HazelcastInstance> survivingInstances,
                                          Map<Integer, PartitionReplicaVersionsView> replicaVersionsByPartitionId,
                                          Map<Integer, List<Address>> partitionReplicaAddresses,
-                                         Map<Integer, Integer> minSurvivingReplicaIndexByPartitionId)
-            throws InterruptedException {
+                                         Map<Integer, Integer> minSurvivingReplicaIndexByPartitionId) {
         for (HazelcastInstance instance : survivingInstances) {
             Node node = getNode(instance);
             Address address = node.getThisAddress();
@@ -150,15 +149,15 @@ public class PartitionReplicaVersionsCorrectnessStressTest extends AbstractParti
     private void verifyReplicaVersions(PartitionReplicaVersionsView initialReplicaVersions,
                                        PartitionReplicaVersionsView replicaVersions,
                                        int minSurvivingReplicaIndex, String message) {
-        Set<String> lostMapNames = new HashSet<String>();
+        Set<String> lostMapNames = new HashSet<>();
         for (int i = 0; i < minSurvivingReplicaIndex; i++) {
             lostMapNames.add(getIthMapName(i));
         }
 
         for (ServiceNamespace namespace : initialReplicaVersions.getNamespaces()) {
             if (replicaVersions.getVersions(namespace) == null) {
-                if (namespace instanceof DistributedObjectNamespace) {
-                    String objectName = ((DistributedObjectNamespace) namespace).getObjectName();
+                if (namespace instanceof DistributedObjectNamespace objectNamespace) {
+                    String objectName = objectNamespace.getObjectName();
                     assertThat(objectName).isIn(lostMapNames);
                     continue;
                 } else {

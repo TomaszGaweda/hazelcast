@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.hazelcast.internal.util;
 
+import com.hazelcast.internal.namespace.NamespaceUtil;
 import com.hazelcast.query.PagingPredicate;
 import com.hazelcast.query.impl.CachedQueryEntry;
 import com.hazelcast.query.impl.QueryableEntry;
@@ -125,8 +126,8 @@ public final class SortingUtil {
     }
 
     private static Comparator<QueryableEntry> newComparator(final PagingPredicateImpl pagingPredicate) {
-        return (entry1, entry2) ->
-                SortingUtil.compare(pagingPredicate.getComparator(), pagingPredicate.getIterationType(), entry1, entry2);
+        return NamespaceUtil.callWithNamespace(pagingPredicate.getUserCodeNamespace(), () -> (entry1, entry2) ->
+                SortingUtil.compare(pagingPredicate.getComparator(), pagingPredicate.getIterationType(), entry1, entry2));
     }
 
     public static List<QueryableEntry> getSortedSubList(List<QueryableEntry> list, PagingPredicate pagingPredicate,
@@ -148,9 +149,8 @@ public final class SortingUtil {
         return list;
     }
 
-    @SuppressWarnings("unchecked")
     public static ResultSet getSortedQueryResultSet(List<Map.Entry> list,
-                                                    PagingPredicate pagingPredicate, IterationType iterationType) {
+                                                    PagingPredicateImpl pagingPredicate, IterationType iterationType) {
         List<? extends Map.Entry> subList = getSortedSubListAndUpdateAnchor(list, pagingPredicate, iterationType);
         return new ResultSet(subList, iterationType);
     }
@@ -167,7 +167,8 @@ public final class SortingUtil {
         PagingPredicateImpl pagingPredicateImpl = (PagingPredicateImpl) pagingPredicate;
         Comparator<Map.Entry> comparator = pagingPredicate.getComparator();
         IterationType iterationType = pagingPredicateImpl.getIterationType();
-        return SortingUtil.compare(comparator, iterationType, anchor, queryEntry) < 0;
+        return NamespaceUtil.callWithNamespace(pagingPredicateImpl.getUserCodeNamespace(),
+                () -> SortingUtil.compare(comparator, iterationType, anchor, queryEntry) < 0);
     }
 
     /**
@@ -185,7 +186,7 @@ public final class SortingUtil {
         int begin = pageIndex.getKey();
         int end = pageIndex.getValue();
         if (begin == -1) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List result = new ArrayList(end - begin);
         for (int i = begin; i < end; ++i) {
@@ -207,25 +208,24 @@ public final class SortingUtil {
     }
 
     private static List<? extends Map.Entry> getSortedSubListAndUpdateAnchor(List<? extends Map.Entry> list,
-                                                                             PagingPredicate pagingPredicate,
+                                                                             PagingPredicateImpl pagingPredicate,
                                                                              IterationType iterationType) {
         Map.Entry<Integer, Integer> pageIndex = getPageIndexesAndUpdateAnchor(list, pagingPredicate, iterationType);
         int begin = pageIndex.getKey();
         int end = pageIndex.getValue();
         if (begin == -1) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return list.subList(begin, end);
     }
 
     private static Map.Entry<Integer, Integer> getPageIndexesAndUpdateAnchor(List<? extends Map.Entry> list,
-                                                                             PagingPredicate pagingPredicate,
+                                                                             PagingPredicateImpl pagingPredicateImpl,
                                                                              IterationType iterationType) {
         if (list.isEmpty()) {
-            return new AbstractMap.SimpleImmutableEntry<Integer, Integer>(-1, -1);
+            return new AbstractMap.SimpleImmutableEntry<>(-1, -1);
         }
-        PagingPredicateImpl pagingPredicateImpl = (PagingPredicateImpl) pagingPredicate;
         Comparator<Map.Entry> comparator = SortingUtil.newComparator(pagingPredicateImpl.getComparator(), iterationType);
         Collections.sort(list, comparator);
 
@@ -236,7 +236,7 @@ public final class SortingUtil {
         long begin = pageSize * ((long) page - nearestPage - 1);
         int size = list.size();
         if (begin > size) {
-            return new AbstractMap.SimpleImmutableEntry<Integer, Integer>(-1, -1);
+            return new AbstractMap.SimpleImmutableEntry<>(-1, -1);
         }
         long end = begin + pageSize;
         if (end > size) {
@@ -244,7 +244,7 @@ public final class SortingUtil {
         }
         setAnchor(list, pagingPredicateImpl, nearestPage);
         // it's safe to cast begin and end back to int here since they are limited by the list size
-        return new AbstractMap.SimpleImmutableEntry<Integer, Integer>((int) begin, (int) end);
+        return new AbstractMap.SimpleImmutableEntry<>((int) begin, (int) end);
     }
 
     private static void setAnchor(List<? extends Map.Entry> list, PagingPredicateImpl pagingPredicate, int nearestPage) {

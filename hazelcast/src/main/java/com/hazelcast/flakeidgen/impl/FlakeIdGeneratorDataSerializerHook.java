@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.flakeidgen.impl;
 import com.hazelcast.internal.serialization.DataSerializerHook;
 import com.hazelcast.internal.serialization.impl.FactoryIdHelper;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
-import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
 import static com.hazelcast.internal.serialization.impl.FactoryIdHelper.FLAKE_ID_GENERATOR_DS_FACTORY;
 import static com.hazelcast.internal.serialization.impl.FactoryIdHelper.FLAKE_ID_GENERATOR_DS_FACTORY_ID;
@@ -37,16 +36,11 @@ public final class FlakeIdGeneratorDataSerializerHook implements DataSerializerH
 
     @Override
     public DataSerializableFactory createFactory() {
-        return new DataSerializableFactory() {
-            @Override
-            public IdentifiedDataSerializable create(int typeId) {
-                switch (typeId) {
-                    case NEW_ID_BATCH_OPERATION:
-                        return new NewIdBatchOperation();
-                    default:
-                        return null;
-                }
+        return typeId -> {
+            if (typeId == NEW_ID_BATCH_OPERATION) {
+                return new NewIdBatchOperation();
             }
+            return null;
         };
     }
 }

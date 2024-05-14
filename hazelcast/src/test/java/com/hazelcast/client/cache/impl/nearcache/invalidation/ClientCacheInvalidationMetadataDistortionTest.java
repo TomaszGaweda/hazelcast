@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import com.hazelcast.internal.nearcache.impl.invalidation.MetaDataGenerator;
 import com.hazelcast.internal.partition.InternalPartitionService;
 import com.hazelcast.internal.util.UuidUtil;
 import com.hazelcast.spi.impl.NodeEngineImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.NightlyTest;
 import org.junit.Test;
@@ -87,45 +86,35 @@ public class ClientCacheInvalidationMetadataDistortionTest extends ClientNearCac
         final Cache<Integer, Integer> clientCache = clientCachingProvider.getCacheManager().createCache(
                 DEFAULT_CACHE_NAME, createCacheConfig(BINARY));
 
-        Thread populateNearCache = new Thread(new Runnable() {
-            public void run() {
-                while (!stopTest.get()) {
-                    for (int i = 0; i < CACHE_SIZE; i++) {
-                        clientCache.get(i);
-                    }
+        Thread populateNearCache = new Thread(() -> {
+            while (!stopTest.get()) {
+                for (int i = 0; i < CACHE_SIZE; i++) {
+                    clientCache.get(i);
                 }
             }
         });
 
-        Thread distortSequence = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!stopTest.get()) {
-                    distortRandomPartitionSequence(DEFAULT_CACHE_NAME, member);
-                    sleepSeconds(1);
-                }
+        Thread distortSequence = new Thread(() -> {
+            while (!stopTest.get()) {
+                distortRandomPartitionSequence(DEFAULT_CACHE_NAME, member);
+                sleepSeconds(1);
             }
         });
 
-        Thread distortUuid = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!stopTest.get()) {
-                    distortRandomPartitionUuid(member);
-                    sleepSeconds(5);
-                }
+        Thread distortUuid = new Thread(() -> {
+            while (!stopTest.get()) {
+                distortRandomPartitionUuid(member);
+                sleepSeconds(5);
             }
         });
 
-        Thread put = new Thread(new Runnable() {
-            public void run() {
-                // change some data
-                while (!stopTest.get()) {
-                    int key = getInt(CACHE_SIZE);
-                    int value = getInt(Integer.MAX_VALUE);
-                    memberCache.put(key, value);
-                    sleepAtLeastMillis(100);
-                }
+        Thread put = new Thread(() -> {
+            // change some data
+            while (!stopTest.get()) {
+                int key = getInt(CACHE_SIZE);
+                int value = getInt(Integer.MAX_VALUE);
+                memberCache.put(key, value);
+                sleepAtLeastMillis(100);
             }
         });
 
@@ -141,15 +130,12 @@ public class ClientCacheInvalidationMetadataDistortionTest extends ClientNearCac
         stopTest.set(true);
         assertJoinable(distortUuid, distortSequence, populateNearCache, put);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                for (int i = 0; i < CACHE_SIZE; i++) {
-                    Integer valueSeenFromMember = memberCache.get(i);
-                    Integer valueSeenFromClient = clientCache.get(i);
+        assertTrueEventually(() -> {
+            for (int i = 0; i < CACHE_SIZE; i++) {
+                Integer valueSeenFromMember = memberCache.get(i);
+                Integer valueSeenFromClient = clientCache.get(i);
 
-                    assertEquals(valueSeenFromMember, valueSeenFromClient);
-                }
+                assertEquals(valueSeenFromMember, valueSeenFromClient);
             }
         });
     }

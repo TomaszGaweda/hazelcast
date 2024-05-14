@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class PersonCacheEntryListenerConfiguration implements CacheEntryListener
 
     @Override
     public Factory<CacheEntryListener<? super String, ? super Person>> getCacheEntryListenerFactory() {
-        return new Factory<CacheEntryListener<? super String, ? super Person>>() {
+        return new Factory<>() {
             @Override
             public CacheEntryListener<? super String, ? super Person> create() {
                 return new CacheEntryListener<String, Person>() {
@@ -47,7 +47,7 @@ public class PersonCacheEntryListenerConfiguration implements CacheEntryListener
 
     @Override
     public Factory<CacheEntryEventFilter<? super String, ? super Person>> getCacheEntryEventFilterFactory() {
-        return new Factory<CacheEntryEventFilter<? super String, ? super Person>>() {
+        return new Factory<>() {
             @Override
             public CacheEntryEventFilter<? super String, ? super Person> create() {
                 return new CacheEntryEventFilter<String, Person>() {

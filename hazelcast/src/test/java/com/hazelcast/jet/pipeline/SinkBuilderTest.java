@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,14 +90,12 @@ public class SinkBuilderTest extends PipelineTestSupport {
         try (ServerSocket serverSocket = new ServerSocket(0)) {
             spawn(() -> uncheckRun(() -> {
                 while (!serverSocket.isClosed()) {
-                    Socket socket = serverSocket.accept();
                     spawn(() -> uncheckRun(() -> {
-                        try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                        try (Socket socket = serverSocket.accept();
+                             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                             while (in.readLine() != null) {
                                 counter.incrementAndGet();
                             }
-                        } finally {
-                            socket.close();
                         }
                     }));
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.hazelcast.client.Client;
 import com.hazelcast.client.LoadBalancer;
 import com.hazelcast.client.config.impl.XmlClientConfigLocator;
 import com.hazelcast.client.config.impl.YamlClientConfigLocator;
+import com.hazelcast.client.impl.protocol.util.PropertiesUtil;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigPatternMatcher;
 import com.hazelcast.config.InstanceTrackingConfig;
@@ -62,7 +63,7 @@ import static com.hazelcast.partition.strategy.StringPartitioningStrategy.getBas
 /**
  * Main configuration to setup a Hazelcast Client
  */
-@SuppressWarnings("checkstyle:classdataabstractioncoupling")
+@SuppressWarnings({"checkstyle:classdataabstractioncoupling", "MethodCount"})
 public class ClientConfig {
 
     /**
@@ -78,7 +79,7 @@ public class ClientConfig {
 
     /**
      * The Network Configuration properties like:
-     * addresses to connect, smart-routing, socket-options...
+     * addresses to connect, smart-routing, subset-routing, socket-options...
      */
     private ClientNetworkConfig networkConfig = new ClientNetworkConfig();
 
@@ -133,8 +134,7 @@ public class ClientConfig {
 
     @SuppressWarnings({"checkstyle:npathcomplexity", "checkstyle:executablestatementcount"})
     public ClientConfig(ClientConfig config) {
-        properties = new Properties();
-        properties.putAll(config.properties);
+        properties = PropertiesUtil.clone(config.properties);
         clusterName = config.clusterName;
         securityConfig = new ClientSecurityConfig(config.securityConfig);
         networkConfig = new ClientNetworkConfig(config.networkConfig);
@@ -274,7 +274,7 @@ public class ClientConfig {
      * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
      */
     public ClientConfig setProperty(String name, String value) {
-        properties.put(name, value);
+        properties.setProperty(name, value);
         return this;
     }
 
@@ -944,9 +944,11 @@ public class ClientConfig {
 
     /**
      * Note that backup acks to client can be enabled only for smart client.
-     * This config has no effect for unisocket clients.
+     * This config has no effect for unisocket or subset clients.
      *
-     * @return true if backup acknowledgements comes to client
+     * @return {@code true} means backup acknowledgements
+     * come to client, otherwise {@code false}
+     * indicates that acknowledgements go to members
      */
     public boolean isBackupAckToClientEnabled() {
         return backupAckToClientEnabled;

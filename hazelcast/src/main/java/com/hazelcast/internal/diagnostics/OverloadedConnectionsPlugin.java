@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,11 +77,11 @@ public class OverloadedConnectionsPlugin extends DiagnosticsPlugin {
     public static final HazelcastProperty SAMPLES
             = new HazelcastProperty("hazelcast.diagnostics.overloaded.connections.samples", 1000);
 
-    private static final Queue<OutboundFrame> EMPTY_QUEUE = new LinkedList<OutboundFrame>();
+    private static final Queue<OutboundFrame> EMPTY_QUEUE = new LinkedList<>();
 
     private final SerializationService serializationService;
-    private final ItemCounter<String> occurrenceMap = new ItemCounter<String>();
-    private final ArrayList<OutboundFrame> packets = new ArrayList<OutboundFrame>();
+    private final ItemCounter<String> occurrenceMap = new ItemCounter<>();
+    private final ArrayList<OutboundFrame> packets = new ArrayList<>();
     private final Random random = new Random();
     private final NumberFormat defaultFormat = NumberFormat.getPercentInstance();
     private final NodeEngineImpl nodeEngine;
@@ -212,8 +212,8 @@ public class OverloadedConnectionsPlugin extends DiagnosticsPlugin {
                 Object result = serializationService.toObject(packet);
                 if (result == null) {
                     return "null";
-                } else if (result instanceof Operation) {
-                    return OperationDescriptors.toOperationDesc((Operation) result);
+                } else if (result instanceof Operation operation) {
+                    return OperationDescriptors.toOperationDesc(operation);
                 } else {
                     return result.getClass().getName();
                 }

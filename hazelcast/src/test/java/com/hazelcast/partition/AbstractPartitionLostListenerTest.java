@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,21 +84,18 @@ public abstract class AbstractPartitionLostListenerTest extends HazelcastTestSup
     protected final void stopInstances(List<HazelcastInstance> instances, final NodeLeaveType nodeLeaveType, int timeoutSeconds) {
         assertNotNull(nodeLeaveType);
 
-        final List<Thread> threads = new ArrayList<Thread>();
+        final List<Thread> threads = new ArrayList<>();
         final CountDownLatch latch = new CountDownLatch(instances.size());
         for (final HazelcastInstance instance : instances) {
-            threads.add(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (nodeLeaveType == NodeLeaveType.SHUTDOWN) {
-                        instance.getLifecycleService().shutdown();
-                        latch.countDown();
-                    } else if (nodeLeaveType == NodeLeaveType.TERMINATE) {
-                        instance.getLifecycleService().terminate();
-                        latch.countDown();
-                    } else {
-                        System.err.println("Invalid node leave type: " + nodeLeaveType);
-                    }
+            threads.add(new Thread(() -> {
+                if (nodeLeaveType == NodeLeaveType.SHUTDOWN) {
+                    instance.getLifecycleService().shutdown();
+                    latch.countDown();
+                } else if (nodeLeaveType == NodeLeaveType.TERMINATE) {
+                    instance.getLifecycleService().terminate();
+                    latch.countDown();
+                } else {
+                    System.err.println("Invalid node leave type: " + nodeLeaveType);
                 }
             }));
         }
@@ -122,7 +119,7 @@ public abstract class AbstractPartitionLostListenerTest extends HazelcastTestSup
     }
 
     protected final List<HazelcastInstance> createInstances(int nodeCount) {
-        List<HazelcastInstance> instances = new ArrayList<HazelcastInstance>();
+        List<HazelcastInstance> instances = new ArrayList<>();
         Config config = createConfig(nodeCount);
         for (int i = 0; i < nodeCount; i++) {
             instances.add(hazelcastInstanceFactory.newHazelcastInstance(config));
@@ -157,7 +154,7 @@ public abstract class AbstractPartitionLostListenerTest extends HazelcastTestSup
     }
 
     protected final Map<Integer, Integer> getMinReplicaIndicesByPartitionId(List<HazelcastInstance> instances) {
-        Map<Integer, Integer> survivingPartitions = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> survivingPartitions = new HashMap<>();
         for (HazelcastInstance instance : instances) {
             Node survivingNode = getNode(instance);
             Address survivingNodeAddress = survivingNode.getThisAddress();

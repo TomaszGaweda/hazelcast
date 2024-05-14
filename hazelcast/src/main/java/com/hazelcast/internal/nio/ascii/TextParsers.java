@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ public class TextParsers {
     private final Set<String> commandPrefixes;
 
     public TextParsers(Map<String, CommandParser> parsers) {
-        this.parsers = new HashMap<String, CommandParser>(parsers);
-        Set<String> prefixes = new HashSet<String>();
+        this.parsers = new HashMap<>(parsers);
+        Set<String> prefixes = new HashSet<>();
         for (String command : parsers.keySet()) {
             prefixes.add(command.substring(0, Protocols.PROTOCOL_LENGTH));
         }

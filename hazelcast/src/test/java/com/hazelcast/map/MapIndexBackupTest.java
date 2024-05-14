@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,18 +81,18 @@ public class MapIndexBackupTest extends HazelcastTestSupport {
             waitAllForSafeState(instance1, instance2);
         }
 
-        Set<Object> foundByPredicate = new TreeSet<Object>(
+        Set<Object> foundByPredicate = new TreeSet<>(
                 bookMap.localKeySet(
                         Predicates.and(
                                 Predicates.in("author", "0", "1", "2", "3", "4", "5", "6"),
                                 Predicates.between("year", 1990, 2000))));
 
-        Map<Member, Set<Object>> foundByPredicateByMember = new HashMap<Member, Set<Object>>();
+        Map<Member, Set<Object>> foundByPredicateByMember = new HashMap<>();
         for (Object key : foundByPredicate) {
             Member owner = instance1.getPartitionService().getPartition(key).getOwner();
             Set<Object> keys = foundByPredicateByMember.get(owner);
             if (keys == null) {
-                keys = new HashSet<Object>();
+                keys = new HashSet<>();
                 foundByPredicateByMember.put(owner, keys);
             }
             keys.add(key);
@@ -156,7 +156,7 @@ public class MapIndexBackupTest extends HazelcastTestSupport {
 
         @Override
         public Map<Integer, Book> loadAll(Collection<Integer> keys) {
-            Map<Integer, Book> map = new TreeMap<Integer, Book>();
+            Map<Integer, Book> map = new TreeMap<>();
             for (int key : keys) {
                 map.put(key, new Book(key, String.valueOf(key), String.valueOf(key % 7), 1800 + key % 200));
             }
@@ -165,7 +165,7 @@ public class MapIndexBackupTest extends HazelcastTestSupport {
 
         @Override
         public Iterable<Integer> loadAllKeys() {
-            List<Integer> keys = new ArrayList<Integer>(2000);
+            List<Integer> keys = new ArrayList<>(2000);
             for (int i = 0; i < 2000; i++) {
                 keys.add(i);
             }

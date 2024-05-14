@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.hazelcast.spi.merge.LatestUpdateMergePolicy;
 import com.hazelcast.spi.merge.PassThroughMergePolicy;
 import com.hazelcast.spi.merge.PutIfAbsentMergePolicy;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.HazelcastSerialParametersRunnerFactory;
 import com.hazelcast.test.HazelcastTestSupport;
@@ -105,13 +104,10 @@ public class ReplicatedMapMergePolicyTest extends HazelcastTestSupport {
         assertOpenEventually(lifeCycleListener.latch);
         assertClusterSizeEventually(2, h1, h2);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                ReplicatedMap<Object, Object> mapTest = h1.getReplicatedMap(mapName);
-                for (Map.Entry<Object, Object> entry : expectedValues.entrySet()) {
-                    assertEquals(entry.getValue(), mapTest.get(entry.getKey()));
-                }
+        assertTrueEventually(() -> {
+            ReplicatedMap<Object, Object> mapTest = h1.getReplicatedMap(mapName);
+            for (Map.Entry<Object, Object> entry : expectedValues.entrySet()) {
+                assertEquals(entry.getValue(), mapTest.get(entry.getKey()));
             }
         });
     }
@@ -167,7 +163,7 @@ public class ReplicatedMapMergePolicyTest extends HazelcastTestSupport {
             sleepAtLeastSeconds(1);
             map1.put("key2", "LatestUpdatedValue2");
 
-            Map<Object, Object> expectedValues = new HashMap<Object, Object>();
+            Map<Object, Object> expectedValues = new HashMap<>();
             expectedValues.put("key1", "LatestUpdatedValue");
             expectedValues.put("key2", "LatestUpdatedValue2");
             return expectedValues;
@@ -201,7 +197,7 @@ public class ReplicatedMapMergePolicyTest extends HazelcastTestSupport {
             map2.get("key2");
             map2.get("key2");
 
-            Map<Object, Object> expectedValues = new HashMap<Object, Object>();
+            Map<Object, Object> expectedValues = new HashMap<>();
             expectedValues.put("key1", "higherHitsValue");
             expectedValues.put("key2", "higherHitsValue2");
             return expectedValues;
@@ -228,7 +224,7 @@ public class ReplicatedMapMergePolicyTest extends HazelcastTestSupport {
             map2.put("key1", "value");
             map2.put("key2", "PutIfAbsentValue2");
 
-            Map<Object, Object> expectedValues = new HashMap<Object, Object>();
+            Map<Object, Object> expectedValues = new HashMap<>();
             expectedValues.put("key1", "PutIfAbsentValue1");
             expectedValues.put("key2", "PutIfAbsentValue2");
             return expectedValues;
@@ -255,7 +251,7 @@ public class ReplicatedMapMergePolicyTest extends HazelcastTestSupport {
             map1.put(key, "value");
 
             map2.put(key, "passThroughValue");
-            Map<Object, Object> expectedValues = new HashMap<Object, Object>();
+            Map<Object, Object> expectedValues = new HashMap<>();
             expectedValues.put(key, "passThroughValue");
             return expectedValues;
         }
@@ -283,7 +279,7 @@ public class ReplicatedMapMergePolicyTest extends HazelcastTestSupport {
 
             map2.put(key, value);
 
-            Map<Object, Object> expectedValues = new HashMap<Object, Object>();
+            Map<Object, Object> expectedValues = new HashMap<>();
             expectedValues.put(key, value);
             return expectedValues;
         }

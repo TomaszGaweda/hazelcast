@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ public class MapNearCacheRecordStateStressTest extends HazelcastTestSupport {
             memberMap.put(i, i);
         }
 
-        List<Thread> threads = new ArrayList<Thread>();
+        List<Thread> threads = new ArrayList<>();
         // member
         for (int i = 0; i < PUT_THREAD_COUNT; i++) {
             Put put = new Put(memberMap);
@@ -239,7 +239,7 @@ public class MapNearCacheRecordStateStressTest extends HazelcastTestSupport {
 
         @Override
         public void run() {
-            HashSet<Integer> keys = new HashSet<Integer>();
+            HashSet<Integer> keys = new HashSet<>();
             for (int i = 0; i < KEY_SPACE; i++) {
                 keys.add(i);
             }

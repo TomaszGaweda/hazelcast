@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,7 @@ import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.projection.Projection;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.security.SecurityInterceptorConstants;
-import com.hazelcast.security.permission.ActionConstants;
-import com.hazelcast.security.permission.MapPermission;
 
-import java.security.Permission;
 import java.util.List;
 
 public class MapProjectionWithPredicateMessageTask
@@ -55,10 +52,6 @@ public class MapProjectionWithPredicateMessageTask
     @Override
     protected ClientMessage encodeResponse(Object response) {
         return MapProjectWithPredicateCodec.encodeResponse((List<Data>) response);
-    }
-
-    public Permission getRequiredPermission() {
-        return new MapPermission(parameters.name, ActionConstants.ACTION_PROJECTION);
     }
 
     @Override

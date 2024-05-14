@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.hazelcast.internal.management;
 
 import com.hazelcast.cache.impl.CacheService;
 import com.hazelcast.client.impl.ClientEndpoint;
-import com.hazelcast.client.impl.statistics.ClientStatistics;
 import com.hazelcast.cluster.Address;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.cluster.impl.MemberImpl;
@@ -29,7 +28,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.config.ManagementCenterConfig;
 import com.hazelcast.config.SSLConfig;
 import com.hazelcast.config.SocketInterceptorConfig;
-import com.hazelcast.cp.CPMember;
 import com.hazelcast.durableexecutor.impl.DistributedDurableExecutorService;
 import com.hazelcast.executor.impl.DistributedExecutorService;
 import com.hazelcast.flakeidgen.impl.FlakeIdGeneratorService;
@@ -48,9 +46,11 @@ import com.hazelcast.internal.monitor.LocalWanStats;
 import com.hazelcast.internal.monitor.impl.HotRestartStateImpl;
 import com.hazelcast.internal.monitor.impl.LocalExecutorStatsImpl;
 import com.hazelcast.internal.monitor.impl.LocalOperationStatsImpl;
+import com.hazelcast.internal.monitor.impl.LocalUserCodeNamespaceStats;
 import com.hazelcast.internal.monitor.impl.MemberPartitionStateImpl;
 import com.hazelcast.internal.monitor.impl.MemberStateImpl;
 import com.hazelcast.internal.monitor.impl.NodeStateImpl;
+import com.hazelcast.internal.namespace.UserCodeNamespaceService;
 import com.hazelcast.internal.partition.IPartition;
 import com.hazelcast.internal.partition.InternalPartitionService;
 import com.hazelcast.internal.services.StatisticsAwareService;
@@ -72,16 +72,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static com.hazelcast.config.ConfigAccessor.getActiveMemberNetworkConfig;
-import static com.hazelcast.internal.util.MapUtil.createHashMap;
 import static com.hazelcast.internal.util.SetUtil.createHashSet;
 
 /**
  * A Factory for creating {@link TimedMemberState} instances.
  */
+@SuppressWarnings("ClassFanOutComplexity")
 public class TimedMemberStateFactory {
 
     private static final int INITIAL_PARTITION_SAFETY_CHECK_DELAY = 15;
@@ -157,12 +156,7 @@ public class TimedMemberStateFactory {
         memberState.setClients(serializableClientEndPoints);
         memberState.setName(instance.getName());
         memberState.setUuid(node.getThisUuid());
-        if (instance.getConfig().getCPSubsystemConfig().getCPMemberCount() == 0) {
-            memberState.setCpMemberUuid(null);
-        } else {
-            CPMember localCPMember = instance.getCPSubsystem().getLocalCPMember();
-            memberState.setCpMemberUuid(localCPMember != null ? localCPMember.getUuid() : null);
-        }
+        setCPMemberUuid(memberState);
 
         Address thisAddress = node.getThisAddress();
         memberState.setAddress(thisAddress.getHost() + ":" + thisAddress.getPort());
@@ -186,20 +180,10 @@ public class TimedMemberStateFactory {
         createNodeState(memberState);
         createHotRestartState(memberState);
         createClusterHotRestartStatus(memberState);
-
-        memberState.setClientStats(getClientAttributes(node.getClientEngine().getClientStatistics()));
     }
 
-    private Map<UUID, String> getClientAttributes(Map<UUID, ClientStatistics> allClientStatistics) {
-        Map<UUID, String> statsMap = createHashMap(allClientStatistics.size());
-        for (Map.Entry<UUID, ClientStatistics> entry : allClientStatistics.entrySet()) {
-            UUID uuid = entry.getKey();
-            ClientStatistics statistics = entry.getValue();
-            if (statistics != null) {
-                statsMap.put(uuid, statistics.clientAttributes());
-            }
-        }
-        return statsMap;
+    protected void setCPMemberUuid(MemberStateImpl memberState) {
+        memberState.setCpMemberUuid(null);
     }
 
     private void createHotRestartState(MemberStateImpl memberState) {
@@ -226,35 +210,38 @@ public class TimedMemberStateFactory {
         memberState.setNodeState(nodeState);
     }
 
+    @SuppressWarnings("CyclomaticComplexity")
     private void createMemState(MemberStateImpl memberState,
                                 Collection<StatisticsAwareService> services) {
         Config config = instance.getConfig();
-        for (StatisticsAwareService service : services) {
-            if (service instanceof MapService) {
-                handleMap(memberState, ((MapService) service).getStats());
-            } else if (service instanceof MultiMapService) {
-                handleMultiMap(memberState, ((MultiMapService) service).getStats());
-            } else if (service instanceof QueueService) {
-                handleQueue(memberState, ((QueueService) service).getStats());
-            } else if (service instanceof TopicService) {
-                handleTopic(memberState, ((TopicService) service).getStats());
-            } else if (service instanceof ReliableTopicService) {
-                handleReliableTopic(memberState, ((ReliableTopicService) service).getStats());
-            } else if (service instanceof DistributedExecutorService) {
-                handleExecutorService(memberState, config, ((DistributedExecutorService) service).getStats());
-            } else if (service instanceof DistributedScheduledExecutorService) {
+        for (StatisticsAwareService<?> service : services) {
+            if (service instanceof MapService mapService) {
+                handleMap(memberState, mapService.getStats());
+            } else if (service instanceof MultiMapService multiMapService) {
+                handleMultiMap(memberState, multiMapService.getStats());
+            } else if (service instanceof QueueService queueService) {
+                handleQueue(memberState, queueService.getStats());
+            } else if (service instanceof TopicService topicService) {
+                handleTopic(memberState, topicService.getStats());
+            } else if (service instanceof ReliableTopicService reliableTopicService) {
+                handleReliableTopic(memberState, reliableTopicService.getStats());
+            } else if (service instanceof DistributedExecutorService distributedExecutorService) {
+                handleExecutorService(memberState, config, distributedExecutorService.getStats());
+            } else if (service instanceof DistributedScheduledExecutorService distributedScheduledExecutorService) {
                 handleScheduledExecutorService(memberState, config,
-                        ((DistributedScheduledExecutorService) service).getStats());
-            } else if (service instanceof DistributedDurableExecutorService) {
-                handleDurableExecutorService(memberState, config, ((DistributedDurableExecutorService) service).getStats());
-            } else if (service instanceof ReplicatedMapService) {
-                handleReplicatedMap(memberState, config, ((ReplicatedMapService) service).getStats());
-            } else if (service instanceof PNCounterService) {
-                handlePNCounter(memberState, config, ((PNCounterService) service).getStats());
-            } else if (service instanceof FlakeIdGeneratorService) {
-                handleFlakeIdGenerator(memberState, config, ((FlakeIdGeneratorService) service).getStats());
-            } else if (service instanceof CacheService) {
-                handleCache(memberState, (CacheService) service);
+                        distributedScheduledExecutorService.getStats());
+            } else if (service instanceof DistributedDurableExecutorService distributedDurableExecutorService) {
+                handleDurableExecutorService(memberState, config, distributedDurableExecutorService.getStats());
+            } else if (service instanceof ReplicatedMapService replicatedMapService) {
+                handleReplicatedMap(memberState, config, replicatedMapService.getStats());
+            } else if (service instanceof PNCounterService pnCounterService) {
+                handlePNCounter(memberState, config, pnCounterService.getStats());
+            } else if (service instanceof FlakeIdGeneratorService flakeIdGeneratorService) {
+                handleFlakeIdGenerator(memberState, config, flakeIdGeneratorService.getStats());
+            } else if (service instanceof CacheService cacheService) {
+                handleCache(memberState, cacheService);
+            } else if (service instanceof UserCodeNamespaceService userCodeNamespaceService) {
+                handleUserCodeNamespaces(memberState, userCodeNamespaceService.getStats());
             }
         }
 
@@ -274,6 +261,11 @@ public class TimedMemberStateFactory {
             }
         }
         memberState.setFlakeIdGeneratorsWithStats(flakeIdGeneratorsWithStats);
+    }
+
+    private void handleUserCodeNamespaces(MemberStateImpl memberState,
+                                          Map<String, LocalUserCodeNamespaceStats> nsStats) {
+        memberState.setUserCodeNamespacesWithStats(nsStats.keySet());
     }
 
     private void handleExecutorService(MemberStateImpl memberState, Config config,

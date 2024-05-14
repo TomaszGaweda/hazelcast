@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class ClientSelectorsTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testLocalhostWithIp() throws UnknownHostException {
+    public void testLocalhostWithIp() {
         String name = randomString();
         Set<String> labels = Collections.emptySet();
         ClientImpl client = new ClientImpl(null, createInetSocketAddress("localhost"), name, labels);
@@ -98,7 +98,7 @@ public class ClientSelectorsTest extends HazelcastTestSupport {
     @Test
     public void testLabelSelector() {
         String name = randomString();
-        HashSet<String> labels = new HashSet<String>();
+        HashSet<String> labels = new HashSet<>();
         Collections.addAll(labels, "admin", "foo", "client1");
 
         ClientImpl client = new ClientImpl(null, createInetSocketAddress("127.0.0.1"), name, labels);
@@ -155,7 +155,7 @@ public class ClientSelectorsTest extends HazelcastTestSupport {
     @Test
     public void testCombinationWithOr() {
         String name = "client1";
-        HashSet<String> labels = new HashSet<String>();
+        HashSet<String> labels = new HashSet<>();
         Collections.addAll(labels, "admin", "foo", "client1");
         String ip = "213.129.127.80";
         ClientImpl client = new ClientImpl(null, createInetSocketAddress(ip), name, labels);

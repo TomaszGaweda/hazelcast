@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,7 +183,7 @@ public class ManagementService implements DistributedObjectListener {
     }
 
     protected ObjectName createObjectName(String type, String name) {
-        Hashtable<String, String> properties = new Hashtable<String, String>(INITIAL_CAPACITY);
+        Hashtable<String, String> properties = new Hashtable<>(INITIAL_CAPACITY);
         properties.put("instance", quote(instance.getName()));
         if (type != null) {
             properties.put("type", quote(type));

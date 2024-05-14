@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,6 +158,7 @@ public final class YamlUtil {
      * @param right The right-side node of the check
      * @return {@code true} if the provided nodes are of the same type
      */
+    @SuppressWarnings("BooleanExpressionComplexity")
     public static boolean isOfSameType(YamlNode left, YamlNode right) {
         return left instanceof YamlMapping && right instanceof YamlMapping
                 || left instanceof YamlSequence && right instanceof YamlSequence

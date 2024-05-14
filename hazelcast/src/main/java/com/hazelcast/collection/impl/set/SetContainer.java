@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class SetContainer extends CollectionContainer {
     public Map<Long, Data> addAll(List<Data> valueList) {
         final int size = valueList.size();
         final Map<Long, Data> map = createHashMap(size);
-        List<CollectionItem> list = new ArrayList<CollectionItem>(size);
+        List<CollectionItem> list = new ArrayList<>(size);
         for (Data value : valueList) {
             final long itemId = nextId();
             final CollectionItem item = new CollectionItem(itemId, value);
@@ -88,7 +88,7 @@ public class SetContainer extends CollectionContainer {
                 setId(maxItemId + ID_PROMOTION_OFFSET);
                 itemMap.clear();
             } else {
-                itemSet = new HashSet<CollectionItem>(INITIAL_CAPACITY);
+                itemSet = new HashSet<>(INITIAL_CAPACITY);
             }
             itemMap = null;
         }
@@ -105,7 +105,7 @@ public class SetContainer extends CollectionContainer {
                 }
                 itemSet.clear();
             } else {
-                itemMap = new HashMap<Long, CollectionItem>(INITIAL_CAPACITY);
+                itemMap = new HashMap<>(INITIAL_CAPACITY);
             }
             itemSet = null;
         }

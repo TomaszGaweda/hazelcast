@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.hazelcast.jet.pipeline;
 
 import com.hazelcast.internal.serialization.SerializableByConvention;
 
+import java.io.Serial;
+
 import static com.hazelcast.internal.util.Preconditions.checkPositive;
 import static com.hazelcast.internal.util.Preconditions.checkTrue;
 
@@ -29,6 +31,7 @@ import static com.hazelcast.internal.util.Preconditions.checkTrue;
 @SerializableByConvention
 public class SlidingWindowDefinition extends WindowDefinition {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final long windowSize;

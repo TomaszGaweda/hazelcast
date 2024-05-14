@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ public class CompactGetter extends Getter {
 
     private Object getValueInternal(Object target, String fieldPath, boolean useLazyDeserialization) throws Exception {
         InternalGenericRecord record;
-        if (target instanceof CompactGenericRecord) {
-            record = (InternalGenericRecord) target;
+        if (target instanceof CompactGenericRecord genericRecord) {
+            record = genericRecord;
         } else {
             record = serializationService.readAsInternalGenericRecord((Data) target);
         }

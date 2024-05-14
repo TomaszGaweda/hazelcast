@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class CacheEventJournalReadResultSetImpl<K, V, T> extends ReadResultSetIm
         // the event journal ringbuffer supports only OBJECT format for now
         final InternalEventJournalCacheEvent e = (InternalEventJournalCacheEvent) item;
         final DeserializingEventJournalCacheEvent<K, V> deserialisingEvent
-                = new DeserializingEventJournalCacheEvent<K, V>(serializationService, e);
+                = new DeserializingEventJournalCacheEvent<>(serializationService, e);
         super.addItem(seq, deserialisingEvent);
     }
 

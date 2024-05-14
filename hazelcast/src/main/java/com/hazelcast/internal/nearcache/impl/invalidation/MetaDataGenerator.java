@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,16 +39,16 @@ public class MetaDataGenerator {
 
     private final int partitionCount;
     private final ConstructorFunction<String, AtomicLongArray> sequenceGeneratorConstructor
-            = new ConstructorFunction<String, AtomicLongArray>() {
+            = new ConstructorFunction<>() {
         @Override
         public AtomicLongArray createNew(String arg) {
             return new AtomicLongArray(partitionCount);
         }
     };
-    private final ConcurrentMap<Integer, UUID> uuids = new ConcurrentHashMap<Integer, UUID>();
-    private final ConcurrentMap<String, AtomicLongArray> sequenceGenerators = new ConcurrentHashMap<String, AtomicLongArray>();
+    private final ConcurrentMap<Integer, UUID> uuids = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, AtomicLongArray> sequenceGenerators = new ConcurrentHashMap<>();
     private final ConstructorFunction<Integer, UUID> uuidConstructor
-            = new ConstructorFunction<Integer, UUID>() {
+            = new ConstructorFunction<>() {
         @Override
         public UUID createNew(Integer partitionId) {
             return newUnsecureUUID();

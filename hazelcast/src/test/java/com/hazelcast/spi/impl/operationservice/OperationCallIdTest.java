@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,8 @@ import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
 import junit.framework.AssertionFailedError;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.util.concurrent.locks.LockSupport;
@@ -32,14 +30,13 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(HazelcastParallelClassRunner.class)
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class OperationCallIdTest {
 
-    @Rule
-    public final ExpectedException exceptionRule = ExpectedException.none();
 
     private final Operation op = new MockOperation();
 
@@ -71,11 +68,8 @@ public class OperationCallIdTest {
         op.setCallId(1);
         assertTrue(op.isActive());
 
-        // Then
-        exceptionRule.expect(IllegalStateException.class);
-
         // When
-        op.setCallId(1);
+        assertThrows(IllegalStateException.class, () -> op.setCallId(1));
     }
 
     @Test
@@ -164,47 +158,41 @@ public class OperationCallIdTest {
         volatile int activationCount;
 
         void run() {
-            final Thread reader = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        long previousCallId = 0;
-                        while (!interrupted()) {
-                            long callId;
-                            while ((callId = op.getCallId()) == previousCallId) {
-                                // Wait until a writer thread sets a call ID
-                            }
-                            activationCount++;
-                            long deadline = System.currentTimeMillis() + SECONDS.toMillis(1);
-                            while (System.currentTimeMillis() < deadline) {
-                                assertEquals(callId, op.getCallId());
-                            }
-                            op.deactivate();
-                            previousCallId = callId;
+            final Thread reader = new Thread(() -> {
+                try {
+                    long previousCallId = 0;
+                    while (!Thread.interrupted()) {
+                        long callId;
+                        while ((callId = op.getCallId()) == previousCallId) {
+                            // Wait until a writer thread sets a call ID
                         }
-                    } catch (AssertionFailedError e) {
-                        testFailure = e;
+                        activationCount++;
+                        long deadline = System.currentTimeMillis() + SECONDS.toMillis(1);
+                        while (System.currentTimeMillis() < deadline) {
+                            assertEquals(callId, op.getCallId());
+                        }
+                        op.deactivate();
+                        previousCallId = callId;
                     }
+                } catch (AssertionFailedError e) {
+                    testFailure = e;
                 }
-            };
+            });
             final int writerCount = 4;
             final Thread[] writers = new Thread[writerCount];
             for (int i = 0; i < writers.length; i++) {
                 final int initialCallId = i + 1;
-                writers[i] = new Thread() {
-                    @Override
-                    public void run() {
-                        long nextCallId = initialCallId;
-                        while (!interrupted()) {
-                            try {
-                                op.setCallId(nextCallId);
-                                nextCallId += writerCount;
-                            } catch (IllegalStateException e) {
-                                // Things are working as expected
-                            }
+                writers[i] = new Thread(() -> {
+                    long nextCallId = initialCallId;
+                    while (!Thread.interrupted()) {
+                        try {
+                            op.setCallId(nextCallId);
+                            nextCallId += writerCount;
+                        } catch (IllegalStateException e) {
+                            // Things are working as expected
                         }
                     }
-                };
+                });
             }
             try {
                 reader.start();

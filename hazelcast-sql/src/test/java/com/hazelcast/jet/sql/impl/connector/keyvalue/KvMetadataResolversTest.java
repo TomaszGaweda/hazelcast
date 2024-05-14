@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ package com.hazelcast.jet.sql.impl.connector.keyvalue;
 import com.google.common.collect.ImmutableMap;
 import com.hazelcast.internal.serialization.InternalSerializationService;
 import com.hazelcast.jet.sql.impl.CalciteSqlOptimizer;
-import com.hazelcast.jet.sql.impl.schema.RelationsStorage;
+import com.hazelcast.jet.sql.impl.schema.AbstractRelationsStorage;
 import com.hazelcast.mock.MockUtil;
 import com.hazelcast.spi.impl.NodeEngine;
+import com.hazelcast.sql.impl.InternalSqlService;
 import com.hazelcast.sql.impl.QueryException;
-import com.hazelcast.sql.impl.SqlServiceImpl;
 import com.hazelcast.sql.impl.schema.MappingField;
 import com.hazelcast.sql.impl.type.QueryDataType;
 import junitparams.JUnitParamsRunner;
@@ -64,10 +64,10 @@ public class KvMetadataResolversTest {
     private CalciteSqlOptimizer optimizer;
 
     @Mock
-    private RelationsStorage relationsStorage;
+    private AbstractRelationsStorage relationsStorage;
 
     @Mock
-    private SqlServiceImpl sqlService;
+    private InternalSqlService sqlService;
 
     @Mock
     private NodeEngine nodeEngine;

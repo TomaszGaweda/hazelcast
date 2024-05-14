@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,8 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 import static com.hazelcast.jet.Util.idToString;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFine;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class SnapshotPhase2Operation extends AsyncJobOperation {
-
-    private static final CompletableFuture<Void> EMPTY_RESULT = completedFuture(null);
 
     private long executionId;
     private long snapshotId;
@@ -63,7 +59,7 @@ public class SnapshotPhase2Operation extends AsyncJobOperation {
                                 String.format("Snapshot %d phase 2 for %s finished with an error on member: %s",
                                 snapshotId, ctx.jobNameAndExecutionId(), t), t);
                     } else {
-                        logFine(getLogger(), "Snapshot %s phase 2 for %s finished successfully on member",
+                        getLogger().fine("Snapshot %s phase 2 for %s finished successfully on member",
                                 snapshotId, ctx.jobNameAndExecutionId());
                     }
                 });

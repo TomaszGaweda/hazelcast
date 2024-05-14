@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,9 @@ public class EqualityTest {
     public void keyedWindowResult_equalsAndHashCode() {
         EqualsVerifier.forClass(KeyedWindowResult.class)
                 .usingGetClass()
+                // KeyedWindowResult has equals with all fields
+                // but hashCode uses only key and value according to Map.Entry contract
+                .suppress(Warning.STRICT_HASHCODE)
                 .verify();
     }
 

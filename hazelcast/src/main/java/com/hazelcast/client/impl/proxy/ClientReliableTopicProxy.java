@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class ClientReliableTopicProxy<E> extends ClientProxy implements ITopic<E
     private static final int INITIAL_BACKOFF_MS = 100;
 
     private final ILogger logger;
-    private final ConcurrentMap<UUID, MessageRunner<E>> runnersMap = new ConcurrentHashMap<UUID, MessageRunner<E>>();
+    private final ConcurrentMap<UUID, MessageRunner<E>> runnersMap = new ConcurrentHashMap<>();
     private final Ringbuffer<ReliableTopicMessage> ringbuffer;
     private final SerializationService serializationService;
     private final ClientReliableTopicConfig config;

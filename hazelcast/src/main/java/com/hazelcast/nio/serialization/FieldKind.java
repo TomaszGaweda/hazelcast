@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.hazelcast.nio.serialization.genericrecord.GenericRecord;
  *
  * @since Hazelcast 5.2
  */
+@SuppressWarnings("JavadocVariable")
 public enum FieldKind {
 
     /**
@@ -41,13 +42,22 @@ public enum FieldKind {
 
     /**
      * Supported only for {@link Portable}. Not applicable to {@link com.hazelcast.config.CompactSerializationConfig Compact}
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = false)
     CHAR(5),
 
     /**
      * Supported only for {@link Portable}. Not applicable to {@link com.hazelcast.config.CompactSerializationConfig Compact}
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = false)
     ARRAY_OF_CHAR(6),
+
     INT16(7),
     ARRAY_OF_INT16(8),
     INT32(9),
@@ -83,12 +93,20 @@ public enum FieldKind {
 
     /**
      * Supported only for {@link Portable}. Not applicable to {@link com.hazelcast.config.CompactSerializationConfig Compact}
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     PORTABLE(31),
 
     /**
      * Supported only for {@link Portable}. Not applicable to Compact{@link com.hazelcast.config.CompactSerializationConfig}
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     ARRAY_OF_PORTABLE(32),
 
     /**

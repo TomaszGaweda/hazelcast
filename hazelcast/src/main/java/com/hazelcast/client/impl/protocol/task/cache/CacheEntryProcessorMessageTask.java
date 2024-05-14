@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,16 +43,18 @@ public class CacheEntryProcessorMessageTask
 
     public CacheEntryProcessorMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
+        setNamespaceAware();
     }
 
     @Override
     protected Operation prepareOperation() {
         CacheService service = getService(getServiceName());
         CacheOperationProvider operationProvider = getOperationProvider(parameters.name);
-        EntryProcessor entryProcessor = (EntryProcessor) service.toObject(parameters.entryProcessor);
+        String namespace = CacheService.lookupNamespace(nodeEngine, parameters.name);
+        EntryProcessor entryProcessor = (EntryProcessor) service.toObject(parameters.entryProcessor, namespace);
         ArrayList argumentsList = new ArrayList(parameters.arguments.size());
         for (Data data : parameters.arguments) {
-            argumentsList.add(service.toObject(data));
+            argumentsList.add(service.toObject(data, namespace));
         }
         return operationProvider
                 .createEntryProcessorOperation(parameters.key, parameters.completionId, entryProcessor

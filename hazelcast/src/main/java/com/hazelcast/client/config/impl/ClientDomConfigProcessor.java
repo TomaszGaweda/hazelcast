@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,10 @@ import com.hazelcast.client.config.ClientSqlConfig;
 import com.hazelcast.client.config.ClientSqlResubmissionMode;
 import com.hazelcast.client.config.ClientUserCodeDeploymentConfig;
 import com.hazelcast.client.config.ConnectionRetryConfig;
+import com.hazelcast.client.config.RoutingStrategy;
 import com.hazelcast.client.config.ProxyFactoryConfig;
 import com.hazelcast.client.config.SocketOptions;
+import com.hazelcast.client.config.SubsetRoutingConfig;
 import com.hazelcast.client.util.RandomLB;
 import com.hazelcast.client.util.RoundRobinLB;
 import com.hazelcast.config.AliasedDiscoveryConfig;
@@ -128,7 +130,7 @@ public class ClientDomConfigProcessor extends AbstractDomConfigProcessor {
     }
 
     ClientDomConfigProcessor(boolean domLevel3, ClientConfig clientConfig, QueryCacheConfigBuilderHelper
-      queryCacheConfigBuilderHelper, boolean strict) {
+            queryCacheConfigBuilderHelper, boolean strict) {
         super(domLevel3, strict);
         this.clientConfig = clientConfig;
         this.queryCacheConfigBuilderHelper = queryCacheConfigBuilderHelper;
@@ -274,7 +276,7 @@ public class ClientDomConfigProcessor extends AbstractDomConfigProcessor {
                 userCodeDeploymentConfig.addJar(getTextContent(jarPathNode));
             }
         } else {
-            throw new InvalidConfigurationException("User code deployement can either be className or jarPath. "
+            throw new InvalidConfigurationException("User code deployment can either be className or jarPath. "
                     + childNodeName + " is invalid");
         }
     }
@@ -426,6 +428,8 @@ public class ClientDomConfigProcessor extends AbstractDomConfigProcessor {
                 handleClusterMembers(child, clientNetworkConfig);
             } else if (matches("smart-routing", nodeName)) {
                 clientNetworkConfig.setSmartRouting(Boolean.parseBoolean(getTextContent(child)));
+            } else if (matches("subset-routing", nodeName)) {
+                handleSubsetRouting(child, clientNetworkConfig);
             } else if (matches("redo-operation", nodeName)) {
                 clientNetworkConfig.setRedoOperation(Boolean.parseBoolean(getTextContent(child)));
             } else if (matches("connection-timeout", nodeName)) {
@@ -451,6 +455,18 @@ public class ClientDomConfigProcessor extends AbstractDomConfigProcessor {
             }
         }
         clientConfig.setNetworkConfig(clientNetworkConfig);
+    }
+
+    private void handleSubsetRouting(Node child, ClientNetworkConfig clientNetworkConfig) {
+        boolean enabled = getBooleanValue(getAttribute(child, "enabled"));
+        if (enabled) {
+            String attribute = getAttribute(child, "routing-strategy");
+            RoutingStrategy routingStrategy = attribute == null
+                    ? SubsetRoutingConfig.DEFAULT_ROUTING_STRATEGY : RoutingStrategy.valueOf(attribute);
+            SubsetRoutingConfig subsetRoutingConfig = clientNetworkConfig.getSubsetRoutingConfig();
+            subsetRoutingConfig.setEnabled(true);
+            subsetRoutingConfig.setRoutingStrategy(routingStrategy);
+        }
     }
 
     private void handleHazelcastCloud(Node node, ClientNetworkConfig clientNetworkConfig) {
@@ -803,5 +819,12 @@ public class ClientDomConfigProcessor extends AbstractDomConfigProcessor {
         // enabled is a required attribute
         Node enabledNode = getNamedItemNode(node, "enabled");
         tpcConfig.setEnabled(getBooleanValue(getTextContent(enabledNode)));
+
+        for (Node child : childElements(node)) {
+            String nodeName = cleanNodeName(child);
+            if (matches("connection-count", nodeName)) {
+                tpcConfig.setConnectionCount(Integer.parseInt(getTextContent(child)));
+            }
+        }
     }
 }

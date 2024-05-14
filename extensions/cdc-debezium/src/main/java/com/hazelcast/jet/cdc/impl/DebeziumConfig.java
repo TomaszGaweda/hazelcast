@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ public class DebeziumConfig {
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(connectorClass, "connectorClass");
 
-        properties.put("name", name);
-        properties.put(CdcSourceP.CONNECTOR_CLASS_PROPERTY, connectorClass);
-        properties.put("database.history", CdcSourceP.DatabaseHistoryImpl.class.getName());
-        properties.put("tombstones.on.delete", "false");
+        properties.setProperty("name", name);
+        properties.setProperty(CdcSourceP.CONNECTOR_CLASS_PROPERTY, connectorClass);
+        properties.setProperty("database.history", CdcSourceP.DatabaseHistoryImpl.class.getName());
+        properties.setProperty("tombstones.on.delete", "false");
     }
 
     public void setProperty(String key, Object value) {

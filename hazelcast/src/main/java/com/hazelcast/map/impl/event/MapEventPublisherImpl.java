@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -286,17 +286,17 @@ public class MapEventPublisherImpl implements MapEventPublisher {
     static boolean isIncludeValue(EventFilter filter) {
         // the order of the following ifs is important!
         // QueryEventFilter is instance of EntryEventFilter
-        if (filter instanceof EventListenerFilter) {
-            filter = ((EventListenerFilter) filter).getEventFilter();
+        if (filter instanceof EventListenerFilter listenerFilter) {
+            filter = listenerFilter.getEventFilter();
         }
         if (filter instanceof TrueEventFilter) {
             return true;
         }
-        if (filter instanceof QueryEventFilter) {
-            return ((QueryEventFilter) filter).isIncludeValue();
+        if (filter instanceof QueryEventFilter eventFilter) {
+            return eventFilter.isIncludeValue();
         }
-        if (filter instanceof EntryEventFilter) {
-            return ((EntryEventFilter) filter).isIncludeValue();
+        if (filter instanceof EntryEventFilter eventFilter) {
+            return eventFilter.isIncludeValue();
         }
         throw new IllegalArgumentException("Unknown EventFilter type = [" + filter.getClass().getCanonicalName() + "]");
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public interface ChunkedMigrationAwareService
     default ChunkSupplier newChunkSupplier(PartitionReplicationEvent event,
                                            Collection<ServiceNamespace> namespaces) {
         return ChunkSuppliers.newSingleChunkSupplier(
-                new Supplier<Operation>() {
+                new Supplier<>() {
                     @Override
                     public Operation get() {
                         return ChunkedMigrationAwareService.this.prepareReplicationOperation(event, namespaces);

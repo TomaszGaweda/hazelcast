@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.hazelcast.jet.pipeline.SlidingWindowDefinition;
 import com.hazelcast.jet.pipeline.WindowDefinition;
 
 import javax.annotation.Nonnull;
+import java.io.Serial;
 import java.util.List;
 
 import static com.hazelcast.function.Functions.entryKey;
@@ -50,6 +51,7 @@ import static java.util.Collections.nCopies;
 
 public class WindowGroupTransform<K, R> extends AbstractTransform {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @SuppressWarnings("rawtypes")
@@ -88,8 +90,8 @@ public class WindowGroupTransform<K, R> extends AbstractTransform {
     @Override
     public void addToDag(Planner p, Context context) {
         determineLocalParallelism(LOCAL_PARALLELISM_USE_DEFAULT, context, false);
-        if (wDef instanceof SessionWindowDefinition) {
-            addSessionWindow(p, (SessionWindowDefinition) wDef);
+        if (wDef instanceof SessionWindowDefinition sessionWindowDefinition) {
+            addSessionWindow(p, sessionWindowDefinition);
         } else if (aggrOp.combineFn() == null || wDef.earlyResultsPeriod() > 0 || shouldRebalanceAnyInput()) {
             addSlidingWindowSingleStage(p, (SlidingWindowDefinition) wDef);
         } else {

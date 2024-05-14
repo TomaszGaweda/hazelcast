@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,8 @@ public class NetworkingImbalancePlugin extends DiagnosticsPlugin {
     public NetworkingImbalancePlugin(HazelcastProperties properties, Networking networking, ILogger logger) {
         super(logger);
 
-        if (networking instanceof NioNetworking) {
-            this.networking = (NioNetworking) networking;
+        if (networking instanceof NioNetworking nioNetworking) {
+            this.networking = nioNetworking;
         } else {
             this.networking = null;
         }

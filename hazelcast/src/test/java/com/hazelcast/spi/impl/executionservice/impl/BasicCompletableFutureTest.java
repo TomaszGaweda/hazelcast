@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,8 @@ package com.hazelcast.spi.impl.executionservice.impl;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.QuickTest;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.util.concurrent.CancellationException;
@@ -33,6 +31,7 @@ import java.util.function.BiConsumer;
 
 import static com.hazelcast.internal.util.ConcurrencyUtil.CALLER_RUNS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,8 +48,6 @@ public class BasicCompletableFutureTest {
 
     private static final String DELEGATE_RESULT = "DELEGATE_RESULT";
 
-    @Rule
-    public ExpectedException expected = ExpectedException.none();
 
     private FutureTask<String> delegateFuture;
     private boolean delegateThrowException;
@@ -72,19 +69,17 @@ public class BasicCompletableFutureTest {
     }
 
     @Test
-    public void cancel_delegate_getOnDelegate() throws Exception {
+    public void cancel_delegate_getOnDelegate() {
         delegateFuture.cancel(false);
 
-        expected.expect(CancellationException.class);
-        delegateFuture.get();
+        assertThrows(CancellationException.class, () -> delegateFuture.get());
     }
 
     @Test
-    public void cancel_delegate_getOnOuter() throws Exception {
+    public void cancel_delegate_getOnOuter() {
         delegateFuture.cancel(false);
 
-        expected.expect(CancellationException.class);
-        outerFuture.get();
+        assertThrows(CancellationException.class, () -> outerFuture.get());
     }
 
     @Test
@@ -96,19 +91,17 @@ public class BasicCompletableFutureTest {
     }
 
     @Test
-    public void cancel_outer_getOnDelegate() throws Exception {
+    public void cancel_outer_getOnDelegate() {
         outerFuture.cancel(false);
 
-        expected.expect(CancellationException.class);
-        delegateFuture.get();
+        assertThrows(CancellationException.class, () -> delegateFuture.get());
     }
 
     @Test
-    public void cancel_outer_getOnOuter() throws Exception {
+    public void cancel_outer_getOnOuter() {
         outerFuture.cancel(false);
 
-        expected.expect(CancellationException.class);
-        outerFuture.get();
+        assertThrows(CancellationException.class, () -> outerFuture.get());
     }
 
     @Test
@@ -189,7 +182,7 @@ public class BasicCompletableFutureTest {
     }
 
     @Test
-    public void completeDelegate_successfully_callbackBeforeGet_invokeIsDoneOnOuter_callbacksRun() throws Exception {
+    public void completeDelegate_successfully_callbackBeforeGet_invokeIsDoneOnOuter_callbacksRun() {
         BiConsumer<String, Throwable> callback = getStringExecutionCallback();
 
         delegateFuture.run();
@@ -249,7 +242,7 @@ public class BasicCompletableFutureTest {
     }
 
     private <V> FutureTask<V> future(final V result) {
-        return new FutureTask<V>(() -> {
+        return new FutureTask<>(() -> {
             if (delegateThrowException) {
                 throw new RuntimeException("Exception in execution");
             }

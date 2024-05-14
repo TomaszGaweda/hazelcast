@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.hazelcast.nio.serialization.TypedDataSerializable;
 import com.hazelcast.nio.serialization.TypedStreamDeserializer;
+import com.hazelcast.nio.serialization.impl.VersionedIdentifiedDataSerializable;
 import com.hazelcast.version.Version;
 
 import java.io.IOException;
@@ -177,11 +178,11 @@ final class DataSerializableSerializer implements StreamSerializer<DataSerializa
     }
 
     private IOException rethrowReadException(int id, int factoryId, String className, Exception e) throws IOException {
-        if (e instanceof IOException) {
-            throw (IOException) e;
+        if (e instanceof IOException exception) {
+            throw exception;
         }
-        if (e instanceof HazelcastSerializationException) {
-            throw (HazelcastSerializationException) e;
+        if (e instanceof HazelcastSerializationException exception) {
+            throw exception;
         }
         throw new HazelcastSerializationException("Problem while reading DataSerializable, namespace: "
                 + factoryId
@@ -248,10 +249,12 @@ final class DataSerializableSerializer implements StreamSerializer<DataSerializa
         if (identified) {
             final IdentifiedDataSerializable ds = (IdentifiedDataSerializable) obj;
             out.writeInt(ds.getFactoryId());
-            out.writeInt(ds.getClassId());
+            out.writeInt(ds instanceof VersionedIdentifiedDataSerializable vids
+                    ? vids.getClassId(version)
+                    : ds.getClassId());
         } else {
-            if (obj instanceof TypedDataSerializable) {
-                out.writeString(((TypedDataSerializable) obj).getClassType().getName());
+            if (obj instanceof TypedDataSerializable serializable) {
+                out.writeString(serializable.getClassType().getName());
             } else {
                 out.writeString(obj.getClass().getName());
             }

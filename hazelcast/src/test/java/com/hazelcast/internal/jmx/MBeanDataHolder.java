@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.internal.jmx;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
 
 import javax.management.InstanceNotFoundException;
@@ -65,26 +64,20 @@ public final class MBeanDataHolder {
     }
 
     public void assertMBeanExistEventually(final String type, final String name) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                ObjectName object = getObjectName(type, name);
-                try {
-                    mbs.getObjectInstance(object);
-                } catch (InstanceNotFoundException e) {
-                    fail(e.getMessage());
-                }
+        assertTrueEventually(() -> {
+            ObjectName object = getObjectName(type, name);
+            try {
+                mbs.getObjectInstance(object);
+            } catch (InstanceNotFoundException e) {
+                fail(e.getMessage());
             }
         });
     }
 
     public void assertMBeanNotExistEventually(final String type, final String name) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                ObjectName object = getObjectName(type, name);
-                assertFalse(mbs.isRegistered(object));
-            }
+        assertTrueEventually(() -> {
+            ObjectName object = getObjectName(type, name);
+            assertFalse(mbs.isRegistered(object));
         });
     }
 
@@ -138,7 +131,7 @@ public final class MBeanDataHolder {
      * @return JMX object name
      */
     private ObjectName getObjectName(String type, String objectName) throws MalformedObjectNameException {
-        Hashtable<String, String> table = new Hashtable<String, String>();
+        Hashtable<String, String> table = new Hashtable<>();
         table.put("type", quote(type));
         table.put("name", quote(objectName));
         table.put("instance", quote(hz.getName()));

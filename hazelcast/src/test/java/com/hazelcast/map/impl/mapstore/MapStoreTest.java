@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,6 @@ import static com.hazelcast.config.MapStoreConfig.InitialLoadMode.EAGER;
 import static com.hazelcast.map.impl.mapstore.writebehind.WriteBehindFlushTest.assertWriteBehindQueuesEmpty;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -176,14 +175,14 @@ public class MapStoreTest extends AbstractMapStoreTest {
 
     @Test
     public void testNullValuesFromMapLoaderAreNotInsertedIntoMap() {
-        Config config = newConfig(new NullLoader());
+        Config config = newConfig(new NullLoader(), 0, EAGER);
         HazelcastInstance node = createHazelcastInstance(config);
         IMap<String, String> map = node.getMap(randomName());
 
-        // load entries.
-        assertThatThrownBy(() -> map.getAll(new HashSet<>(asList("key1", "key2", "key3"))))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("Neither key nor value can be loaded as null");
+        Map<String, String> responseMap = map.getAll(new HashSet<>(asList("key1", "key2", "key3")));
+
+        assertEquals(0, responseMap.size());
+        assertEquals(0, map.size());
     }
 
     /**
@@ -200,7 +199,7 @@ public class MapStoreTest extends AbstractMapStoreTest {
         public Map<Object, Object> loadAll(Collection keys) {
             Map<Object, Object> map = new HashMap<>();
             for (Object key : keys) {
-                map.put(key, null);
+                map.put(key, load(key));
             }
             return map;
         }
@@ -739,7 +738,7 @@ public class MapStoreTest extends AbstractMapStoreTest {
     public void testIssue1019() {
         final String keyWithNullValue = "keyWithNullValue";
 
-        EventBasedMapStore<String, Integer> testMapStore = new EventBasedMapStore<String, Integer>() {
+        EventBasedMapStore<String, Integer> testMapStore = new EventBasedMapStore<>() {
             @Override
             public Set<String> loadAllKeys() {
                 Set<String> keys = new HashSet<>(super.loadAllKeys());
@@ -1029,7 +1028,7 @@ public class MapStoreTest extends AbstractMapStoreTest {
         HazelcastInstance member = createHazelcastInstance(config);
         IMap<Integer, Integer> map = member.getMap("default");
 
-        map.executeOnKey(1, new EntryProcessor<Integer, Integer, Object>() {
+        map.executeOnKey(1, new EntryProcessor<>() {
 
             @Override
             public Object process(Map.Entry<Integer, Integer> entry) {
@@ -1044,6 +1043,19 @@ public class MapStoreTest extends AbstractMapStoreTest {
         });
 
         assertEquals(1, mapStore.getLoadCount());
+    }
+
+    /**
+     * Regression test for https://github.com/hazelcast/hazelcast/issues/26239
+     */
+    @Test
+    public void nullMapStoreConfigIsAllowed() {
+        Config config = smallInstanceConfigWithoutJetAndMetrics();
+        config.getMapConfig("test").setMapStoreConfig(null);
+        HazelcastInstance member = createHazelcastInstance(config);
+        IMap<Integer, Integer> map = member.getMap("test");
+        map.put(1, 2);
+        assertEquals(2, (int) map.get(1));
     }
 
     @Test
@@ -1520,7 +1532,7 @@ public class MapStoreTest extends AbstractMapStoreTest {
 
         @Override
         public MapLoader<String, String> newMapStore(String mapName, final Properties properties) {
-            return new MapStore<String, String>() {
+            return new MapStore<>() {
                 @Override
                 public void store(String key, String value) {
                 }
@@ -1553,7 +1565,7 @@ public class MapStoreTest extends AbstractMapStoreTest {
 
                 @Override
                 public Set<String> loadAllKeys() {
-                    return new HashSet<String>(properties.stringPropertyNames());
+                    return new HashSet<>(properties.stringPropertyNames());
                 }
             };
         }

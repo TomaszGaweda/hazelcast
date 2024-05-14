@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  */
 public final class ConcurrentItemCounter<T> {
 
-    protected final ConcurrentMap<T, AtomicLong> map = new ConcurrentHashMap<T, AtomicLong>();
+    protected final ConcurrentMap<T, AtomicLong> map = new ConcurrentHashMap<>();
 
     /**
      * Returns the total counts.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public final class ReflectionHelper {
     private ReflectionHelper() {
     }
 
+    @SuppressWarnings({"CyclomaticComplexity", "ReturnCount"})
     public static AttributeType getAttributeType(Class klass) {
         if (klass == String.class) {
             return AttributeType.STRING;
@@ -97,6 +98,7 @@ public final class ReflectionHelper {
         return null;
     }
 
+    @SuppressWarnings({"CyclomaticComplexity", "MethodLength", "NPathComplexity"})
     public static Getter createGetter(Object obj, String attribute, boolean failOnMissingAttribute) {
         if (obj == null || obj == NULL) {
             return NULL_GETTER;
@@ -108,7 +110,7 @@ public final class ReflectionHelper {
 
         try {
             Getter parent = null;
-            List<String> possibleMethodNames = new ArrayList<String>(INITIAL_CAPACITY);
+            List<String> possibleMethodNames = new ArrayList<>(INITIAL_CAPACITY);
             for (final String fullname : attribute.split("\\.")) {
                 String baseName = removeModifierSuffix(fullname);
                 String modifier = getModifierSuffix(fullname, baseName);

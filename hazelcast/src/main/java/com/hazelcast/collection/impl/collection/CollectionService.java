@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.hazelcast.collection.impl.common.DataAwareItemEvent;
 import com.hazelcast.collection.impl.txncollection.operations.CollectionTransactionRollbackOperation;
 import com.hazelcast.core.ItemEventType;
 import com.hazelcast.internal.monitor.impl.AbstractLocalCollectionStats;
+import com.hazelcast.internal.namespace.NamespaceUtil;
 import com.hazelcast.internal.partition.IPartitionService;
 import com.hazelcast.internal.partition.MigrationAwareService;
 import com.hazelcast.internal.partition.MigrationEndpoint;
@@ -107,7 +108,7 @@ public abstract class CollectionService implements ManagedService, RemoteService
     @Override
     public void dispatchEvent(CollectionEvent event, ItemListener<Data> listener) {
         final MemberImpl member = nodeEngine.getClusterService().getMember(event.getCaller());
-        ItemEvent<Data> itemEvent = new DataAwareItemEvent<Data>(event.getName(), event.getEventType(), event.getData(),
+        ItemEvent<Data> itemEvent = new DataAwareItemEvent<>(event.getName(), event.getEventType(), event.getData(),
                 member, serializationService);
         if (member == null) {
             if (logger.isInfoEnabled()) {
@@ -115,11 +116,15 @@ public abstract class CollectionService implements ManagedService, RemoteService
             }
             return;
         }
-        if (event.getEventType().equals(ItemEventType.ADDED)) {
-            listener.itemAdded(itemEvent);
-        } else {
-            listener.itemRemoved(itemEvent);
-        }
+
+        String namespace = lookupNamespace(event.getName());
+        NamespaceUtil.runWithNamespace(nodeEngine, namespace, () -> {
+            if (event.getEventType().equals(ItemEventType.ADDED)) {
+                listener.itemAdded(itemEvent);
+            } else {
+                listener.itemRemoved(itemEvent);
+            }
+        });
     }
 
     @Override
@@ -141,7 +146,7 @@ public abstract class CollectionService implements ManagedService, RemoteService
     }
 
     protected Map<String, CollectionContainer> getMigrationData(PartitionReplicationEvent event) {
-        Map<String, CollectionContainer> migrationData = new HashMap<String, CollectionContainer>();
+        Map<String, CollectionContainer> migrationData = new HashMap<>();
         for (Map.Entry<String, ? extends CollectionContainer> entry : getContainerMap().entrySet()) {
             String name = entry.getKey();
             int partitionId = partitionService.getPartitionId(StringPartitioningStrategy.getPartitionKey(name));
@@ -245,4 +250,8 @@ public abstract class CollectionService implements ManagedService, RemoteService
             invoke(getServiceName(), operation, partitionId);
         }
     }
+
+    // For faster access within the service, primary calling points are from static
+    //     methods in implementing services
+    protected abstract String lookupNamespace(String collectionName);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class RepartitioningStressTest extends HazelcastTestSupport {
     private static final int THREAD_COUNT = 10;
     private static final int DURATION_SECONDS = 120;
 
-    private BlockingQueue<HazelcastInstance> queue = new LinkedBlockingQueue<HazelcastInstance>();
+    private BlockingQueue<HazelcastInstance> queue = new LinkedBlockingQueue<>();
 
     private TestHazelcastInstanceFactory instanceFactory;
     private Config config;
@@ -165,7 +165,7 @@ public class RepartitioningStressTest extends HazelcastTestSupport {
                     Random random = new Random();
                     while (true) {
                         int key = random.nextInt(itemCount);
-                        assertEquals(new Integer(key), map.get(key));
+                        assertEquals(Integer.valueOf(key), map.get(key));
                         if (System.currentTimeMillis() > endTime) {
                             break;
                         }

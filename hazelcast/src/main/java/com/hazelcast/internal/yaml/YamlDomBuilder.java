@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,9 +68,9 @@ public final class YamlDomBuilder {
             YamlMappingImpl node = new YamlMappingImpl(parent, nodeName);
             buildChildren(node, (Map<String, Object>) sourceNode);
             return node;
-        } else if (sourceNode instanceof List) {
+        } else if (sourceNode instanceof List list) {
             YamlSequenceImpl node = new YamlSequenceImpl(parent, nodeName);
-            buildChildren(node, (List<Object>) sourceNode);
+            buildChildren(node, list);
             return node;
         } else if (isSupportedScalarType(sourceNode)) {
             return buildScalar(parent, nodeName, sourceNode);

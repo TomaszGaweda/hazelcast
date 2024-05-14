@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class QueueSplitBrainProtectionReadTest extends AbstractSplitBrainProtect
     @Test
     public void element_splitBrainProtection() {
         LOGGER.info(String.valueOf(queue(0).size()));
-        LOGGER.info(String.valueOf(queue(0).getPartitionKey()));
+        LOGGER.info(queue(0).getPartitionKey());
         queue(0).element();
     }
 

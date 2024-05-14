@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,8 +192,7 @@ public class UnmodifiableLazyList extends AbstractList implements IdentifiedData
                     ignore(e);
                 }
                 return item;
-            } else if (o instanceof Map.Entry) {
-                Map.Entry entry = (Map.Entry) o;
+            } else if (o instanceof Map.Entry entry) {
                 Object key = serializationService.toObject(entry.getKey());
                 Object value = serializationService.toObject(entry.getValue());
                 AbstractMap.SimpleImmutableEntry item = new AbstractMap.SimpleImmutableEntry(key, value);

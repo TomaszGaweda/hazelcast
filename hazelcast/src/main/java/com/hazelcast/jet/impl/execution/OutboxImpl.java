@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,8 +158,7 @@ public class OutboxImpl implements OutboxInternal {
             broadcastTracker.clear();
             unfinishedItem = null;
             unfinishedItemOrdinals = null;
-            if (item instanceof Watermark) {
-                Watermark wm = (Watermark) item;
+            if (item instanceof Watermark wm) {
                 long wmTimestamp = wm.timestamp();
                 if (wmTimestamp != WatermarkCoalescer.IDLE_MESSAGE_TIME) {
                     // We allow equal timestamp here, even though the WMs should be increasing.
@@ -249,8 +248,8 @@ public class OutboxImpl implements OutboxInternal {
     }
 
     private ProgressState doOffer(OutboundCollector collector, Object item) {
-        if (item instanceof BroadcastItem) {
-            return collector.offerBroadcast((BroadcastItem) item);
+        if (item instanceof BroadcastItem broadcastItem) {
+            return collector.offerBroadcast(broadcastItem);
         }
         return collector.offer(item);
     }

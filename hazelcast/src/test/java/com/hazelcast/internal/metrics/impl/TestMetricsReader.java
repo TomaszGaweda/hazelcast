@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,11 +38,9 @@ public class TestMetricsReader {
         ProbeFunction function = probeInstance.function;
         Object source = probeInstance.source;
 
-        if (function instanceof LongProbeFunction) {
-            LongProbeFunction longFunction = (LongProbeFunction) function;
+        if (function instanceof LongProbeFunction longFunction) {
             return longFunction.get(source);
-        } else if (function instanceof DoubleProbeFunction) {
-            DoubleProbeFunction doubleFunction = (DoubleProbeFunction) function;
+        } else if (function instanceof DoubleProbeFunction doubleFunction) {
             return doubleFunction.get(source);
         } else {
             throw new IllegalStateException("Unexpected probe function type " + function.getClass().getName());

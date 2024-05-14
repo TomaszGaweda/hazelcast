@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class TxnCommitBackupOperation extends AbstractKeyBasedMultiMapOperation 
     protected void readInternal(ObjectDataInput in) throws IOException {
         super.readInternal(in);
         int size = in.readInt();
-        opList = new ArrayList<Operation>(size);
+        opList = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             opList.add((Operation) in.readObject());
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ public class CompareAndRemoveOperation extends QueueBackupAwareOperation impleme
         super.readInternal(in);
         retain = in.readBoolean();
         int size = in.readInt();
-        dataList = new ArrayList<Data>(size);
+        dataList = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             dataList.add(IOUtil.readData(in));
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ public class DynamicConfigBouncingTest extends HazelcastTestSupport {
                 .setClassName("foo.bar.MapStoreDoesNotExist");
 
         WanReplicationRef wanRef = new WanReplicationRef("name", "foo.bar.PolicyClass",
-                Collections.<String>emptyList(), true);
+                Collections.emptyList(), true);
 
         EntryListenerConfig classEntryListener = new EntryListenerConfig("foo.bar.ClassName", true, true);
         EntryListenerConfig entryListener = new EntryListenerConfig(new MyEntryListener(), true, true);

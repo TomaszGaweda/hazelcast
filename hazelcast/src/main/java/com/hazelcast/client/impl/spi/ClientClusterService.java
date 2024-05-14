@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,14 @@
 
 package com.hazelcast.client.impl.spi;
 
+import com.hazelcast.client.config.SubsetRoutingConfig;
+import com.hazelcast.client.impl.clientside.SubsetMembers;
+import com.hazelcast.client.impl.clientside.SubsetMembersImpl;
 import com.hazelcast.cluster.Address;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.cluster.MemberSelector;
 import com.hazelcast.cluster.MembershipListener;
+import com.hazelcast.internal.cluster.MemberInfo;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -48,9 +52,14 @@ public interface ClientClusterService {
     Collection<Member> getMemberList();
 
     /**
+     * <p>
      * Gets the collection of members, or an empty list if the client
      * changed the cluster and the new member list is not received yet.
-     *
+     * </p>
+     * <p>
+     * When {@link SubsetRoutingConfig} is enabled, this method
+     * returns list of members seen by {@link SubsetMembersImpl}
+     * </p>
      * @return The collection of members.
      */
     @Nonnull
@@ -83,4 +92,26 @@ public interface ClientClusterService {
      * @return true if successfully removed, false otherwise.
      */
     boolean removeMembershipListener(@Nonnull UUID registrationId);
+
+    /**
+     * Updates the members of the cluster with the latest list.
+     * @param memberListVersion The version of the member list
+     * @param memberInfos The list of members
+     * @param clusterUuid The UUID of the cluster
+     */
+    void handleMembersViewEvent(int memberListVersion, Collection<MemberInfo> memberInfos, UUID clusterUuid);
+
+    SubsetMembers getSubsetMembers();
+
+    /**
+     * @return cluster's uuid
+     */
+    UUID getClusterId();
+
+    void onClusterConnect(UUID newClusterId);
+
+    /**
+     * @return config for subset routing.
+     */
+    SubsetRoutingConfig getSubsetRoutingConfig();
 }

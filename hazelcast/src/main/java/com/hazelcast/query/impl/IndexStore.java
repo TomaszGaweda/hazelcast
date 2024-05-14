@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.hazelcast.query.impl;
 
 import com.hazelcast.core.TypeConverter;
 import com.hazelcast.internal.monitor.impl.IndexOperationStats;
+import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.query.Predicate;
 
 import javax.annotation.Nonnull;
@@ -183,6 +184,14 @@ public interface IndexStore {
      */
     Iterator<IndexKeyEntries> getSqlRecordIteratorBatch(@Nonnull Comparable value, boolean descending);
 
+    default Iterator<IndexKeyEntries> getSqlRecordIteratorBatch(
+            @Nonnull Comparable value,
+            boolean descending,
+            Data lastEntryKeyData
+    )  {
+        throw new IllegalStateException("Not implemented");
+    }
+
     /**
      * Scan all records, including NULL.
      *
@@ -222,6 +231,13 @@ public interface IndexStore {
                                                         @Nonnull Comparable value,
                                                         boolean descending);
 
+    default Iterator<IndexKeyEntries> getSqlRecordIteratorBatch(@Nonnull Comparison comparison,
+                                                                @Nonnull Comparable value,
+                                                                boolean descending,
+                                                                Data lastEntryKeyData) {
+        throw new IllegalStateException("Not implemented");
+    }
+
     /**
      * Returns records in given range. Both bounds must be given, however they may be {@link AbstractIndex#NULL}.
      * <p>
@@ -254,6 +270,17 @@ public interface IndexStore {
             boolean toInclusive,
             boolean descending
     );
+
+    default Iterator<IndexKeyEntries> getSqlRecordIteratorBatch(
+            @Nonnull Comparable from,
+            boolean fromInclusive,
+            @Nonnull Comparable to,
+            boolean toInclusive,
+            boolean descending,
+            Data lastEntryKeyData
+    ) {
+        throw new IllegalStateException("Not implemented");
+    }
 
     /**
      * Obtains entries that have indexed attribute value equal to the given
@@ -300,4 +327,5 @@ public interface IndexStore {
      * @see Index#getRecords(Comparable, boolean, Comparable, boolean)
      */
     Set<QueryableEntry> getRecords(Comparable from, boolean fromInclusive, Comparable to, boolean toInclusive);
+
 }

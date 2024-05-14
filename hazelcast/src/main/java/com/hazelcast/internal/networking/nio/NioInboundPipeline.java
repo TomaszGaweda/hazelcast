@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -238,8 +238,7 @@ public final class NioInboundPipeline extends NioPipeline implements InboundPipe
     }
 
     private void fixDependencies(ChannelHandler addedHandler) {
-        if (addedHandler instanceof InboundHandlerWithCounters) {
-            InboundHandlerWithCounters c = (InboundHandlerWithCounters) addedHandler;
+        if (addedHandler instanceof InboundHandlerWithCounters c) {
             c.setNormalPacketsRead(normalFramesRead);
             c.setPriorityPacketsRead(priorityFramesRead);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,12 @@ public class ScheduledExecutorSubmitToPartitionMessageTask
 
     public ScheduledExecutorSubmitToPartitionMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
+        setNamespaceAware();
     }
 
     @Override
     protected Operation prepareOperation() {
-        Callable callable = serializationService.toObject(parameters.task);
+        Callable<?> callable = getCallable();
         SecurityContext securityContext = clientEngine.getSecurityContext();
         if (securityContext != null) {
             Subject subject = endpoint.getSubject();
@@ -52,9 +53,7 @@ public class ScheduledExecutorSubmitToPartitionMessageTask
             serializationService.getManagedContext().initialize(callable);
         }
 
-        TaskDefinition def = new TaskDefinition(TaskDefinition.Type.getById(parameters.type),
-                parameters.taskName, callable, parameters.initialDelayInMillis, parameters.periodInMillis,
-                TimeUnit.MILLISECONDS, isAutoDisposable());
+        TaskDefinition<?> def = getTaskDefinition(callable);
         return new ScheduleTaskOperation(parameters.schedulerName, def);
     }
 
@@ -88,16 +87,28 @@ public class ScheduledExecutorSubmitToPartitionMessageTask
         return SecurityInterceptorConstants.SCHEDULE_ON_PARTITION;
     }
 
+    private Callable<?> getCallable() {
+        return serializationService.toObject(parameters.task);
+    }
+
+    private TaskDefinition<?> getTaskDefinition(Callable<?> callable) {
+        return new TaskDefinition<>(TaskDefinition.Type.getById(parameters.type), parameters.taskName, callable,
+                parameters.initialDelayInMillis, parameters.periodInMillis, TimeUnit.MILLISECONDS, isAutoDisposable());
+    }
+
     @Override
     public Object[] getParameters() {
-        Callable callable = serializationService.toObject(parameters.task);
-        TaskDefinition def = new TaskDefinition(TaskDefinition.Type.getById(parameters.type),
-                parameters.taskName, callable, parameters.initialDelayInMillis, parameters.periodInMillis,
-                TimeUnit.MILLISECONDS, isAutoDisposable());
+        Callable<?> callable = getCallable();
+        TaskDefinition<?> def = getTaskDefinition(callable);
         return new Object[] { parameters.schedulerName, def };
     }
 
     private boolean isAutoDisposable() {
         return parameters.isAutoDisposableExists && parameters.autoDisposable;
+    }
+
+    @Override
+    protected String getUserCodeNamespace() {
+        return DistributedScheduledExecutorService.lookupNamespace(nodeEngine, getDistributedObjectName());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class MultiMapMergingEntryImpl<K, V> implements MultiMapMergeTypes<K, V>,
     }
 
     @Override
-    public Collection<V> getValue() {
+    public Collection<V> getDeserializedValue() {
         Collection<Object> deserializedValues = new ArrayList<>(value.size());
         for (Object aValue : value) {
             deserializedValues.add(serializationService.toObject(aValue));
@@ -153,7 +153,7 @@ public class MultiMapMergingEntryImpl<K, V> implements MultiMapMergeTypes<K, V>,
     public void readData(ObjectDataInput in) throws IOException {
         key = IOUtil.readObject(in);
         int size = in.readInt();
-        value = new ArrayList<Object>(size);
+        value = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             value.add(in.readObject());
         }

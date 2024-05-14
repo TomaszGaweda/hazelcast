@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,21 +47,13 @@ public class WanDataSerializerHook implements DataSerializerHook {
 
     @Override
     public DataSerializableFactory createFactory() {
-        return typeId -> {
-            switch (typeId) {
-                case MAP_REPLICATION_UPDATE:
-                    return new WanMapAddOrUpdateEvent();
-                case MAP_REPLICATION_REMOVE:
-                    return new WanMapRemoveEvent();
-                case WAN_MAP_ENTRY_VIEW:
-                    return new WanMapEntryView<>();
-                case WAN_CACHE_ENTRY_VIEW:
-                    return new WanCacheEntryView<>();
-                case WAN_EVENT_CONTAINER_REPLICATION_OPERATION:
-                    return new WanEventContainerReplicationOperation();
-                default:
-                    throw new IllegalArgumentException("Unknown type-id: " + typeId);
-            }
+        return typeId -> switch (typeId) {
+            case MAP_REPLICATION_UPDATE -> new WanMapAddOrUpdateEvent();
+            case MAP_REPLICATION_REMOVE -> new WanMapRemoveEvent();
+            case WAN_MAP_ENTRY_VIEW -> new WanMapEntryView<>();
+            case WAN_CACHE_ENTRY_VIEW -> new WanCacheEntryView<>();
+            case WAN_EVENT_CONTAINER_REPLICATION_OPERATION -> new WanEventContainerReplicationOperation();
+            default -> throw new IllegalArgumentException("Unknown type-id: " + typeId);
         };
     }
 }

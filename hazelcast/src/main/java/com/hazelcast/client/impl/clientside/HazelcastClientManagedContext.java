@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,11 @@ final class HazelcastClientManagedContext implements ManagedContext {
     @Override
     public Object initialize(Object obj) {
         Object object = obj;
-        if (object instanceof HazelcastInstanceAware) {
-            ((HazelcastInstanceAware) object).setHazelcastInstance(instance);
+        if (object instanceof HazelcastInstanceAware aware) {
+            aware.setHazelcastInstance(instance);
         }
-        if (object instanceof SerializationServiceAware) {
-            ((SerializationServiceAware) object).setSerializationService(instance.getSerializationService());
+        if (object instanceof SerializationServiceAware aware) {
+            aware.setSerializationService(instance.getSerializationService());
         }
 
         if (hasExternalContext) {

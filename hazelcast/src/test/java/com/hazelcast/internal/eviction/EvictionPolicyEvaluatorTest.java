@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,7 +122,7 @@ public class EvictionPolicyEvaluatorTest extends HazelcastTestSupport {
         };
         EvictionPolicyEvaluator evictionPolicyEvaluator = getEvictionPolicyEvaluator(evictionConfig, null);
         List<EvictionCandidate<Integer, CacheObjectRecord>> records
-                = new ArrayList<EvictionCandidate<Integer, CacheObjectRecord>>();
+                = new ArrayList<>();
 
         long baseTime = System.currentTimeMillis();
         long minCreationTime = -1;
@@ -198,7 +198,7 @@ public class EvictionPolicyEvaluatorTest extends HazelcastTestSupport {
         };
         EvictionPolicyEvaluator evictionPolicyEvaluator = getEvictionPolicyEvaluator(evictionConfig, null);
         List<EvictionCandidate<Integer, CacheObjectRecord>> records
-                = new ArrayList<EvictionCandidate<Integer, CacheObjectRecord>>();
+                = new ArrayList<>();
 
         for (int i = 0; i < recordCount; i++) {
             CacheObjectRecord record = new CacheObjectRecord(i, System.currentTimeMillis(), Long.MAX_VALUE);

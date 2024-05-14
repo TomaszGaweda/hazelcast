@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class SystemLogPlugin extends DiagnosticsPlugin {
      */
     private static final long PERIOD_MILLIS = SECONDS.toMillis(1);
 
-    private final Queue<Object> logQueue = new ConcurrentLinkedQueue<Object>();
+    private final Queue<Object> logQueue = new ConcurrentLinkedQueue<>();
     private final ConnectionListenable connectionObservable;
     private final HazelcastInstance hazelcastInstance;
     private final Address thisAddress;
@@ -155,19 +155,18 @@ public class SystemLogPlugin extends DiagnosticsPlugin {
                 return;
             }
 
-            if (item instanceof LifecycleEvent) {
-                render(writer, (LifecycleEvent) item);
-            } else if (item instanceof MembershipEvent) {
-                render(writer, (MembershipEvent) item);
-            } else if (item instanceof MigrationState) {
-                render(writer, (MigrationState) item);
-            } else if (item instanceof ReplicaMigrationEvent) {
-                render(writer, (ReplicaMigrationEvent) item);
-            } else if (item instanceof ConnectionEvent) {
-                ConnectionEvent event = (ConnectionEvent) item;
+            if (item instanceof LifecycleEvent event) {
                 render(writer, event);
-            } else if (item instanceof Version) {
-                render(writer, (Version) item);
+            } else if (item instanceof MembershipEvent event) {
+                render(writer, event);
+            } else if (item instanceof MigrationState state) {
+                render(writer, state);
+            } else if (item instanceof ReplicaMigrationEvent event) {
+                render(writer, event);
+            } else if (item instanceof ConnectionEvent event) {
+                render(writer, event);
+            } else if (item instanceof Version version) {
+                render(writer, version);
             }
         }
     }
@@ -258,8 +257,8 @@ public class SystemLogPlugin extends DiagnosticsPlugin {
         Connection connection = event.connection;
         writer.writeEntry(connection.toString());
 
-        if (connection instanceof ServerConnection) {
-            writer.writeKeyValueEntry("type", ((ServerConnection) connection).getConnectionType());
+        if (connection instanceof ServerConnection serverConnection) {
+            writer.writeKeyValueEntry("type", serverConnection.getConnectionType());
         }
         writer.writeKeyValueEntry("isAlive", connection.isAlive());
 

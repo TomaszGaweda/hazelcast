@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.hazelcast.client.HazelcastClientNotActiveException;
 import com.hazelcast.client.impl.clientside.HazelcastClientInstanceImpl;
 import com.hazelcast.client.impl.connection.ClientConnection;
 import com.hazelcast.client.impl.connection.ClientConnectionManager;
+import com.hazelcast.client.impl.connection.tcp.RoutingMode;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.ClientLocalBackupListenerCodec;
 import com.hazelcast.client.impl.spi.ClientInvocationService;
@@ -35,6 +36,7 @@ import com.hazelcast.spi.impl.sequence.CallIdSequence;
 import com.hazelcast.spi.properties.HazelcastProperties;
 import com.hazelcast.spi.properties.HazelcastProperty;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,7 +56,7 @@ import static com.hazelcast.internal.metrics.MetricDescriptorConstants.CLIENT_PR
 import static com.hazelcast.internal.metrics.ProbeLevel.MANDATORY;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public class ClientInvocationServiceImpl implements ClientInvocationService {
+public class ClientInvocationServiceImpl implements ClientInvocationServiceInternal {
 
     private static final ListenerMessageCodec BACKUP_LISTENER = new ListenerMessageCodec() {
         @Override
@@ -82,6 +84,7 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
             = new HazelcastProperty("hazelcast.client.internal.clean.resources.millis", 100, MILLISECONDS);
 
     final HazelcastClientInstanceImpl client;
+
     final ILogger invocationLogger;
     private volatile boolean isShutdown;
 
@@ -96,7 +99,7 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
     private final boolean isBackupAckToClientEnabled;
     private final ClientConnectionManager connectionManager;
     private final ClientPartitionService partitionService;
-    private final boolean isUnisocketClient;
+    private final RoutingMode routingMode;
 
     public ClientInvocationServiceImpl(HazelcastClientInstanceImpl client) {
         this.client = client;
@@ -115,8 +118,14 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
         client.getMetricsRegistry().registerStaticMetrics(this, CLIENT_PREFIX_INVOCATIONS);
         this.connectionManager = client.getConnectionManager();
         this.partitionService = client.getClientPartitionService();
-        this.isUnisocketClient = connectionManager.isUnisocketClient();
-        this.isBackupAckToClientEnabled = !isUnisocketClient && client.getClientConfig().isBackupAckToClientEnabled();
+        this.routingMode = connectionManager.getRoutingMode();
+        this.isBackupAckToClientEnabled = routingMode == RoutingMode.SMART
+                && client.getClientConfig().isBackupAckToClientEnabled();
+    }
+
+    @Override
+    public ILogger getInvocationLogger() {
+        return invocationLogger;
     }
 
     private long initInvocationRetryPauseMillis() {
@@ -137,15 +146,18 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
         return callIdSequence.getMaxConcurrentInvocations();
     }
 
+    @Override
     public long getInvocationTimeoutMillis() {
         return invocationTimeoutMillis;
     }
 
+    @Override
     public long getInvocationRetryPauseMillis() {
         return invocationRetryPauseMillis;
     }
 
-    CallIdSequence getCallIdSequence() {
+    @Override
+    public CallIdSequence getCallIdSequence() {
         return callIdSequence;
     }
 
@@ -167,7 +179,8 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
     }
 
     @Override
-    public boolean invokeOnPartitionOwner(ClientInvocation invocation, int partitionId) {
+    public boolean invokeOnPartitionOwner(ClientInvocation invocation,
+                                          int partitionId) {
         UUID partitionOwner = partitionService.getPartitionOwner(partitionId);
         if (partitionOwner == null) {
             if (invocationLogger.isFinestEnabled()) {
@@ -175,6 +188,7 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
             }
             return false;
         }
+
         return invokeOnTarget(invocation, partitionOwner);
     }
 
@@ -191,9 +205,11 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
     }
 
     @Override
-    public boolean invokeOnTarget(ClientInvocation invocation, UUID uuid) {
+    public boolean invokeOnTarget(ClientInvocation invocation,
+                                  UUID uuid) {
         assert (uuid != null);
-        ClientConnection connection = connectionManager.getConnection(uuid);
+
+        ClientConnection connection = connectionManager.getActiveConnection(uuid);
         if (connection == null) {
             if (invocationLogger.isFinestEnabled()) {
                 invocationLogger.finest("Client is not connected to target : " + uuid);
@@ -224,8 +240,32 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
     }
 
     @Override
+    public boolean isConnectionInUse(@Nonnull ClientConnection connection) {
+        for (ClientInvocation invocation : invocations.values()) {
+            ClientConnection sentConnection = invocation.getSentConnection();
+            if (sentConnection == null) {
+                // not expecting this case and deemed as indeterminate
+                // state, best to return true as if the connection is
+                // in use and leave the decision to the next checks
+                return true;
+            }
+
+            if (sentConnection.equals(connection)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
     public boolean isRedoOperation() {
         return client.getClientConfig().getNetworkConfig().isRedoOperation();
+    }
+
+    @Override
+    public boolean isBackupAckToClientEnabled() {
+        return isBackupAckToClientEnabled;
     }
 
     private boolean send(ClientInvocation invocation, ClientConnection connection) {
@@ -268,7 +308,8 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
         }
     }
 
-    void deRegisterInvocation(long callId) {
+    @Override
+    public void deRegisterInvocation(long callId) {
         invocations.remove(callId);
     }
 
@@ -290,11 +331,13 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
         }
     }
 
-    void checkInvocationAllowed() throws IOException {
+    @Override
+    public void checkInvocationAllowed() throws IOException {
         connectionManager.checkInvocationAllowed();
     }
 
-    void checkUrgentInvocationAllowed(ClientInvocation invocation) {
+    @Override
+    public void checkUrgentInvocationAllowed(ClientInvocation invocation) {
         if (connectionManager.clientInitializedOnCluster()) {
             // If the client is initialized on the cluster, that means we
             // have sent all the schemas to the cluster, even if we are
@@ -324,12 +367,14 @@ public class ClientInvocationServiceImpl implements ClientInvocationService {
         }
     }
 
-    boolean shouldFailOnIndeterminateOperationState() {
+    @Override
+    public boolean shouldFailOnIndeterminateOperationState() {
         return shouldFailOnIndeterminateOperationState;
     }
 
-    public boolean isUnisocketClient() {
-        return isUnisocketClient;
+    @Override
+    public RoutingMode getRoutingMode() {
+        return routingMode;
     }
 
     private class BackupTimeoutTask implements Runnable {

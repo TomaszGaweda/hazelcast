@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,9 +104,7 @@ public class MCEventStoreTest {
             assertPolledEventCount(0, MC_2_UUID);
         });
         logEvent();
-        inNextMilli(() -> {
-            assertPolledEventCount(1, MC_1_UUID);
-        });
+        inNextMilli(() -> assertPolledEventCount(1, MC_1_UUID));
         inNextMilli(() -> {
             logEvent();
             assertPolledEventCount(1, MC_1_UUID);
@@ -122,9 +120,7 @@ public class MCEventStoreTest {
             assertPolledEventCount(0, MC_1_UUID);
             assertPolledEventCount(0, MC_2_UUID);
         });
-        inNextMilli(() -> {
-            assertPolledEventCount(0, MC_1_UUID);
-        });
+        inNextMilli(() -> assertPolledEventCount(0, MC_1_UUID));
         inNextMilli(() -> {
             logEvent();
             assertPolledEventCount(1, MC_1_UUID);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public final class ThreadLeakTestUtils {
     }
 
     private static Thread[] getJoinableThreads(Set<Thread> oldThreads, Set<Thread> newThreads) {
-        Set<Thread> diff = new HashSet<Thread>(newThreads);
+        Set<Thread> diff = new HashSet<>(newThreads);
         diff.removeAll(oldThreads);
         diff.remove(Thread.currentThread());
         removeWhitelistedThreadClasses(diff);

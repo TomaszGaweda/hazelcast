@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class CollectRemoteTransactionsOperation extends AbstractXAOperation {
         XAService xaService = getService();
         NodeEngine nodeEngine = getNodeEngine();
         Set<SerializableXID> xids = xaService.getPreparedXids();
-        List<Data> xidSet = new ArrayList<Data>();
+        List<Data> xidSet = new ArrayList<>();
         for (SerializableXID xid : xids) {
             xidSet.add(nodeEngine.toData(xid));
         }

@@ -40,7 +40,7 @@ Thanks a lot for creating your <abbr title="Pull Request">PR</abbr>!
 
 A PR can target many different subjects:
 
-* [Documentation](https://github.com/hazelcast/hazelcast-reference-manual):
+* [Documentation](https://github.com/hazelcast/hz-docs):
   either fix typos or improve the documentation as a whole
 * Fix a bug
 * Add a feature
@@ -58,10 +58,18 @@ All PRs follow the same process:
 5. Please keep your PRs as small as possible, _i.e._ if you plan to perform a huge change, do not submit a single and
    large PR for it.
    For an enhancement or larger feature, you can create a GitHub issue first to discuss.
-6. Before you push, run the command `mvn clean validate` in your terminal and fix the CheckStyle errors if any.
-   Push your PR once it is free of CheckStyle errors.
+6. Before you push, run:
+   ```bash
+   ./mvnw clean validate
+   ```
+   Pushing your PR once it is free of CheckStyle errors.
 7. If you submit a PR as the solution to a specific issue, please mention the issue number either in the PR description
    or commit message.
+8. Your PRs will first be merged into our internal repo.
+9. Following internal merging, the final commit will be pushed back to this repository.
+10. You will be acknowledged as a co-author of the final commit, recognizing your valuable contribution.
+11. Your original PR will be closed, accompanied by a comment indicating that it has been merged internally as part of
+    the monorepo process.
 
 ## Additional Documentation
 

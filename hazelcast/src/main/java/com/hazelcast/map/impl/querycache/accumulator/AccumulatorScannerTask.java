@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import com.hazelcast.map.impl.querycache.publisher.MapPublisherRegistry;
 import com.hazelcast.map.impl.querycache.publisher.PartitionAccumulatorRegistry;
 import com.hazelcast.map.impl.querycache.publisher.PublisherContext;
 import com.hazelcast.map.impl.querycache.publisher.PublisherRegistry;
+import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.impl.operationservice.Operation;
-import com.hazelcast.spi.impl.NodeEngineImpl;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -104,7 +104,7 @@ public class AccumulatorScannerTask implements Runnable {
 
     private Operation createConsumerOperation(int partitionId, Queue<Accumulator> accumulators) {
         PublisherContext publisherContext = context.getPublisherContext();
-        NodeEngineImpl nodeEngine = (NodeEngineImpl) publisherContext.getNodeEngine();
+        NodeEngine nodeEngine = publisherContext.getNodeEngine();
 
         Operation operation = new ConsumeAccumulatorOperation(accumulators, MAX_PROCESSABLE_ACCUMULATOR_COUNT);
         operation
@@ -132,11 +132,7 @@ public class AccumulatorScannerTask implements Runnable {
                 partitionAccumulators = new HashMap<>();
             }
 
-            Queue<Accumulator> accumulators = partitionAccumulators.get(partitionId);
-            if (accumulators == null) {
-                accumulators = new ArrayDeque<>();
-                partitionAccumulators.put(partitionId, accumulators);
-            }
+            Queue<Accumulator> accumulators = partitionAccumulators.computeIfAbsent(partitionId, x -> new ArrayDeque<>());
             accumulators.add(accumulator);
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class MultiMapGetMessageTask
 
     @Override
     protected ClientMessage encodeResponse(Object response) {
-        List<Data> collection = new ArrayList<Data>();
+        List<Data> collection = new ArrayList<>();
         Collection<MultiMapRecord> responseCollection = ((MultiMapResponse) response).getCollection();
         if (responseCollection != null) {
             for (MultiMapRecord record : responseCollection) {

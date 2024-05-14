@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.internal.adapter.ReplicatedMapDataStructureAdapter;
 import com.hazelcast.internal.nearcache.NearCache;
 import com.hazelcast.nearcache.NearCacheStats;
 import com.hazelcast.query.Predicates;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ConfigureParallelRunnerWith;
 import com.hazelcast.test.annotation.HeavilyMultiThreadedTestLimiter;
@@ -418,7 +417,7 @@ public abstract class AbstractNearCacheBasicTest<NK, NV> extends HazelcastTestSu
 
         ExpiryPolicy expiryPolicy = new HazelcastExpiryPolicy(1, 1, 1, HOURS);
 
-        Map<Integer, String> putAllMap = new HashMap<Integer, String>(DEFAULT_RECORD_COUNT);
+        Map<Integer, String> putAllMap = new HashMap<>(DEFAULT_RECORD_COUNT);
         for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
             String value = "value-" + i;
             switch (method) {
@@ -839,7 +838,7 @@ public abstract class AbstractNearCacheBasicTest<NK, NV> extends HazelcastTestSu
         // this should invalidate the Near Cache
         IMapReplaceEntryProcessor mapEntryProcessor = new IMapReplaceEntryProcessor("value", "newValue");
         ExpiryPolicy expiryPolicy = new HazelcastExpiryPolicy(1, 1, 1, HOURS);
-        Map<Integer, String> invalidationMap = new HashMap<Integer, String>(DEFAULT_RECORD_COUNT);
+        Map<Integer, String> invalidationMap = new HashMap<>(DEFAULT_RECORD_COUNT);
         for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
             String value = "value-" + i;
             String newValue = "newValue-" + i;
@@ -1041,7 +1040,7 @@ public abstract class AbstractNearCacheBasicTest<NK, NV> extends HazelcastTestSu
         populateNearCache(context);
 
         // this should invalidate the Near Cache
-        Set<Integer> keys = new HashSet<Integer>(DEFAULT_RECORD_COUNT);
+        Set<Integer> keys = new HashSet<>(DEFAULT_RECORD_COUNT);
         for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
             keys.add(i);
         }
@@ -1253,7 +1252,7 @@ public abstract class AbstractNearCacheBasicTest<NK, NV> extends HazelcastTestSu
         populateNearCache(context);
 
         // this should invalidate the Near Cache
-        Set<Integer> removeKeys = new HashSet<Integer>();
+        Set<Integer> removeKeys = new HashSet<>();
         if (method == DataStructureMethods.REMOVE_ALL) {
             adapter.removeAll();
         } else {
@@ -1351,15 +1350,12 @@ public abstract class AbstractNearCacheBasicTest<NK, NV> extends HazelcastTestSu
         adapter.remove(0);
         adapter.remove(2);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertFalse(context.nearCacheAdapter.containsKey(0));
-                assertTrue(context.nearCacheAdapter.containsKey(1));
-                assertFalse(context.nearCacheAdapter.containsKey(2));
-                assertFalse(context.nearCacheAdapter.containsKey(3));
-                assertFalse(context.nearCacheAdapter.containsKey(4));
-            }
+        assertTrueEventually(() -> {
+            assertFalse(context.nearCacheAdapter.containsKey(0));
+            assertTrue(context.nearCacheAdapter.containsKey(1));
+            assertFalse(context.nearCacheAdapter.containsKey(2));
+            assertFalse(context.nearCacheAdapter.containsKey(3));
+            assertFalse(context.nearCacheAdapter.containsKey(4));
         });
     }
 
@@ -1413,7 +1409,6 @@ public abstract class AbstractNearCacheBasicTest<NK, NV> extends HazelcastTestSu
         testNearCacheExpiration();
     }
 
-    @SuppressWarnings("UnnecessaryLocalVariable")
     private void testNearCacheExpiration() {
         NearCacheTestContext<Integer, String, NK, NV> context = createContext();
 
@@ -1474,12 +1469,9 @@ public abstract class AbstractNearCacheBasicTest<NK, NV> extends HazelcastTestSu
         populateDataAdapter(context, DEFAULT_RECORD_COUNT);
 
         final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                populateNearCache(context);
-                countDownLatch.countDown();
-            }
+        Runnable task = () -> {
+            populateNearCache(context);
+            countDownLatch.countDown();
         };
 
         ExecutorService executorService = newFixedThreadPool(threadCount);

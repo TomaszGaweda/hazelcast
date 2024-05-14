@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.hazelcast.logging;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
@@ -99,7 +98,7 @@ public class LoggerTest extends HazelcastTestSupport {
 
         final Config config = new Config();
         config.setProperty(LOGGING_TYPE_PROPERTY, LOGGING_TYPE_LOG4J2);
-        final HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
+        final HazelcastInstance instance = createHazelcastInstance(config);
         try {
             final ILogger loggerAfterInstanceStartup = Logger.getLogger(getClass());
 

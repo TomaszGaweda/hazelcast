@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ final class UUIDConverter extends TypeConverters.BaseTypeConverter {
         if (value instanceof UUID) {
             return value;
         }
-        if (value instanceof String) {
-            return UUID.fromString((String) value);
+        if (value instanceof String string) {
+            return UUID.fromString(string);
         }
         throw new IllegalArgumentException("Cannot convert [" + value + "] to java.util.UUID");
     }

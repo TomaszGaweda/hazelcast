@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,8 +127,8 @@ public abstract class Offload extends CallStatus {
         OperationResponseHandler delegate = offloadedOperation.getOperationResponseHandler();
 
         // we need to peel of the OperationResponseHandlerImpl
-        if (delegate instanceof OffloadedOperationResponseHandler) {
-            delegate = ((OffloadedOperationResponseHandler) delegate).delegate;
+        if (delegate instanceof OffloadedOperationResponseHandler handler) {
+            delegate = handler.delegate;
         }
 
         return new OffloadedOperationResponseHandler(delegate);

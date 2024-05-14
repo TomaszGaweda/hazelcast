@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
+import org.opentest4j.TestAbortedException;
 
 import java.lang.annotation.Annotation;
 import java.lang.management.ManagementFactory;
@@ -63,7 +64,7 @@ public abstract class AbstractHazelcastClassRunner extends AbstractParameterized
     private static final int DEFAULT_TEST_TIMEOUT_IN_SECONDS = getInteger("hazelcast.test.defaultTestTimeoutInSeconds", 300);
     private static final boolean THREAD_DUMP_ON_FAILURE;
 
-    private static final ThreadLocal<String> TEST_NAME_THREAD_LOCAL = new InheritableThreadLocal<String>();
+    private static final ThreadLocal<String> TEST_NAME_THREAD_LOCAL = new InheritableThreadLocal<>();
     private static final boolean THREAD_CPU_TIME_INFO_AVAILABLE;
     private static final boolean THREAD_CONTENTION_INFO_AVAILABLE;
 
@@ -158,7 +159,7 @@ public abstract class AbstractHazelcastClassRunner extends AbstractParameterized
     @Override
     protected List<FrameworkMethod> getChildren() {
         List<FrameworkMethod> children = super.getChildren();
-        List<FrameworkMethod> modifiableList = new ArrayList<FrameworkMethod>(children);
+        List<FrameworkMethod> modifiableList = new ArrayList<>(children);
         Collections.shuffle(modifiableList);
         return modifiableList;
     }
@@ -185,11 +186,11 @@ public abstract class AbstractHazelcastClassRunner extends AbstractParameterized
         ExpectedException expectedException = null;
         if (!testRules.isEmpty()) {
             for (TestRule rule : testRules) {
-                if (rule instanceof BounceMemberRule) {
-                    nextStatement = ((BounceMemberRule) rule).stopBouncing(statement);
+                if (rule instanceof BounceMemberRule memberRule) {
+                    nextStatement = memberRule.stopBouncing(statement);
                 }
-                if (rule instanceof ExpectedException) {
-                    expectedException = (ExpectedException) rule;
+                if (rule instanceof ExpectedException exception) {
+                    expectedException = exception;
                 }
             }
         }
@@ -214,8 +215,8 @@ public abstract class AbstractHazelcastClassRunner extends AbstractParameterized
         Statement nextStatement = statement;
         if (!testRules.isEmpty()) {
             for (TestRule rule : testRules) {
-                if (rule instanceof BounceMemberRule) {
-                    nextStatement = ((BounceMemberRule) rule).startBouncing(statement);
+                if (rule instanceof BounceMemberRule memberRule) {
+                    nextStatement = memberRule.startBouncing(statement);
                 }
             }
         }
@@ -250,7 +251,7 @@ public abstract class AbstractHazelcastClassRunner extends AbstractParameterized
     protected List<TestRule> getTestRules(Object target) {
         List<TestRule> testRules = super.getTestRules(target);
 
-        Set<Class<? extends TestRule>> testRuleClasses = new HashSet<Class<? extends TestRule>>();
+        Set<Class<? extends TestRule>> testRuleClasses = new HashSet<>();
 
         TestClass testClass = getTestClass();
 
@@ -360,7 +361,7 @@ public abstract class AbstractHazelcastClassRunner extends AbstractParameterized
 
         @Override
         public void evaluate() throws Throwable {
-            List<Throwable> errors = new ArrayList<Throwable>();
+            List<Throwable> errors = new ArrayList<>();
             try {
                 next.evaluate();
             } catch (Throwable e) {
@@ -388,7 +389,7 @@ public abstract class AbstractHazelcastClassRunner extends AbstractParameterized
         }
 
         private boolean isJUnitAssumeException(Throwable e) {
-            return e instanceof AssumptionViolatedException;
+            return e instanceof AssumptionViolatedException || e instanceof TestAbortedException;
         }
 
         private boolean expectsException() throws IllegalAccessException {

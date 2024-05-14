@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 
 package com.hazelcast.buildutils;
 
-import com.hazelcast.internal.util.JavaVersion;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
-import org.apache.maven.plugins.shade.relocation.Relocator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,8 +63,8 @@ public class HazelcastManifestTransformerTest {
         transformer = new HazelcastManifestTransformer();
 
         transformer.setMainClass("com.hazelcast.core.server.HazelcastMemberStarter");
-        transformer.setManifestEntries(new HashMap<String, Object>());
-        transformer.setOverrideInstructions(new HashMap<String, String>());
+        transformer.setManifestEntries(new HashMap<>());
+        transformer.setOverrideInstructions(new HashMap<>());
     }
 
     @After
@@ -90,15 +88,13 @@ public class HazelcastManifestTransformerTest {
 
     @Test
     public void testTransformation() throws Exception {
-        transformer.processResource(null, is, Collections.<Relocator>emptyList());
+        transformer.processResource(null, is, Collections.emptyList());
         transformer.modifyOutputStream(os);
 
         verify(os).putNextEntry(any(JarEntry.class));
         verify(os, atLeastOnce()).write(anyInt());
         verify(os, atLeastOnce()).flush();
-        if (JavaVersion.isAtLeast(JavaVersion.JAVA_13)) {
-            verify(os, atLeastOnce()).write(any(byte[].class), anyInt(), anyInt());
-        }
+        verify(os, atLeastOnce()).write(any(byte[].class), anyInt(), anyInt());
         verifyNoMoreInteractions(os);
     }
 }

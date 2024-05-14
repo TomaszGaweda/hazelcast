@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class KubernetesApiEndpointResolverTest {
     @Test
     public void resolveWhenNodeInFound() {
         // given
-        List<Endpoint> endpoints = Collections.<Endpoint>emptyList();
+        List<Endpoint> endpoints = Collections.emptyList();
         given(client.endpoints()).willReturn(endpoints);
 
         KubernetesApiEndpointResolver sut = new KubernetesApiEndpointResolver(LOGGER, null, 0, null, null, null, null, null, client);

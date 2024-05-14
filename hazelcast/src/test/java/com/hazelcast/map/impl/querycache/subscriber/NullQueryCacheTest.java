@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class NullQueryCacheTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testContainsValue() throws Exception {
+    public void testContainsValue() {
         assertFalse(NULL_QUERY_CACHE.containsValue(1));
     }
 
@@ -80,7 +80,7 @@ public class NullQueryCacheTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testGetName() throws Exception {
+    public void testGetName() {
         assertNull(NULL_QUERY_CACHE.getName());
     }
 }

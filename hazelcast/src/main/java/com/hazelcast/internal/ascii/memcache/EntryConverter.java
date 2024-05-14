@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,12 @@ public final class EntryConverter {
         }
 
         MemcacheEntry entry = null;
-        if (value instanceof MemcacheEntry) {
-            entry = (MemcacheEntry) value;
-        } else if (value instanceof byte[]) {
-            entry = new MemcacheEntry(key, ((byte[]) value), 0);
-        } else if (value instanceof String) {
-            entry = new MemcacheEntry(key, stringToBytes((String) value), 0);
+        if (value instanceof MemcacheEntry memcacheEntry) {
+            entry = memcacheEntry;
+        } else if (value instanceof byte[] bytes) {
+            entry = new MemcacheEntry(key, bytes, 0);
+        } else if (value instanceof String string) {
+            entry = new MemcacheEntry(key, stringToBytes(string), 0);
         } else {
             try {
                 entry = new MemcacheEntry(key, textCommandService.toByteArray(value), 0);

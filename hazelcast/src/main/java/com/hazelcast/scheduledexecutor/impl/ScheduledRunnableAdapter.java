@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,8 @@ public class ScheduledRunnableAdapter<V> extends AbstractTaskDecorator<V>
 
     @Override
     public Object getPartitionKey() {
-        if (delegate instanceof PartitionAware) {
-            return ((PartitionAware) delegate).getPartitionKey();
+        if (delegate instanceof PartitionAware aware) {
+            return aware.getPartitionKey();
         }
         return null;
     }
@@ -66,23 +66,23 @@ public class ScheduledRunnableAdapter<V> extends AbstractTaskDecorator<V>
 
     @Override
     public String getName() {
-        if (delegate instanceof NamedTask) {
-            return ((NamedTask) delegate).getName();
+        if (delegate instanceof NamedTask task) {
+            return task.getName();
         }
         return null;
     }
 
     @Override
     public void save(Map snapshot) {
-        if (delegate instanceof StatefulTask) {
-            ((StatefulTask) delegate).save(snapshot);
+        if (delegate instanceof StatefulTask task) {
+            task.save(snapshot);
         }
     }
 
     @Override
     public void load(Map snapshot) {
-        if (delegate instanceof StatefulTask) {
-            ((StatefulTask) delegate).load(snapshot);
+        if (delegate instanceof StatefulTask task) {
+            task.load(snapshot);
         }
     }
 

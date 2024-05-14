@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,7 +44,7 @@ import static java.util.stream.Collectors.groupingBy;
  *
  * @since Jet 3.2
  */
-public final class JobMetrics implements IdentifiedDataSerializable {
+public final class JobMetrics implements Iterable<Entry<String, List<Measurement>>>, IdentifiedDataSerializable {
 
     private static final JobMetrics EMPTY = new JobMetrics(Collections.emptyMap());
 
@@ -103,6 +104,20 @@ public final class JobMetrics implements IdentifiedDataSerializable {
     }
 
     /**
+     * Returns an iterator over the metrics.
+     * <p>
+     * The returned iterator does not support {@link Iterator#remove() remove()}
+     * operation.
+     *
+     * @since 5.5
+     */
+    @Nonnull
+    @Override
+    public Iterator<Entry<String, List<Measurement>>> iterator() {
+        return Collections.unmodifiableSet(metrics.entrySet()).iterator();
+    }
+
+    /**
      * Convenience method for {@link #filter(Predicate)}, returns a new
      * {@link JobMetrics} instance containing only those {@link Measurement}s
      * which have the specified tag set to the specified value.
@@ -112,6 +127,16 @@ public final class JobMetrics implements IdentifiedDataSerializable {
     @Nonnull
     public JobMetrics filter(@Nonnull String tagName, @Nonnull String tagValue) {
         return filter(MeasurementPredicates.tagValueEquals(tagName, tagValue));
+    }
+
+    /**
+     * Returns true if there is any {@link Measurement} that has the specified tag.
+     *
+     * @since 5.4
+     */
+    public boolean containsTag(@Nonnull String tagName) {
+        return metrics.values().stream().flatMap(List::stream)
+                .anyMatch(MeasurementPredicates.containsTag(tagName));
     }
 
     /**

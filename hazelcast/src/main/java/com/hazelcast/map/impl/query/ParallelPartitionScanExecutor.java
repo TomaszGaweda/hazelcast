@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,7 @@ public class ParallelPartitionScanExecutor implements PartitionScanExecutor {
     @Override
     public void execute(String mapName, Predicate predicate, Collection<Integer> partitions, Result result) {
         runUsingPartitionScanWithoutPaging(mapName, predicate, partitions, result);
-        if (predicate instanceof PagingPredicateImpl) {
-            PagingPredicateImpl pagingPredicate = (PagingPredicateImpl) predicate;
+        if (predicate instanceof PagingPredicateImpl pagingPredicate) {
             Map.Entry<Integer, Map.Entry> nearestAnchorEntry = pagingPredicate.getNearestAnchorEntry();
             result.orderAndLimit(pagingPredicate, nearestAnchorEntry);
         }

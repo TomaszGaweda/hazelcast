@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.hazelcast.map.impl.MapServiceContext;
 import com.hazelcast.map.impl.PartitionContainer;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelParametersRunnerFactory;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.HazelcastTestSupport;
@@ -125,15 +124,10 @@ public class MapDestroyTest extends HazelcastTestSupport {
     }
 
     private void assertAllPartitionContainersAreEmptyEventually(final HazelcastInstance instance) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertAllPartitionContainersAreEmpty(instance);
-            }
-        });
+        assertTrueEventually(() -> assertAllPartitionContainersAreEmpty(instance));
     }
 
-    private void assertAllPartitionContainersAreEmpty(HazelcastInstance instance) {
+    protected void assertAllPartitionContainersAreEmpty(HazelcastInstance instance) {
         MapServiceContext context = getMapServiceContext(instance);
         int partitionCount = getPartitionCount(instance);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ public class QueueProxyImpl<E> extends QueueProxySupport<E> implements IQueue<E>
     @Override
     public Iterator<E> iterator() {
         final NodeEngine nodeEngine = getNodeEngine();
-        return new QueueIterator<E>(listInternal().iterator(), nodeEngine.getSerializationService(), false);
+        return new QueueIterator<>(listInternal().iterator(), nodeEngine.getSerializationService(), false);
     }
 
     @Override
@@ -238,7 +238,7 @@ public class QueueProxyImpl<E> extends QueueProxySupport<E> implements IQueue<E>
 
     private List<Data> getDataList(Collection<?> objects) {
         final NodeEngine nodeEngine = getNodeEngine();
-        List<Data> dataList = new ArrayList<Data>(objects.size());
+        List<Data> dataList = new ArrayList<>(objects.size());
         for (Object o : objects) {
             dataList.add(nodeEngine.toData(o));
         }
@@ -247,7 +247,7 @@ public class QueueProxyImpl<E> extends QueueProxySupport<E> implements IQueue<E>
 
     private List<Data> toDataList(Collection<?> objects) {
         final NodeEngine nodeEngine = getNodeEngine();
-        List<Data> dataList = new ArrayList<Data>(objects.size());
+        List<Data> dataList = new ArrayList<>(objects.size());
         for (Object o : objects) {
             checkNotNull(o, "Object is null");
             dataList.add(nodeEngine.toData(o));

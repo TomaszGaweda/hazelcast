@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class ArrayRingbufferTest {
 
     @Test
     public void testIsEmpty() {
-        final ArrayRingbuffer<String> rb = new ArrayRingbuffer<String>(5);
+        final ArrayRingbuffer<String> rb = new ArrayRingbuffer<>(5);
         assertTrue(rb.isEmpty());
         rb.add("");
         assertFalse(rb.isEmpty());
@@ -72,14 +72,14 @@ public class ArrayRingbufferTest {
 
     @Test
     public void testPeekNextSequenceNumberReturnsTheNext() {
-        final ArrayRingbuffer<String> rb = new ArrayRingbuffer<String>(5);
+        final ArrayRingbuffer<String> rb = new ArrayRingbuffer<>(5);
         long nextTailSequence = rb.peekNextTailSequence();
         long sequenceAdded = rb.add("");
         assertEquals(sequenceAdded, nextTailSequence);
     }
 
     private static ArrayRingbuffer fullRingbuffer() {
-        final ArrayRingbuffer<String> rb = new ArrayRingbuffer<String>(5);
+        final ArrayRingbuffer<String> rb = new ArrayRingbuffer<>(5);
         for (int i = 0; i < rb.getCapacity(); i++) {
             rb.add("");
         }

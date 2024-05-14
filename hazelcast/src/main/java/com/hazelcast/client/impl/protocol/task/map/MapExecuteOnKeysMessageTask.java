@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,12 +51,12 @@ public class MapExecuteOnKeysMessageTask
         EntryProcessor processor = serializationService.toObject(parameters.entryProcessor);
         MapOperationProvider operationProvider = getMapOperationProvider(parameters.name);
         return operationProvider.createMultipleEntryOperationFactory(parameters.name,
-                new HashSet<Data>(parameters.keys), processor);
+                new HashSet<>(parameters.keys), processor);
     }
 
     @Override
     protected Object reduce(Map<Integer, Object> map) {
-        List<Map.Entry<Data, Data>> entries = new ArrayList<Map.Entry<Data, Data>>();
+        List<Map.Entry<Data, Data>> entries = new ArrayList<>();
 
         MapService mapService = getService(MapService.SERVICE_NAME);
         for (Object o : map.values()) {
@@ -118,5 +118,10 @@ public class MapExecuteOnKeysMessageTask
     @Override
     public Object[] getParameters() {
         return new Object[]{parameters.keys, parameters.entryProcessor};
+    }
+
+    @Override
+    protected String getUserCodeNamespace() {
+        return MapService.lookupNamespace(nodeEngine, getDistributedObjectName());
     }
 }

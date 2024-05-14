@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.utility.DockerImageName.parse;
 
 @Category(SlowTest.class)
+@SuppressWarnings("StaticVariableName")
 public class KinesisLimitExceededIntegrationTest extends AbstractKinesisTest {
 
     public static LocalStackContainer localStack;

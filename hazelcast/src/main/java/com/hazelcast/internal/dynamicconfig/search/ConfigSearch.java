@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import com.hazelcast.config.ScheduledExecutorConfig;
 import com.hazelcast.config.SetConfig;
 import com.hazelcast.config.TopicConfig;
 import com.hazelcast.config.WanReplicationConfig;
+import com.hazelcast.config.vector.VectorCollectionConfig;
 import com.hazelcast.internal.dynamicconfig.ConfigurationService;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.spi.properties.ClusterProperty;
@@ -53,7 +54,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @SuppressWarnings({"checkstyle:methodcount", "checkstyle:executablestatementcount"})
 public final class ConfigSearch {
-    private static final Map<Class, ConfigSupplier> CONFIG_SUPPLIERS = new ConcurrentHashMap<Class, ConfigSupplier>();
+    private static final Map<Class, ConfigSupplier> CONFIG_SUPPLIERS = new ConcurrentHashMap<>();
 
     private ConfigSearch() {
     }
@@ -355,6 +356,26 @@ public final class ConfigSearch {
             @Override
             public Map<String, WanReplicationConfig> getStaticConfigs(@Nonnull Config staticConfig) {
                 return staticConfig.getWanReplicationConfigs();
+            }
+        });
+
+        CONFIG_SUPPLIERS.put(VectorCollectionConfig.class, new ConfigSupplier<VectorCollectionConfig>() {
+            @Override
+            public VectorCollectionConfig getDynamicConfig(
+                    @Nonnull ConfigurationService configurationService,
+                    @Nonnull String name
+            ) {
+                return configurationService.findVectorCollectionConfig(name);
+            }
+
+            @Override
+            public VectorCollectionConfig getStaticConfig(@Nonnull Config staticConfig, @Nonnull String name) {
+                return staticConfig.getVectorCollectionConfigOrNull(name);
+            }
+
+            @Override
+            public Map<String, VectorCollectionConfig> getStaticConfigs(@Nonnull Config staticConfig) {
+                return staticConfig.getVectorCollectionConfigs();
             }
         });
     }

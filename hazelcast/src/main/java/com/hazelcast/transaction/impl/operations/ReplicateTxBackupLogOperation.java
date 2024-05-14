@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import static com.hazelcast.transaction.impl.TransactionDataSerializerHook.REPLI
 public class ReplicateTxBackupLogOperation extends AbstractTxOperation {
 
     // todo: probably we don't want to use linked list.
-    private final List<TransactionLogRecord> records = new LinkedList<TransactionLogRecord>();
+    private final List<TransactionLogRecord> records = new LinkedList<>();
     private UUID callerUuid;
     private UUID txnId;
     private long timeoutMillis;

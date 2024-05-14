@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class ClientMultiMapTest {
     }
 
     protected <K, V> EntryListener<K, V> putAllEntryListenerBuilder(Consumer<EntryEvent<K, V>> f) {
-        return new EntryAdapter<K, V>() {
+        return new EntryAdapter<>() {
             public void entryAdded(EntryEvent<K, V> event) {
                 f.accept(event);
             }
@@ -117,7 +117,7 @@ public class ClientMultiMapTest {
     }
 
     public void testMultiMapPutAllTemplate(Map<String, Collection<? extends Integer>> expectedMultiMap,
-                                           Consumer<MultiMap<String, Integer>> putAllOperation) throws InterruptedException {
+                                           Consumer<MultiMap<String, Integer>> putAllOperation) {
         MultiMap<String, Integer> mmap1 = client.getMultiMap("testMultiMapList");
         MultiMap<String, Integer> mmap2 = client.getMultiMap("testMultiMapSet");
         Map<String, Collection<Integer>> resultMap1 = new ConcurrentHashMap<>();
@@ -133,8 +133,8 @@ public class ClientMultiMapTest {
 
         final CountDownLatch latchAdded = new CountDownLatch(totalItems);
         mmap1.addEntryListener(putAllEntryListenerBuilder((event) -> {
-                    String key = (String) event.getKey();
-                    Integer value = (Integer) event.getValue();
+                    String key = event.getKey();
+                    Integer value = event.getValue();
                     Collection<Integer> c;
                     if (!resultMap1.containsKey(key)) {
                         c = new ArrayList<>();
@@ -147,8 +147,8 @@ public class ClientMultiMapTest {
                 }
         ), true);
         mmap2.addEntryListener(putAllEntryListenerBuilder((event) -> {
-                    String key = (String) event.getKey();
-                    Integer value = (Integer) event.getValue();
+                    String key = event.getKey();
+                    Integer value = event.getValue();
                     Collection<Integer> c;
                     if (!resultMap2.containsKey(key)) {
                         c = new ArrayList<>();
@@ -175,7 +175,7 @@ public class ClientMultiMapTest {
     }
 
     @Test
-    public void testMultiMapPutAllAsyncMap() throws InterruptedException {
+    public void testMultiMapPutAllAsyncMap() {
         testMultiMapPutAllSetup();
         Map<String, Collection<? extends Integer>> expectedMultiMap = new HashMap<>();
         expectedMultiMap.put("A", new ArrayList<>(Arrays.asList(1, 1, 1, 1, 2)));
@@ -183,14 +183,12 @@ public class ClientMultiMapTest {
         expectedMultiMap.put("C", new ArrayList<>(Arrays.asList(10, 10, 10, 10, 10, 15)));
 
         testMultiMapPutAllTemplate(expectedMultiMap,
-                (o) -> {
-                    o.putAllAsync(expectedMultiMap);
-                }
+                (o) -> o.putAllAsync(expectedMultiMap)
         );
     }
 
     @Test
-    public void testMultiMapPutAllAsyncKey() throws InterruptedException {
+    public void testMultiMapPutAllAsyncKey() {
         testMultiMapPutAllSetup();
         Map<String, Collection<? extends Integer>> expectedMultiMap = new HashMap<>();
         expectedMultiMap.put("A", new ArrayList<>(Arrays.asList(1, 1, 1, 1, 2)));
@@ -198,11 +196,9 @@ public class ClientMultiMapTest {
         expectedMultiMap.put("C", new ArrayList<>(Arrays.asList(10, 10, 10, 10, 10, 15)));
 
         testMultiMapPutAllTemplate(expectedMultiMap,
-                (o) -> {
-                    expectedMultiMap.keySet().forEach(
-                            (v) -> o.putAllAsync(v, expectedMultiMap.get(v))
-                    );
-                }
+                (o) -> expectedMultiMap.keySet().forEach(
+                        (v) -> o.putAllAsync(v, expectedMultiMap.get(v))
+                )
         );
     }
 
@@ -366,7 +362,7 @@ public class ClientMultiMapTest {
         String key = "key";
         MultiMap mm = client.getMultiMap(randomString());
         mm.put(key, 4);
-        assertTrue(!mm.get(key).isEmpty());
+        assertFalse(mm.get(key).isEmpty());
         mm.delete(key);
         assertTrue(mm.get(key).isEmpty());
     }
@@ -400,7 +396,7 @@ public class ClientMultiMapTest {
     @Test
     public void testValues_whenEmptyCollection() {
         final MultiMap mm = client.getMultiMap(randomString());
-        assertEquals(Collections.EMPTY_LIST, mm.values());
+        assertEquals(Collections.emptyList(), mm.values());
     }
 
     @Test

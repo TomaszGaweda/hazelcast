@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.util.UuidUtil;
 import com.hazelcast.map.MapEvent;
 import com.hazelcast.multimap.MultiMap;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -86,13 +85,13 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testAddListener_whenListenerNull() throws InterruptedException {
+    public void testAddListener_whenListenerNull() {
         final MultiMap mm = client.getMultiMap(randomString());
         mm.addEntryListener(null, true);
     }
 
     @Test
-    public void testRemoveListener() throws InterruptedException {
+    public void testRemoveListener() {
         final MultiMap mm = client.getMultiMap(randomString());
 
         MyEntryListener listener = new CountDownValueNotNullListener(1);
@@ -102,14 +101,14 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testRemoveListener_whenNotExist() throws InterruptedException {
+    public void testRemoveListener_whenNotExist() {
         final MultiMap mm = client.getMultiMap(randomString());
 
         assertFalse(mm.removeEntryListener(UuidUtil.newUnsecureUUID()));
     }
 
     @Test
-    public void testListenerEntryAddEvent() throws InterruptedException {
+    public void testListenerEntryAddEvent() {
         final int maxKeys = 12;
         final int maxItems = 3;
         final MultiMap mm = client.getMultiMap(randomString());
@@ -126,7 +125,7 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testListenerEntryAddEvent_whenValueNotIncluded() throws InterruptedException {
+    public void testListenerEntryAddEvent_whenValueNotIncluded() {
         final int maxKeys = 21;
         final int maxItems = 3;
         final MultiMap mm = client.getMultiMap(randomString());
@@ -143,7 +142,7 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testListenerEntryRemoveEvent() throws InterruptedException {
+    public void testListenerEntryRemoveEvent() {
         final int maxKeys = 25;
         final int maxItems = 3;
         final MultiMap mm = client.getMultiMap(randomString());
@@ -161,7 +160,7 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testListenerEntryRemoveEvent_whenValueNotIncluded() throws InterruptedException {
+    public void testListenerEntryRemoveEvent_whenValueNotIncluded() {
         final int maxKeys = 31;
         final int maxItems = 3;
         final MultiMap mm = client.getMultiMap(randomString());
@@ -179,7 +178,7 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testListenerOnKeyEntryAddEvent() throws InterruptedException {
+    public void testListenerOnKeyEntryAddEvent() {
         final Object key = "key";
         final int maxItems = 42;
         final MultiMap mm = client.getMultiMap(randomString());
@@ -195,10 +194,10 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testListenerOnKey_whenOtherKeysAdded() throws InterruptedException {
+    public void testListenerOnKey_whenOtherKeysAdded() {
         final MultiMap mm = client.getMultiMap(randomString());
 
-        final List<EntryEvent> events = new ArrayList<EntryEvent>();
+        final List<EntryEvent> events = new ArrayList<>();
         mm.addEntryListener(new EntryAdapter() {
             @Override
             public void entryAdded(EntryEvent event) {
@@ -209,17 +208,14 @@ public class ClientMultiMapListenersTest {
         mm.put("key2", "value");
         mm.put("key", "value");
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(1, events.size());
-                assertEquals("key", events.get(0).getKey());
-            }
+        assertTrueEventually(() -> {
+            assertEquals(1, events.size());
+            assertEquals("key", events.get(0).getKey());
         });
     }
 
     @Test
-    public void testListenerOnKeyEntryAddEvent_whenValueNotIncluded() throws InterruptedException {
+    public void testListenerOnKeyEntryAddEvent_whenValueNotIncluded() {
         final Object key = "key";
         final int maxItems = 72;
         final MultiMap mm = client.getMultiMap(randomString());
@@ -235,7 +231,7 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testListenerOnKeyEntryRemoveEvent() throws InterruptedException {
+    public void testListenerOnKeyEntryRemoveEvent() {
         final Object key = "key";
         final int maxItems = 88;
         final MultiMap mm = client.getMultiMap(randomString());
@@ -252,7 +248,7 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testListenerOnKeyEntryRemoveEvent_whenValueNotIncluded() throws InterruptedException {
+    public void testListenerOnKeyEntryRemoveEvent_whenValueNotIncluded() {
         final Object key = "key";
         final int maxItems = 62;
         final MultiMap mm = client.getMultiMap(randomString());
@@ -269,7 +265,7 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testListenerOnKeyEntryRemove_WithOneRemove() throws InterruptedException {
+    public void testListenerOnKeyEntryRemove_WithOneRemove() {
         final Object key = "key";
         final int maxItems = 98;
         final MultiMap mm = client.getMultiMap(randomString());
@@ -286,7 +282,7 @@ public class ClientMultiMapListenersTest {
     }
 
     @Test
-    public void testListenerOnKeyEntryRemove_WithOneRemoveWhenValueNotIncluded() throws InterruptedException {
+    public void testListenerOnKeyEntryRemove_WithOneRemoveWhenValueNotIncluded() {
         final Object key = "key";
         final int maxItems = 56;
         final MultiMap mm = client.getMultiMap(randomString());

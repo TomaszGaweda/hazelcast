@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class InstructionDefinitionTest {
 
     @Before
     public void setUp() {
-        PackageDefinition definition = new PackageDefinition("packageName", true, "version", Collections.<String>emptySet());
+        PackageDefinition definition = new PackageDefinition("packageName", true, "version", Collections.emptySet());
         Instruction instruction = mock(Instruction.class);
 
         instructionDefinition = new InstructionDefinition(definition, instruction);

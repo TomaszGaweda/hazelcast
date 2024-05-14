@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class CompositeIndexQueriesTest extends HazelcastTestSupport {
 
     private IMap<Integer, Person> map;
 
-    private List<String> indexes = new ArrayList<String>();
+    private List<String> indexes = new ArrayList<>();
 
     @Parameterized.Parameters(name = "format:{0}")
     public static Collection<Object[]> parameters() {
@@ -336,8 +336,8 @@ public class CompositeIndexQueriesTest extends HazelcastTestSupport {
         @Override
         public Predicate accept(Visitor visitor, IndexRegistry indexes) {
             Predicate delegate = this.delegate;
-            if (delegate instanceof VisitablePredicate) {
-                this.delegate = ((VisitablePredicate) delegate).accept(visitor, indexes);
+            if (delegate instanceof VisitablePredicate predicate) {
+                this.delegate = predicate.accept(visitor, indexes);
             }
             return this;
         }

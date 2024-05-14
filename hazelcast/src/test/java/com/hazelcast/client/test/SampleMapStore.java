@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentMap;
  * This class is for Non-java clients. Please do not remove or modify.
  */
 public class SampleMapStore implements MapStore<String, String> {
-    private ConcurrentMap<String, String> internalStore = new ConcurrentHashMap<String, String>();
+    private ConcurrentMap<String, String> internalStore = new ConcurrentHashMap<>();
 
     @Override
     public void store(String key, String value) {
@@ -59,7 +59,7 @@ public class SampleMapStore implements MapStore<String, String> {
 
     @Override
     public Map<String, String> loadAll(Collection<String> keys) {
-        HashMap<String, String> resultMap = new HashMap<String, String>();
+        HashMap<String, String> resultMap = new HashMap<>();
         for (String key : keys) {
             resultMap.put(key, internalStore.get(key));
         }

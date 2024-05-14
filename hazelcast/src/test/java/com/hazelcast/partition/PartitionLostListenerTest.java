@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.partition.PartitionLostListenerStressTest.EventCollectingPartitionLostListener;
 import com.hazelcast.spi.impl.NodeEngineImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -126,7 +125,7 @@ public class PartitionLostListenerTest extends HazelcastTestSupport {
         Node survivingNode = getNode(survivingInstance);
         final Address survivingAddress = survivingNode.getThisAddress();
 
-        final Set<Integer> survivingPartitionIds = new HashSet<Integer>();
+        final Set<Integer> survivingPartitionIds = new HashSet<>();
         for (InternalPartition partition : survivingNode.getPartitionService().getInternalPartitions()) {
             if (survivingAddress.equals(partition.getReplicaAddress(0))) {
                 survivingPartitionIds.add(partition.getPartitionId());
@@ -136,18 +135,15 @@ public class PartitionLostListenerTest extends HazelcastTestSupport {
         terminatingInstance.getLifecycleService().terminate();
         waitAllForSafeState(survivingInstance);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                List<PartitionLostEvent> events = listener.getEvents();
-                assertFalse(events.isEmpty());
+        assertTrueEventually(() -> {
+            List<PartitionLostEvent> events = listener.getEvents();
+            assertFalse(events.isEmpty());
 
-                for (PartitionLostEvent event : events) {
-                    assertEquals(survivingAddress, event.getEventSource());
-                    assertFalse(survivingPartitionIds.contains(event.getPartitionId()));
-                    assertEquals(0, event.getLostBackupCount());
-                    assertFalse(event.allReplicasInPartitionLost());
-                }
+            for (PartitionLostEvent event : events) {
+                assertEquals(survivingAddress, event.getEventSource());
+                assertFalse(survivingPartitionIds.contains(event.getPartitionId()));
+                assertEquals(0, event.getLostBackupCount());
+                assertFalse(event.allReplicasInPartitionLost());
             }
         });
     }
@@ -167,13 +163,10 @@ public class PartitionLostListenerTest extends HazelcastTestSupport {
         instances[0].getLifecycleService().terminate();
         instances[1].getLifecycleService().terminate();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                List<PartitionLostEvent> events = listener.getEvents();
-                assertFalse(events.isEmpty());
-                assertTrue(getLast(events).allReplicasInPartitionLost());
-            }
+        assertTrueEventually(() -> {
+            List<PartitionLostEvent> events = listener.getEvents();
+            assertFalse(events.isEmpty());
+            assertTrue(getLast(events).allReplicasInPartitionLost());
         });
     }
 
@@ -208,16 +201,13 @@ public class PartitionLostListenerTest extends HazelcastTestSupport {
     }
 
     private void assertEventEventually(final EventCollectingPartitionLostListener listener, final IPartitionLostEvent internalEvent) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                List<PartitionLostEvent> events = listener.getEvents();
-                assertEquals(1, events.size());
+        assertTrueEventually(() -> {
+            List<PartitionLostEvent> events = listener.getEvents();
+            assertEquals(1, events.size());
 
-                PartitionLostEvent event = events.get(0);
-                assertEquals(internalEvent.getPartitionId(), event.getPartitionId());
-                assertEquals(internalEvent.getLostReplicaIndex(), event.getLostBackupCount());
-            }
+            PartitionLostEvent event = events.get(0);
+            assertEquals(internalEvent.getPartitionId(), event.getPartitionId());
+            assertEquals(internalEvent.getLostReplicaIndex(), event.getLostBackupCount());
         });
     }
 }

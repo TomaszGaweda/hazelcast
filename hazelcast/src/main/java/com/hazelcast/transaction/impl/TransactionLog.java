@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,8 +127,8 @@ public class TransactionLog {
 
     private Future invoke(NodeEngine nodeEngine, TransactionLogRecord record, Operation op) {
         OperationService operationService = nodeEngine.getOperationService();
-        if (record instanceof TargetAwareTransactionLogRecord) {
-            Address target = ((TargetAwareTransactionLogRecord) record).getTarget();
+        if (record instanceof TargetAwareTransactionLogRecord logRecord) {
+            Address target = logRecord.getTarget();
             return operationService.invokeOnTarget(op.getServiceName(), op, target);
         }
         return operationService.invokeOnPartition(op.getServiceName(), op, op.getPartitionId());
@@ -151,8 +151,8 @@ public class TransactionLog {
 
         OperationServiceImpl operationService = (OperationServiceImpl) nodeEngine.getOperationService();
 
-        if (record instanceof TargetAwareTransactionLogRecord) {
-            Address target = ((TargetAwareTransactionLogRecord) record).getTarget();
+        if (record instanceof TargetAwareTransactionLogRecord logRecord) {
+            Address target = logRecord.getTarget();
             operationService.invokeOnTarget(op.getServiceName(), op, target);
         } else {
             operationService.invokeOnPartitionAsync(op.getServiceName(), op, op.getPartitionId())

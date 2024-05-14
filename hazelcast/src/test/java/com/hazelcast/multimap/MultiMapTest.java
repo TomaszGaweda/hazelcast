@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class MultiMapTest extends HazelcastTestSupport {
     }
 
     protected <K, V> EntryListener<K, V> putAllEntryListenerBuilder(Consumer<EntryEvent<K, V>> f) {
-        return new EntryAdapter<K, V>() {
+        return new EntryAdapter<>() {
             public void entryAdded(EntryEvent<K, V> event) {
                 f.accept(event);
             }
@@ -157,8 +157,7 @@ public class MultiMapTest extends HazelcastTestSupport {
 
     public void testMultiMapPutAllTemplate(HazelcastInstance instance1,
                                            Map<String, Collection<? extends Integer>> expectedMultiMap,
-                                           Consumer<MultiMap<String, Integer>> putAllOperation)
-            throws InterruptedException {
+                                           Consumer<MultiMap<String, Integer>> putAllOperation) {
 
         MultiMap<String, Integer> mmap1 = instance1.getMultiMap("testMultiMapPutAllMapList");
         MultiMap<String, Integer> mmap2 = instance1.getMultiMap("testMultiMapPutAllMapSet");
@@ -175,8 +174,8 @@ public class MultiMapTest extends HazelcastTestSupport {
 
         final CountDownLatch latchAdded = new CountDownLatch(totalItems);
         mmap1.addEntryListener(putAllEntryListenerBuilder((event) -> {
-                    String key = (String) event.getKey();
-                    Integer value = (Integer) event.getValue();
+                    String key = event.getKey();
+                    Integer value = event.getValue();
                     Collection<Integer> c;
                     if (!resultMap1.containsKey(key)) {
                         c = new ArrayList<>();
@@ -189,8 +188,8 @@ public class MultiMapTest extends HazelcastTestSupport {
                 }
         ), true);
         mmap2.addEntryListener(putAllEntryListenerBuilder((event) -> {
-                    String key = (String) event.getKey();
-                    Integer value = (Integer) event.getValue();
+                    String key = event.getKey();
+                    Integer value = event.getValue();
                     Collection<Integer> c;
                     if (!resultMap2.containsKey(key)) {
                         c = new ArrayList<>();
@@ -218,7 +217,7 @@ public class MultiMapTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testMultiMapPutAllAsyncMap() throws InterruptedException {
+    public void testMultiMapPutAllAsyncMap() {
         Map<String, Collection<? extends Integer>> expectedMultiMap = new HashMap<>();
         expectedMultiMap.put("A", new ArrayList<>(Arrays.asList(1, 1, 1, 1, 2)));
         expectedMultiMap.put("B", new ArrayList<>(Arrays.asList(6, 6, 6, 9)));
@@ -226,14 +225,12 @@ public class MultiMapTest extends HazelcastTestSupport {
 
         testMultiMapPutAllTemplate(testMultiMapPutAllSetup(),
                 expectedMultiMap,
-                (o) -> {
-                    o.putAllAsync(expectedMultiMap);
-                }
+                (o) -> o.putAllAsync(expectedMultiMap)
         );
     }
 
     @Test
-    public void testMultiMapPutAllAsyncKey() throws InterruptedException {
+    public void testMultiMapPutAllAsyncKey() {
         Map<String, Collection<? extends Integer>> expectedMultiMap = new HashMap<>();
         expectedMultiMap.put("A", new ArrayList<>(Arrays.asList(1, 1, 1, 1, 2)));
         expectedMultiMap.put("B", new ArrayList<>(Arrays.asList(6, 6, 6, 9)));
@@ -241,11 +238,9 @@ public class MultiMapTest extends HazelcastTestSupport {
 
         testMultiMapPutAllTemplate(testMultiMapPutAllSetup(),
                 expectedMultiMap,
-                (o) -> {
-                    expectedMultiMap.keySet().forEach(
-                            (v) -> o.putAllAsync(v, expectedMultiMap.get(v))
-                    );
-                }
+                (o) -> expectedMultiMap.keySet().forEach(
+                        (v) -> o.putAllAsync(v, expectedMultiMap.get(v))
+                )
         );
     }
 
@@ -517,15 +512,12 @@ public class MultiMapTest extends HazelcastTestSupport {
         multiMap.put(key, 2);
 
         final AtomicBoolean isRunning = new AtomicBoolean(true);
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                int count = 3;
-                while (isRunning.get()) {
-                    multiMap.put(key, count++);
-                }
+        Thread thread = new Thread(() -> {
+            int count = 3;
+            while (isRunning.get()) {
+                multiMap.put(key, count++);
             }
-        };
+        });
         thread.start();
 
         for (int i = 0; i < 10; i++) {
@@ -718,7 +710,7 @@ public class MultiMapTest extends HazelcastTestSupport {
         assertTrue(getMultiMap(instances, name).containsValue("key3_val4"));
 
         Set<Object> localKeySet = instances[0].getMultiMap(name).localKeySet();
-        Set<Object> totalKeySet = new HashSet<Object>(localKeySet);
+        Set<Object> totalKeySet = new HashSet<>(localKeySet);
 
         localKeySet = instances[1].getMultiMap(name).localKeySet();
         totalKeySet.addAll(localKeySet);

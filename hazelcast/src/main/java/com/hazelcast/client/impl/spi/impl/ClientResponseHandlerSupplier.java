@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class ClientResponseHandlerSupplier implements Supplier<Consumer<ClientMe
     private static final HazelcastProperty IDLE_STRATEGY
             = new HazelcastProperty("hazelcast.client.responsequeue.idlestrategy", "block");
 
-    private static final ThreadLocal<MutableInteger> INT_HOLDER = new ThreadLocal<MutableInteger>() {
+    private static final ThreadLocal<MutableInteger> INT_HOLDER = new ThreadLocal<>() {
         @Override
         protected MutableInteger initialValue() {
             return new MutableInteger();
@@ -183,7 +183,7 @@ public class ClientResponseHandlerSupplier implements Supplier<Consumer<ClientMe
         ResponseThread(String name) {
             super(name);
             setContextClassLoader(client.getClientConfig().getClassLoader());
-            this.responseQueue = new MPSCQueue<ClientMessage>(this,
+            this.responseQueue = new MPSCQueue<>(this,
                     getIdleStrategy(client.getProperties(), IDLE_STRATEGY));
         }
 

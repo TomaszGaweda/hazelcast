@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,10 +54,8 @@ import com.hazelcast.test.annotation.SlowTest;
 import com.hazelcast.topic.ITopic;
 import com.hazelcast.topic.MessageListener;
 import org.junit.After;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
@@ -88,9 +86,6 @@ import static org.mockito.Mockito.mock;
 @RunWith(HazelcastParallelClassRunner.class)
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class ClientRegressionWithMockNetworkTest extends HazelcastTestSupport {
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     private final TestHazelcastFactory hazelcastFactory = new TestHazelcastFactory();
 
@@ -376,8 +371,7 @@ public class ClientRegressionWithMockNetworkTest extends HazelcastTestSupport {
         ClientSecurityConfig securityConfig = clientConfig.getSecurityConfig();
         securityConfig.setCredentials(new MyCredentials());
         // not null username/password credentials are not allowed when Security is disabled
-        expectedException.expect(IllegalStateException.class);
-        hazelcastFactory.newHazelcastClient(clientConfig);
+        assertThrows(IllegalStateException.class, () -> hazelcastFactory.newHazelcastClient(clientConfig));
     }
 
     public static class MyCredentials extends UsernamePasswordCredentials {
@@ -394,7 +388,7 @@ public class ClientRegressionWithMockNetworkTest extends HazelcastTestSupport {
         CountDownLatch latch = new CountDownLatch(2);
 
         IMap<Object, Object> m = client.getMap("m");
-        UUID id = m.addEntryListener(new EntryAdapter<Object, Object>() {
+        UUID id = m.addEntryListener(new EntryAdapter<>() {
             public void entryAdded(EntryEvent<Object, Object> event) {
                 latch.countDown();
             }
@@ -500,7 +494,7 @@ public class ClientRegressionWithMockNetworkTest extends HazelcastTestSupport {
         IMap<Object, Object> map1 = client.getMap(randomMapName());
         IMap<Object, Object> map2 = client.getMap(randomMapName());
 
-        map1.addEntryListener(new EntryAdapter<Object, Object>() {
+        map1.addEntryListener(new EntryAdapter<>() {
             @Override
             public void entryAdded(EntryEvent<Object, Object> event) {
                 map2.put(1, 1);
@@ -826,7 +820,7 @@ public class ClientRegressionWithMockNetworkTest extends HazelcastTestSupport {
     }
 
     @Test(timeout = 20000)
-    public void testClientShutdown_shouldNotWaitForNextConnectionAttempt() throws InterruptedException {
+    public void testClientShutdown_shouldNotWaitForNextConnectionAttempt() {
         HazelcastInstance server = hazelcastFactory.newHazelcastInstance();
 
         ClientConfig clientConfig = new ClientConfig();

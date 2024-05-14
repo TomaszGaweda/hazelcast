@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public final class ClientICMPManager {
     public static void start(ClientIcmpPingConfig clientIcmpPingConfig,
                              TaskScheduler taskScheduler,
                              ILogger logger,
-                             Collection<ClientConnection> connectionsView) {
+                             TcpClientConnectionManager connectionManager) {
         if (!clientIcmpPingConfig.isEnabled()) {
             return;
         }
@@ -75,8 +75,9 @@ public final class ClientICMPManager {
 
         PingFailureDetector<ClientConnection> failureDetector = new PingFailureDetector<>(icmpMaxAttempts);
         taskScheduler.scheduleWithRepetition(() -> {
-            failureDetector.retainAttemptsForAliveEndpoints(connectionsView);
-            for (ClientConnection connection : connectionsView) {
+            Collection<ClientConnection> activeConnections = connectionManager.getActiveConnections();
+            failureDetector.retainAttemptsForAliveEndpoints(activeConnections);
+            for (ClientConnection connection : activeConnections) {
                 // we don't want an isReachable call to an address stopping us to check other addresses.
                 // so we run each check in its own thread
                 taskScheduler.execute(() -> ping(logger, failureDetector, connection, icmpTtl, icmpTimeoutMillis));

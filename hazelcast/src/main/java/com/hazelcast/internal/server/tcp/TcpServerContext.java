@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import com.hazelcast.internal.server.ServerConnection;
 import com.hazelcast.internal.util.AddressUtil;
 import com.hazelcast.logging.LoggingService;
 import com.hazelcast.nio.MemberSocketInterceptor;
-import com.hazelcast.spi.impl.NodeEngineImpl;
+import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.impl.eventservice.EventService;
 import com.hazelcast.spi.impl.executionservice.ExecutionService;
 import com.hazelcast.spi.properties.ClusterProperty;
@@ -66,11 +66,11 @@ import static com.hazelcast.internal.util.ThreadUtil.createThreadName;
 public class TcpServerContext implements ServerContext {
 
     private final Node node;
-    private final NodeEngineImpl nodeEngine;
+    private final NodeEngine nodeEngine;
     private final RestApiConfig restApiConfig;
     private final MemcacheProtocolConfig memcacheProtocolConfig;
 
-    public TcpServerContext(Node node, NodeEngineImpl nodeEngine) {
+    public TcpServerContext(Node node, NodeEngine nodeEngine) {
         this.node = node;
         this.nodeEngine = nodeEngine;
         this.restApiConfig = initRestApiConfig(node.getConfig());
@@ -140,6 +140,7 @@ public class TcpServerContext implements ServerContext {
     public void onFatalError(Exception e) {
         String hzName = nodeEngine.getHazelcastInstance().getName();
         Thread thread = new Thread(createThreadName(hzName, "io.error.shutdown")) {
+            @Override
             public void run() {
                 node.shutdown(false);
             }
@@ -308,9 +309,9 @@ public class TcpServerContext implements ServerContext {
         if (advancedNetworkConfig.isEnabled()) {
             EndpointConfig endpointConfig = advancedNetworkConfig.getEndpointConfigs().get(endpointQualifier);
             final Collection<Integer> outboundPorts = endpointConfig != null
-                    ? endpointConfig.getOutboundPorts() : Collections.<Integer>emptyList();
+                    ? endpointConfig.getOutboundPorts() : Collections.emptyList();
             final Collection<String> outboundPortDefinitions = endpointConfig != null
-                    ? endpointConfig.getOutboundPortDefinitions() : Collections.<String>emptyList();
+                    ? endpointConfig.getOutboundPortDefinitions() : Collections.emptyList();
             return AddressUtil.getOutboundPorts(outboundPorts, outboundPortDefinitions);
         }
 

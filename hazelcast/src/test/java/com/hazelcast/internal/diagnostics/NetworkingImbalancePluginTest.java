@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.internal.diagnostics;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.annotation.QuickTest;
 import org.junit.After;
@@ -62,41 +61,25 @@ public class NetworkingImbalancePluginTest extends AbstractDiagnosticsPluginTest
 
     @Test
     public void testRun() {
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                hz.getMap("foo").put("key", "value");
-            }
-        });
+        spawn((Runnable) () -> hz.getMap("foo").put("key", "value"));
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                plugin.run(logWriter);
+        assertTrueEventually(() -> {
+            plugin.run(logWriter);
 
-                assertContains("Networking");
-                assertContains("InputThreads");
-                assertContains("OutputThreads");
-            }
+            assertContains("Networking");
+            assertContains("InputThreads");
+            assertContains("OutputThreads");
         });
     }
 
     @Test
     public void noNaNPercentagesForZeroAmounts() {
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                hz.getMap("foo").put("key", "value");
-            }
-        });
+        spawn((Runnable) () -> hz.getMap("foo").put("key", "value"));
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                plugin.run(logWriter);
+        assertTrueEventually(() -> {
+            plugin.run(logWriter);
 
-                assertNotContains("NaN");
-            }
+            assertNotContains("NaN");
         });
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public abstract class AbstractExecutorNullTest extends HazelcastTestSupport {
         Member sampleMember = getDriver().getCluster().getMembers().iterator().next();
         Set<Member> sampleMembers = Collections.singleton(sampleMember);
         MemberSelector sampleSelector = member -> true;
-        ExecutionCallback<Object> sampleCallback = new ExecutionCallback<Object>() {
+        ExecutionCallback<Object> sampleCallback = new ExecutionCallback<>() {
             @Override
             public void onResponse(Object response) {
 

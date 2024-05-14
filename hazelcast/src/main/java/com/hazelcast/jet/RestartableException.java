@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import com.hazelcast.jet.config.JobConfig;
 import com.hazelcast.jet.core.Processor;
 import com.hazelcast.jet.core.ProcessorMetaSupplier;
 import com.hazelcast.jet.core.ProcessorSupplier;
+
+import java.io.Serial;
 
 /**
  * Exception to throw from job-executing methods to indicate a failure that can
@@ -42,6 +44,7 @@ import com.hazelcast.jet.core.ProcessorSupplier;
  */
 public class RestartableException extends JetException {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public RestartableException() {

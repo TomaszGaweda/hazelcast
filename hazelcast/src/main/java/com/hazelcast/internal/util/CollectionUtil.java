@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,6 @@ public final class CollectionUtil {
         return !isEmpty(collection);
     }
 
-
     /**
      * Returns the n-th item or {@code null} if collection is smaller.
      *
@@ -91,7 +90,7 @@ public final class CollectionUtil {
      */
     public static <C> Collection<Data> objectToDataCollection(Collection<C> collection,
                                                               SerializationService serializationService) {
-        List<Data> dataCollection = new ArrayList<Data>(collection.size());
+        List<Data> dataCollection = new ArrayList<>(collection.size());
         objectToDataCollection(collection, dataCollection, serializationService, null);
         return dataCollection;
     }
@@ -131,14 +130,15 @@ public final class CollectionUtil {
 
     /**
      * Adapts an int array to an Integer {@link List}.
+     * <p>
+     * The returned list is not serializable. If serializability is required,
+     * use {@code Arrays.stream(array).boxed().toList()}.
      *
-     * @param array the array
-     * @return the list
      * @throws NullPointerException if array is null.
      */
-    public static List<Integer> asIntegerList(int[] array) {
+    public static List<Integer> asIntegerList(@Nonnull int[] array) {
         checkNotNull(array, "null array");
-        return new AbstractList<Integer>() {
+        return new AbstractList<>() {
             @Override
             public Integer get(int index) {
                 return array[index];
@@ -153,18 +153,6 @@ public final class CollectionUtil {
 
     /** Returns an empty Collection if argument is null. **/
     public static <T> Collection<T> nullToEmpty(Collection<T> collection) {
-        return collection == null ? Collections.<T>emptyList() : collection;
-    }
-
-    /**
-     * Returns true, if the two collections contain any common item.
-     */
-    public static <T> boolean hasNonEmptyIntersection(@Nonnull Collection<T> a, @Nonnull Collection<T> b) {
-        for (T t : a) {
-            if (b.contains(t)) {
-                return true;
-            }
-        }
-        return false;
+        return collection == null ? Collections.emptyList() : collection;
     }
 }

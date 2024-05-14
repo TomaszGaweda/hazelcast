@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,7 +142,7 @@ public class MultiMapSplitBrainTest extends SplitBrainTestSupport {
         multiMapA2 = secondBrain[0].getMultiMap(multiMapNameA);
         multiMapB2 = secondBrain[0].getMultiMap(multiMapNameB);
 
-        EntryListener<Object, Object> listener = new EmptyEntryListener<Object, Object>();
+        EntryListener<Object, Object> listener = new EmptyEntryListener<>();
         multiMapA1.addEntryListener(listener, true);
         multiMapA2.addEntryListener(listener, true);
         multiMapB2.addEntryListener(listener, true);

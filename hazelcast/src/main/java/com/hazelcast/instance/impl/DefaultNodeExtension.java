@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,16 @@ import com.hazelcast.config.InstanceTrackingConfig.InstanceMode;
 import com.hazelcast.config.InstanceTrackingConfig.InstanceProductName;
 import com.hazelcast.config.InvalidConfigurationException;
 import com.hazelcast.config.PersistenceConfig;
+import com.hazelcast.config.SSLConfig;
 import com.hazelcast.config.SecurityConfig;
 import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.SymmetricEncryptionConfig;
 import com.hazelcast.config.cp.CPSubsystemConfig;
 import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
+import com.hazelcast.cp.CPSubsystem;
+import com.hazelcast.cp.CPSubsystemStubImpl;
 import com.hazelcast.cp.internal.persistence.CPPersistenceService;
-import com.hazelcast.cp.internal.persistence.NopCPPersistenceService;
 import com.hazelcast.hotrestart.HotRestartService;
 import com.hazelcast.instance.BuildInfo;
 import com.hazelcast.instance.BuildInfoProvider;
@@ -75,6 +77,9 @@ import com.hazelcast.internal.jmx.ManagementService;
 import com.hazelcast.internal.management.TimedMemberStateFactory;
 import com.hazelcast.internal.memory.DefaultMemoryStats;
 import com.hazelcast.internal.memory.MemoryStats;
+import com.hazelcast.internal.namespace.UserCodeNamespaceService;
+import com.hazelcast.internal.namespace.impl.NoOpUserCodeNamespaceService;
+import com.hazelcast.internal.namespace.impl.NodeEngineThreadLocalContext;
 import com.hazelcast.internal.networking.ChannelInitializer;
 import com.hazelcast.internal.networking.InboundHandler;
 import com.hazelcast.internal.networking.OutboundHandler;
@@ -88,6 +93,8 @@ import com.hazelcast.internal.server.ServerContext;
 import com.hazelcast.internal.server.tcp.ChannelInitializerFunction;
 import com.hazelcast.internal.server.tcp.PacketDecoder;
 import com.hazelcast.internal.server.tcp.PacketEncoder;
+import com.hazelcast.internal.tpc.TpcServerBootstrap;
+import com.hazelcast.internal.tpc.TpcServerBootstrapImpl;
 import com.hazelcast.internal.util.ConstructorFunction;
 import com.hazelcast.internal.util.JVMUtil;
 import com.hazelcast.internal.util.MapUtil;
@@ -100,6 +107,7 @@ import com.hazelcast.jet.impl.JobEventService;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.map.impl.MapService;
 import com.hazelcast.nio.MemberSocketInterceptor;
+import com.hazelcast.nio.ssl.SSLEngineFactory;
 import com.hazelcast.partition.PartitioningStrategy;
 import com.hazelcast.partition.strategy.DefaultPartitioningStrategy;
 import com.hazelcast.security.SecurityContext;
@@ -128,22 +136,26 @@ import static com.hazelcast.config.InstanceTrackingConfig.InstanceTrackingProper
 import static com.hazelcast.config.InstanceTrackingConfig.InstanceTrackingProperties.PRODUCT;
 import static com.hazelcast.config.InstanceTrackingConfig.InstanceTrackingProperties.START_TIMESTAMP;
 import static com.hazelcast.config.InstanceTrackingConfig.InstanceTrackingProperties.VERSION;
+import static com.hazelcast.cp.CPSubsystemStubImpl.CP_SUBSYSTEM_IS_NOT_AVAILABLE_IN_OS;
+import static com.hazelcast.instance.impl.Node.getLegacyUCDClassLoader;
 import static com.hazelcast.internal.util.ExceptionUtil.rethrow;
 import static com.hazelcast.internal.util.InstanceTrackingUtil.writeInstanceTrackingFile;
+import static com.hazelcast.internal.util.StringUtil.isNullOrEmpty;
 import static com.hazelcast.jet.impl.util.Util.JET_IS_DISABLED_MESSAGE;
 import static com.hazelcast.jet.impl.util.Util.checkJetIsEnabled;
 import static com.hazelcast.map.impl.MapServiceConstructor.getDefaultMapServiceConstructor;
 
 @SuppressWarnings({"checkstyle:methodcount", "checkstyle:classfanoutcomplexity", "checkstyle:classdataabstractioncoupling"})
 public class DefaultNodeExtension implements NodeExtension {
-    private static final String PLATFORM_LOGO
-            = "\t+       +  o    o     o     o---o o----o o      o---o     o     o----o o--o--o\n"
-            + "\t+ +   + +  |    |    / \\       /  |      |     /         / \\    |         |   \n"
-            + "\t+ + + + +  o----o   o   o     o   o----o |    o         o   o   o----o    |   \n"
-            + "\t+ +   + +  |    |  /     \\   /    |      |     \\       /     \\       |    |   \n"
-            + "\t+       +  o    o o       o o---o o----o o----o o---o o       o o----o    o   ";
+    private static final String PLATFORM_LOGO = """
+      o    o     o     o---o   o--o o      o---o     o     o----o o--o--o
+      |    |    / \\       /         |     /         / \\    |         |
+      o----o       o     o   o----o |    o             o   o----o    |
+      |    |  *     \\   /           |     \\       *     \\       |    |
+      o    o *       o o---o   o--o o----o o---o *       o o----o    o
+      """.indent(4);
 
-    private static final String COPYRIGHT_LINE = "Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.";
+    private static final String COPYRIGHT_LINE = "Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.";
 
     protected final Node node;
     protected final ILogger logger;
@@ -161,6 +173,7 @@ public class DefaultNodeExtension implements NodeExtension {
         this.logger = node.getLogger(NodeExtension.class);
         this.logoLogger = node.getLogger("com.hazelcast.system.logo");
         this.systemLogger = node.getLogger("com.hazelcast.system");
+        checkCPSubsystemAllowed();
         checkSecurityAllowed();
         checkPersistenceAllowed();
         checkLosslessRestartAllowed();
@@ -175,18 +188,20 @@ public class DefaultNodeExtension implements NodeExtension {
         integrityChecker = new IntegrityChecker(node.getConfig().getIntegrityCheckerConfig(), this.systemLogger);
     }
 
+    private void checkCPSubsystemAllowed() {
+        CPSubsystemConfig cpSubsystemConfig = node.getConfig().getCPSubsystemConfig();
+        if (cpSubsystemConfig != null && cpSubsystemConfig.getCPMemberCount() != 0) {
+            if (!BuildInfoProvider.getBuildInfo().isEnterprise()) {
+                throw new IllegalStateException(CP_SUBSYSTEM_IS_NOT_AVAILABLE_IN_OS);
+            }
+        }
+    }
+
     private void checkPersistenceAllowed() {
         PersistenceConfig persistenceConfig = node.getConfig().getPersistenceConfig();
         if (persistenceConfig != null && persistenceConfig.isEnabled()) {
             if (!BuildInfoProvider.getBuildInfo().isEnterprise()) {
                 throw new IllegalStateException("Hot Restart requires Hazelcast Enterprise Edition");
-            }
-        }
-
-        CPSubsystemConfig cpSubsystemConfig = node.getConfig().getCPSubsystemConfig();
-        if (cpSubsystemConfig != null && cpSubsystemConfig.isPersistenceEnabled()) {
-            if (!BuildInfoProvider.getBuildInfo().isEnterprise()) {
-                throw new IllegalStateException("CP persistence requires Hazelcast Enterprise Edition");
             }
         }
     }
@@ -401,7 +416,7 @@ public class DefaultNodeExtension implements NodeExtension {
 
     protected PartitioningStrategy getPartitioningStrategy(ClassLoader configClassLoader) throws Exception {
         String partitioningStrategyClassName = node.getProperties().getString(ClusterProperty.PARTITIONING_STRATEGY_CLASS);
-        if (partitioningStrategyClassName != null && partitioningStrategyClassName.length() > 0) {
+        if (!isNullOrEmpty(partitioningStrategyClassName)) {
             return ClassLoaderUtil.newInstance(configClassLoader, partitioningStrategyClassName);
         } else {
             return new DefaultPartitioningStrategy();
@@ -541,7 +556,7 @@ public class DefaultNodeExtension implements NodeExtension {
 
     @Override
     public void onPartitionStateChange() {
-        ClusterViewListenerService service = node.clientEngine.getClusterListenerService();
+        ClusterViewListenerService service = node.clientEngine.getClusterViewListenerService();
         if (service != null) {
             service.onPartitionStateChange();
         }
@@ -549,7 +564,7 @@ public class DefaultNodeExtension implements NodeExtension {
 
     @Override
     public void onMemberListChange() {
-        ClusterViewListenerService service = node.clientEngine.getClusterListenerService();
+        ClusterViewListenerService service = node.clientEngine.getClusterViewListenerService();
         if (service != null) {
             service.onMemberListChange();
         }
@@ -580,11 +595,10 @@ public class DefaultNodeExtension implements NodeExtension {
 
     @Override
     public boolean registerListener(Object listener) {
-        if (listener instanceof HazelcastInstanceAware) {
-            ((HazelcastInstanceAware) listener).setHazelcastInstance(node.hazelcastInstance);
+        if (listener instanceof HazelcastInstanceAware aware) {
+            aware.setHazelcastInstance(node.hazelcastInstance);
         }
-        if (listener instanceof ClusterVersionListener) {
-            ClusterVersionListener clusterVersionListener = (ClusterVersionListener) listener;
+        if (listener instanceof ClusterVersionListener clusterVersionListener) {
             clusterVersionListeners.add(clusterVersionListener);
             // on registration, invoke once the listening method so version is properly initialized on the listener
             clusterVersionListener.onClusterVersionChange(getClusterOrNodeVersion());
@@ -666,7 +680,12 @@ public class DefaultNodeExtension implements NodeExtension {
 
     @Override
     public CPPersistenceService getCPPersistenceService() {
-        return NopCPPersistenceService.INSTANCE;
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public CPSubsystem createCPSubsystem(NodeEngine nodeEngine) {
+        return new CPSubsystemStubImpl();
     }
 
     protected void createAndSetPhoneHome() {
@@ -692,5 +711,32 @@ public class DefaultNodeExtension implements NodeExtension {
     @Nullable
     public JetServiceBackend getJetServiceBackend() {
         return jetServiceBackend;
+    }
+
+    @Override
+    public SSLEngineFactory createSslEngineFactory(SSLConfig sslConfig) {
+        throw new IllegalStateException("SSL/TLS requires Hazelcast Enterprise Edition");
+    }
+
+    @Override
+    public void onThreadStart(Thread thread) {
+        // Setup NodeEngine context for User Code Deployment Namespacing in operations
+        NodeEngineThreadLocalContext.declareNodeEngineReference(node.getNodeEngine());
+    }
+
+    @Override
+    public void onThreadStop(Thread thread) {
+        // Destroy NodeEngine context from User Code Deployment Namespacing
+        NodeEngineThreadLocalContext.destroyNodeEngineReference();
+    }
+
+    @Override
+    public UserCodeNamespaceService getNamespaceService() {
+        return new NoOpUserCodeNamespaceService(getLegacyUCDClassLoader(node.getConfig()));
+    }
+
+    @Override
+    public TpcServerBootstrap createTpcServerBootstrap() {
+        return new TpcServerBootstrapImpl(node);
     }
 }

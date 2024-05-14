@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.security.impl.function.SecuredFunctions;
 import com.hazelcast.security.permission.MapPermission;
 import com.hazelcast.sql.impl.expression.ExpressionEvalContext;
+import com.hazelcast.sql.impl.expression.UntrustedExpressionEvalContext;
 import com.hazelcast.sql.impl.row.JetSqlRow;
 
 import javax.annotation.Nonnull;
@@ -103,7 +104,7 @@ final class UpdateProcessorSupplier implements ProcessorSupplier, DataSerializab
             assert row.getFieldCount() == 1;
             keys.add(row.get(0));
         }
-        return map.submitToKeys(keys, updaterSupplier.get(evalContext))
+        return map.submitToKeys(keys, updaterSupplier.get(UntrustedExpressionEvalContext.from(evalContext)))
                 .toCompletableFuture()
                 .thenApply(m -> Traversers.empty());
     }

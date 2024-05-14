@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class ClientQueryCacheClientContextTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void same_context_object_is_used_by_all_query_caches() throws Exception {
+    public void same_context_object_is_used_by_all_query_caches() {
         ClientQueryCacheContext instance1 = getQueryCacheContext(map1);
         ClientQueryCacheContext instance2 = getQueryCacheContext(map2);
         ClientQueryCacheContext instance3 = getQueryCacheContext(map3);

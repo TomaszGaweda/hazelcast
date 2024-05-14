@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,36 +50,29 @@ public class ContextMutexFactoryTest {
     @Test
     public void testConcurrentMutexOperation() {
         final String[] keys = new String[]{"a", "b", "c"};
-        final Map<String, Integer> timesAcquired = new HashMap<String, Integer>();
+        final Map<String, Integer> timesAcquired = new HashMap<>();
 
         int concurrency = RuntimeAvailableProcessors.get() * 3;
         final CyclicBarrier cyc = new CyclicBarrier(concurrency + 1);
 
         for (int i = 0; i < concurrency; i++) {
-            new Thread(new Runnable() {
+            new Thread(() -> {
+                await(cyc);
 
-                @Override
-                public void run() {
-                    await(cyc);
-
-                    for (String key : keys) {
-                        ContextMutexFactory.Mutex mutex = contextMutexFactory.mutexFor(key);
-                        try {
-                            synchronized (mutex) {
-                                Integer value = timesAcquired.get(key);
-                                if (value == null) {
-                                    timesAcquired.put(key, 1);
-                                } else {
-                                    timesAcquired.put(key, value + 1);
-                                }
+                for (String key : keys) {
+                    try (ContextMutexFactory.Mutex mutex = contextMutexFactory.mutexFor(key)) {
+                        synchronized (mutex) {
+                            Integer value = timesAcquired.get(key);
+                            if (value == null) {
+                                timesAcquired.put(key, 1);
+                            } else {
+                                timesAcquired.put(key, value + 1);
                             }
-                        } finally {
-                            mutex.close();
                         }
                     }
-
-                    await(cyc);
                 }
+
+                await(cyc);
             }).start();
         }
         // start threads, wait for them to finish

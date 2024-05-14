@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.hazelcast.partition.PartitioningStrategy;
 import com.hazelcast.internal.serialization.SerializableByConvention;
 
 @SerializableByConvention
+@SuppressWarnings("JavadocVariable")
 public final class StringAndPartitionAwarePartitioningStrategy implements PartitioningStrategy {
 
     //since the StringAndPartitionAwarePartitioningStrategy is stateless, we can just create an instance up front
@@ -34,10 +35,10 @@ public final class StringAndPartitionAwarePartitioningStrategy implements Partit
 
     @Override
     public Object getPartitionKey(Object key) {
-        if (key instanceof String) {
-            return StringPartitioningStrategy.getPartitionKey((String) key);
-        } else if (key instanceof PartitionAware) {
-            return ((PartitionAware) key).getPartitionKey();
+        if (key instanceof String string) {
+            return StringPartitioningStrategy.getPartitionKey(string);
+        } else if (key instanceof PartitionAware aware) {
+            return aware.getPartitionKey();
         }
         return null;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -283,11 +283,10 @@ public class TextCommandServiceImpl implements TextCommandService {
         Object value = hazelcast.getMap(mapName).get(key);
         byte[] result = null;
         if (value != null) {
-            if (value instanceof RestValue) {
-                RestValue restValue = (RestValue) value;
+            if (value instanceof RestValue restValue) {
                 result = restValue.getValue();
-            } else if (value instanceof byte[]) {
-                result = (byte[]) value;
+            } else if (value instanceof byte[] bytes) {
+                result = bytes;
             } else {
                 result = toByteArray(value);
             }
@@ -407,7 +406,7 @@ public class TextCommandServiceImpl implements TextCommandService {
     }
 
     private class ResponseThreadRunnable implements Runnable {
-        private final BlockingQueue<TextCommand> blockingQueue = new ArrayBlockingQueue<TextCommand>(200);
+        private final BlockingQueue<TextCommand> blockingQueue = new ArrayBlockingQueue<>(200);
         private final Object stopObject = new Object();
 
         @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")

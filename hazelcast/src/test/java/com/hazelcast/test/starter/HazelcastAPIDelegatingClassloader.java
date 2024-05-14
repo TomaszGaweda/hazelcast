@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,13 +171,13 @@ public class HazelcastAPIDelegatingClassloader extends URLClassLoader {
     }
 
     private void checkExcluded(String className) throws ClassNotFoundException {
-        if (parent instanceof FilteringClassLoader) {
-            ((FilteringClassLoader) parent).checkExcluded(className);
+        if (parent instanceof FilteringClassLoader loader) {
+            loader.checkExcluded(className);
         }
     }
 
     private boolean checkResourceExcluded(String resourceName) {
-        return (parent instanceof FilteringClassLoader) && ((FilteringClassLoader) parent).checkResourceExcluded(resourceName);
+        return (parent instanceof FilteringClassLoader classLoader) && classLoader.checkResourceExcluded(resourceName);
     }
 
     @Override

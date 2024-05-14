@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,8 +74,8 @@ public class HazelcastServerCacheManager extends AbstractHazelcastCacheManager {
          * internals. It's also used for passing the full cache name directly
          * by this cache manager itself.
          */
-        if (hazelcastInstance instanceof HazelcastInstanceProxy) {
-            instance = ((HazelcastInstanceProxy) hazelcastInstance).getOriginal();
+        if (hazelcastInstance instanceof HazelcastInstanceProxy proxy) {
+            instance = proxy.getOriginal();
         } else {
             instance = (HazelcastInstanceImpl) hazelcastInstance;
         }
@@ -104,7 +104,7 @@ public class HazelcastServerCacheManager extends AbstractHazelcastCacheManager {
     private void enableStatisticManagementOnOtherNodes(String cacheName, boolean statOrMan, boolean enabled) {
         String cacheNameWithPrefix = getCacheNameWithPrefix(cacheName);
         OperationService operationService = nodeEngine.getOperationService();
-        Collection<Future> futures = new ArrayList<Future>();
+        Collection<Future> futures = new ArrayList<>();
         for (Member member : nodeEngine.getClusterService().getMembers()) {
             if (!member.localMember()) {
                 CacheManagementConfigOperation op = new CacheManagementConfigOperation(cacheNameWithPrefix, statOrMan, enabled);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class MPSCQueueTest extends HazelcastTestSupport {
 
     @Before
     public void setup() {
-        this.queue = new MPSCQueue<String>(new BusySpinIdleStrategy());
+        this.queue = new MPSCQueue<>(new BusySpinIdleStrategy());
     }
 
     @Test(expected = NullPointerException.class)
@@ -74,7 +74,7 @@ public class MPSCQueueTest extends HazelcastTestSupport {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void pollWithTimeout_thenUnsupportedOperation() throws InterruptedException {
+    public void pollWithTimeout_thenUnsupportedOperation() {
         queue.setConsumerThread(Thread.currentThread());
 
         queue.poll(1, TimeUnit.SECONDS);
@@ -98,12 +98,9 @@ public class MPSCQueueTest extends HazelcastTestSupport {
         final Thread owningThread = Thread.currentThread();
         queue.setConsumerThread(owningThread);
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                sleepSeconds(3);
-                owningThread.interrupt();
-            }
+        spawn((Runnable) () -> {
+            sleepSeconds(3);
+            owningThread.interrupt();
         });
 
         queue.take();
@@ -113,12 +110,9 @@ public class MPSCQueueTest extends HazelcastTestSupport {
     public void take_whenItemAvailableAfterSomeBlocking() throws Exception {
         queue.setConsumerThread(Thread.currentThread());
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                sleepSeconds(3);
-                queue.offer("1");
-            }
+        spawn((Runnable) () -> {
+            sleepSeconds(3);
+            queue.offer("1");
         });
 
         Object item = queue.take();
@@ -152,7 +146,7 @@ public class MPSCQueueTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void isEmpty_whenSomeItemsOnPutStack() throws InterruptedException {
+    public void isEmpty_whenSomeItemsOnPutStack() {
         queue.put("item1");
         assertFalse(queue.isEmpty());
 
@@ -194,7 +188,7 @@ public class MPSCQueueTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void size_whenSomeItemsOnPutStack() throws InterruptedException {
+    public void size_whenSomeItemsOnPutStack() {
         queue.setConsumerThread(Thread.currentThread());
 
         queue.put("item1");
@@ -247,7 +241,7 @@ public class MPSCQueueTest extends HazelcastTestSupport {
     // ============= offer ====================================
 
     @Test
-    public void offer_withTimeout() throws InterruptedException {
+    public void offer_withTimeout() {
         assertTrue(queue.offer("item1", 1, MINUTES));
         assertTrue(queue.offer("item2", 1, MINUTES));
         assertTrue(queue.offer("item3", 3, MINUTES));
@@ -256,7 +250,7 @@ public class MPSCQueueTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void offer_noTimeout() throws InterruptedException {
+    public void offer_noTimeout() {
         assertTrue(queue.offer("item1"));
         assertTrue(queue.offer("item2"));
         assertTrue(queue.offer("item3"));
@@ -269,13 +263,13 @@ public class MPSCQueueTest extends HazelcastTestSupport {
 
     @Test(expected = UnsupportedOperationException.class)
     public void drain() {
-        queue.drainTo(new LinkedList<String>());
+        queue.drainTo(new LinkedList<>());
     }
 
 
     @Test(expected = UnsupportedOperationException.class)
     public void drainMaxItems() {
-        queue.drainTo(new LinkedList<String>(), 10);
+        queue.drainTo(new LinkedList<>(), 10);
     }
 
     // ============= clear ====================================

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.util.UuidUtil;
 import com.hazelcast.spi.impl.eventservice.EventRegistration;
 import com.hazelcast.spi.impl.eventservice.EventService;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -129,19 +128,11 @@ public class PartitionLostListenerRegistrationTest extends HazelcastTestSupport 
     }
 
     private static void assertRegistrationsSizeEventually(final HazelcastInstance instance, final int expectedSize) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertTrueEventually(new AssertTask() {
-                    @Override
-                    public void run() {
-                        EventService eventService = getNode(instance).getNodeEngine().getEventService();
-                        Collection<EventRegistration> registrations = eventService.getRegistrations(SERVICE_NAME,
-                                PARTITION_LOST_EVENT_TOPIC);
-                        assertEquals(expectedSize, registrations.size());
-                    }
-                });
-            }
-        });
+        assertTrueEventually(() -> assertTrueEventually(() -> {
+            EventService eventService = getNode(instance).getNodeEngine().getEventService();
+            Collection<EventRegistration> registrations = eventService.getRegistrations(SERVICE_NAME,
+                    PARTITION_LOST_EVENT_TOPIC);
+            assertEquals(expectedSize, registrations.size());
+        }));
     }
 }

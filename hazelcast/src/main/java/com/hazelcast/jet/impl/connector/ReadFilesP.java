@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.hazelcast.security.permission.ConnectorPermission;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -145,6 +146,7 @@ public final class ReadFilesP<T> extends AbstractProcessor {
 
     private static final class MetaSupplier<T> implements FileProcessorMetaSupplier<T> {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private static final ILogger LOGGER = Logger.getLogger(MetaSupplier.class);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,10 +54,10 @@ public final class SplitBrainMergePolicyProvider {
     private final ClassLoader configClassLoader;
 
     private final ConcurrentMap<String, SplitBrainMergePolicy> mergePolicyMap
-            = new ConcurrentHashMap<String, SplitBrainMergePolicy>();
+            = new ConcurrentHashMap<>();
 
     private final ConstructorFunction<String, SplitBrainMergePolicy> policyConstructorFunction
-            = new ConstructorFunction<String, SplitBrainMergePolicy>() {
+            = new ConstructorFunction<>() {
         @Override
         public SplitBrainMergePolicy createNew(String className) {
             try {

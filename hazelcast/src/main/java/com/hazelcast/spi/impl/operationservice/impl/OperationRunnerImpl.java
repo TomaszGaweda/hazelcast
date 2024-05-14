@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -244,9 +244,6 @@ public class OperationRunnerImpl extends OperationRunner implements StaticMetric
      * @param op         the operation to execute
      * @param startNanos the time, as returned by {@link System#nanoTime} when this operation
      *                   started execution
-     * @return {@code true} if this operation was not executed and should be retried at a later time,
-     * {@code false} if the operation should not be retried, either because it
-     * timed out or has run successfully
      */
     protected void run(Operation op, long startNanos) {
         executedOperationsCounter.inc();
@@ -277,8 +274,8 @@ public class OperationRunnerImpl extends OperationRunner implements StaticMetric
     protected void record(Object op, long startNanos) {
         if (opLatencyDistributions != null) {
             Class c = op.getClass();
-            if (op instanceof PartitionIteratingOperation) {
-                c = ((PartitionIteratingOperation) op).getOperationFactory().getClass();
+            if (op instanceof PartitionIteratingOperation operation) {
+                c = operation.getOperationFactory().getClass();
             }
 
             LatencyDistribution distribution = opLatencyDistributions.get(c);
@@ -377,8 +374,7 @@ public class OperationRunnerImpl extends OperationRunner implements StaticMetric
     private void afterRun(Operation op) {
         try {
             op.afterRun();
-            if (op instanceof Notifier) {
-                final Notifier notifier = (Notifier) op;
+            if (op instanceof Notifier notifier) {
                 if (notifier.shouldNotify()) {
                     operationService.nodeEngine.getOperationParker().unpark(notifier);
                 }
@@ -424,8 +420,8 @@ public class OperationRunnerImpl extends OperationRunner implements StaticMetric
     }
 
     public void handleOperationError(Operation operation, Throwable e) {
-        if (e instanceof OutOfMemoryError) {
-            OutOfMemoryErrorDispatcher.onOutOfMemory((OutOfMemoryError) e);
+        if (e instanceof OutOfMemoryError error) {
+            OutOfMemoryErrorDispatcher.onOutOfMemory(error);
         }
         try {
             operation.onExecutionFailure(e);
@@ -459,8 +455,8 @@ public class OperationRunnerImpl extends OperationRunner implements StaticMetric
     }
 
     private void logOperationError(Operation op, Throwable e) {
-        if (e instanceof OutOfMemoryError) {
-            OutOfMemoryErrorDispatcher.onOutOfMemory((OutOfMemoryError) e);
+        if (e instanceof OutOfMemoryError error) {
+            OutOfMemoryErrorDispatcher.onOutOfMemory(error);
         }
         op.logError(e);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,20 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.cp.event.CPGroupAvailabilityListener;
 import com.hazelcast.cp.event.CPMembershipListener;
 import com.hazelcast.cp.exception.CPGroupDestroyedException;
+import com.hazelcast.cp.internal.datastructures.atomiclong.AtomicLongServiceUtil;
+import com.hazelcast.cp.internal.datastructures.atomicref.AtomicRefServiceUtil;
+import com.hazelcast.cp.internal.datastructures.countdownlatch.CountDownLatchServiceUtil;
+import com.hazelcast.cp.internal.datastructures.cpmap.CPMapServiceUtil;
+import com.hazelcast.cp.internal.datastructures.lock.LockServiceUtil;
+import com.hazelcast.cp.internal.datastructures.semaphore.SemaphoreServiceUtil;
 import com.hazelcast.cp.lock.FencedLock;
 import com.hazelcast.cp.session.CPSession;
 import com.hazelcast.cp.session.CPSessionManagementService;
 import com.hazelcast.map.IMap;
+import com.hazelcast.spi.annotation.Beta;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -370,6 +378,42 @@ import java.util.UUID;
 public interface CPSubsystem {
 
     /**
+     * Constant identifying service for {@link IAtomicLong},
+     * to be used with {@link #getObjectInfos(CPGroupId, String)}
+     */
+    String ATOMIC_LONG = AtomicLongServiceUtil.SERVICE_NAME;
+
+    /**
+     * Constant identifying service for {@link IAtomicReference},
+     * to be used with {@link #getObjectInfos(CPGroupId, String)}
+     */
+    String ATOMIC_REFERENCE = AtomicRefServiceUtil.SERVICE_NAME;
+
+    /**
+     * Constant identifying service for {@link ICountDownLatch},
+     * to be used with {@link #getObjectInfos(CPGroupId, String)}
+     */
+    String COUNT_DOWN_LATCH = CountDownLatchServiceUtil.SERVICE_NAME;
+
+    /**
+     * Constant identifying service for {@link ISemaphore},
+     * to be used with {@link #getObjectInfos(CPGroupId, String)}
+     */
+    String SEMAPHORE = SemaphoreServiceUtil.SERVICE_NAME;
+
+    /**
+     * Constant identifying service for {@link FencedLock},
+     * to be used with {@link #getObjectInfos(CPGroupId, String)}
+     */
+    String LOCK = LockServiceUtil.SERVICE_NAME;
+
+    /**
+     * Constant identifying service for {@link CPMap},
+     * to be used with {@link #getObjectInfos(CPGroupId, String)}
+     */
+    String CP_MAP = CPMapServiceUtil.SERVICE_NAME;
+
+    /**
      * Returns a proxy for an {@link IAtomicLong} instance created on CP
      * Subsystem. Hazelcast's {@link IAtomicLong} is a distributed version of
      * <tt>java.util.concurrent.atomic.AtomicLong</tt>. If no group name is
@@ -557,5 +601,61 @@ public interface CPSubsystem {
      * @since 4.1
      */
     boolean removeGroupAvailabilityListener(UUID id);
+
+    /**
+     * Returns a proxy for a {@link CPMap}. <b>Enterprise Only</b>.
+     * <p>
+     *     If no group name is given within the {@code name} parameter, then the
+     *     {@link CPMap} instance will be created on the DEFAULT CP group. If a
+     *     group name is given, like {@code .getMap("myMap@group1")}, the given
+     *     group will be initialized first, if not initialized already, and then
+     *     the {@link CPMap} instance will be created on this group. The returned
+     *     {@link CPMap} instance offers linearizability. When a network partition
+     *     occurs, proxies that exist on the minority side of its CP group lose
+     *     availability.
+     * </p>
+     * <p>
+     *     <strong>Each call of this method performs a commit to the METADATA CP
+     *     group. Hence, callers should cache the returned proxy.</strong>
+     * </p>
+     * @param name Name of the map
+     * @return Proxy for {@link CPMap}
+     * @param <K> Key type of the map
+     * @param <V> Value type of the map
+     * @since 5.4
+     */
+    @Nonnull
+    <K, V> CPMap<K, V> getMap(@Nonnull String name);
+
+    /**
+     * Returns all active CP group ids.
+     *
+     * @since 5.4
+     */
+    @Beta
+    @Nonnull
+    Collection<CPGroupId> getCPGroupIds();
+
+    /**
+     * Returns info about all objects of given type within the given group
+     *
+     * @param groupId groupId for which to return the object infos
+     * @param serviceName service name for which the objects are returned
+     * @since 5.4
+     */
+    @Beta
+    @Nonnull
+    Iterable<CPObjectInfo> getObjectInfos(@Nonnull CPGroupId groupId, @Nonnull String serviceName);
+
+    /**
+     * Returns info about all tombstones of given type within the given group
+     *
+     * @param groupId groupId for which to return the tombstone infos
+     * @param serviceName service name for which the tombstones are returned
+     * @since 5.4
+     */
+    @Beta
+    @Nonnull
+    Iterable<CPObjectInfo> getTombstoneInfos(@Nonnull CPGroupId groupId, @Nonnull String serviceName);
 
 }

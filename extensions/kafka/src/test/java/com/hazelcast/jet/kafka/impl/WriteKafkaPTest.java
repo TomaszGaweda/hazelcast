@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -259,7 +259,7 @@ public class WriteKafkaPTest extends SimpleTestInClusterSupport {
 
     @Test
     public void test_resumeTransaction() throws Exception {
-        properties.put("transactional.id", "txn.resumeTransactionTest");
+        properties.setProperty("transactional.id", "txn.resumeTransactionTest");
 
         // produce items
         KafkaProducer<String, String> producer = new KafkaProducer<>(properties);

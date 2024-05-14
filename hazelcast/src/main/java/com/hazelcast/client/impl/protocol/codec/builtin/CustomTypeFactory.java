@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.hazelcast.client.impl.protocol.codec.builtin;
 
 import com.hazelcast.cache.CacheEventType;
 import com.hazelcast.cache.impl.CacheEventDataImpl;
+import com.hazelcast.client.impl.protocol.codec.holder.VectorPairHolder;
 import com.hazelcast.cluster.Address;
 import com.hazelcast.config.BTreeIndexConfig;
 import com.hazelcast.config.BitmapIndexOptions;
@@ -33,6 +34,8 @@ import com.hazelcast.config.MemoryTierConfig;
 import com.hazelcast.config.MerkleTreeConfig;
 import com.hazelcast.config.NearCachePreloaderConfig;
 import com.hazelcast.config.TieredStoreConfig;
+import com.hazelcast.config.vector.Metric;
+import com.hazelcast.config.vector.VectorIndexConfig;
 import com.hazelcast.core.HazelcastException;
 import com.hazelcast.core.HazelcastJsonValue;
 import com.hazelcast.instance.EndpointQualifier;
@@ -49,18 +52,25 @@ import com.hazelcast.map.impl.querycache.event.DefaultQueryCacheEventData;
 import com.hazelcast.memory.Capacity;
 import com.hazelcast.memory.MemoryUnit;
 import com.hazelcast.nio.serialization.FieldKind;
+import com.hazelcast.replicatedmap.impl.record.ReplicatedMapEntryView;
 import com.hazelcast.sql.SqlColumnMetadata;
 import com.hazelcast.sql.SqlColumnType;
+import com.hazelcast.vector.SearchOptions;
+import com.hazelcast.vector.VectorValues;
+import com.hazelcast.vector.impl.DataSearchResult;
+import com.hazelcast.vector.impl.DataVectorDocument;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig.DurationConfig;
 import static com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig.TimedExpiryPolicyFactoryConfig;
 import static com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig.TimedExpiryPolicyFactoryConfig.ExpiryPolicyType;
 
-@SuppressWarnings("checkstyle:ClassDataAbstractionCoupling")
+@SuppressWarnings({"checkstyle:ClassDataAbstractionCoupling", "checkstyle:ClassFanOutComplexity"})
 public final class CustomTypeFactory {
 
     private CustomTypeFactory() {
@@ -156,17 +166,37 @@ public final class CustomTypeFactory {
         return entryView;
     }
 
+    public static ReplicatedMapEntryView<Data, Data> createReplicatedMapEntryView(Data key, Data value, long creationTime,
+                                                                           long hits, long lastAccessTime, long lastUpdateTime,
+                                                                           long ttl) {
+        ReplicatedMapEntryView<Data, Data> entryView = new ReplicatedMapEntryView<>();
+        entryView.setKey(key);
+        entryView.setValue(value);
+        entryView.setCreationTime(creationTime);
+        entryView.setHits(hits);
+        entryView.setLastAccessTime(lastAccessTime);
+        entryView.setLastUpdateTime(lastUpdateTime);
+        entryView.setTtl(ttl);
+        return entryView;
+    }
+
     public static DefaultQueryCacheEventData createQueryCacheEventData(Data dataKey, Data dataNewValue, long sequence,
-                                                                       int eventType, int partitionId) {
+                                                                       int eventType, int partitionId, boolean isMapNameExists,
+                                                                       String mapName) {
         DefaultQueryCacheEventData eventData = new DefaultQueryCacheEventData();
         eventData.setDataKey(dataKey);
         eventData.setDataNewValue(dataNewValue);
         eventData.setSequence(sequence);
         eventData.setEventType(eventType);
         eventData.setPartitionId(partitionId);
+        if (isMapNameExists) {
+            eventData.setMapName(mapName);
+        }
+
         return eventData;
     }
 
+    @SuppressWarnings("MagicNumber")
     public static DurationConfig createDurationConfig(long durationAmount, int timeUnitId) {
         TimeUnit timeUnit;
         if (timeUnitId == 0) {
@@ -307,5 +337,67 @@ public final class CustomTypeFactory {
         return new JobAndSqlSummary(lightJob, jobId, executionId, nameOrId, JobStatus.getById(jobStatus), submissionTime,
                 completionTime, failureText, sqlSummary, isSuspensionCauseExists ? suspensionCause : null,
                 isUserCancelledExists ? userCancelled : false);
+    }
+
+    public static VectorIndexConfig createVectorIndexConfig(
+            String name,
+            int metric,
+            int dimension,
+            int maxDegree,
+            int efConstruction,
+            boolean useDeduplication
+    ) {
+        var vectorConfig = new VectorIndexConfig()
+                .setMetric(Metric.getById(metric))
+                .setDimension(dimension)
+                .setMaxDegree(maxDegree)
+                .setEfConstruction(efConstruction)
+                .setUseDeduplication(useDeduplication);
+        if (name != null) {
+            vectorConfig.setName(name);
+        }
+        return vectorConfig;
+    }
+
+    private static VectorValues toVectorValues(List<VectorPairHolder> vectors) {
+        if (vectors == null) {
+            return null;
+        }
+        if (vectors.size() == 1 && VectorPairHolder.SINGLE_VECTOR_NAME.equals(vectors.get(0).getName())) {
+            VectorPairHolder pair = vectors.get(0);
+            if (pair.getType() == VectorPairHolder.DENSE_FLOAT_VECTOR) {
+                return VectorValues.of(pair.getVector());
+            } else {
+                throw new IllegalArgumentException("Unsupported vector type: " + pair.getType());
+            }
+        } else {
+            var map = vectors.stream().collect(Collectors.toMap(VectorPairHolder::getName, pair -> {
+                if (pair.getType() == VectorPairHolder.DENSE_FLOAT_VECTOR) {
+                    return pair.getVector();
+                } else {
+                    throw new IllegalArgumentException("Unsupported vector type: " + pair.getType());
+                }
+            }));
+            return VectorValues.of(map);
+        }
+    }
+
+    public static DataVectorDocument createVectorDocument(Data value, List<VectorPairHolder> vectors) {
+        return new DataVectorDocument(value, toVectorValues(vectors));
+    }
+
+    public static SearchOptions createVectorSearchOptions(boolean includeValue, boolean includeVectors, int limit,
+                                                              List<VectorPairHolder> vectors, Map<String, String> hints) {
+        return SearchOptions.builder()
+                .setIncludePayload(includeValue)
+                .setIncludeVectors(includeVectors)
+                .limit(limit)
+                .vectors(toVectorValues(vectors))
+                .hints(hints)
+                .build();
+    }
+
+    public static DataSearchResult createVectorSearchResult(Data key, Data document, float score, List<VectorPairHolder> vectors) {
+        return new DataSearchResult(key, document, score, toVectorValues(vectors));
     }
 }

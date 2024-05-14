@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,8 +124,8 @@ public abstract class AbstractLockOperation extends Operation
     protected final void interceptLockOperation() {
         // if service is a LockInterceptorService, notify it a key is about to be locked
         Object targetService = getNodeEngine().getService(namespace.getServiceName());
-        if (targetService instanceof LockInterceptorService) {
-            ((LockInterceptorService) targetService).onBeforeLock(namespace.getObjectName(), key);
+        if (targetService instanceof LockInterceptorService service) {
+            service.onBeforeLock(namespace.getObjectName(), key);
         }
     }
 

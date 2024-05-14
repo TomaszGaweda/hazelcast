@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class MapStoreAdapterTest extends HazelcastTestSupport {
     @Test
     public void testStoreAll() {
         MockMapStoreAdapter adapter = new MockMapStoreAdapter();
-        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> map = new HashMap<>();
         map.put(1, 1);
         map.put(2, 2);
 
@@ -55,7 +55,7 @@ public class MapStoreAdapterTest extends HazelcastTestSupport {
         MockMapStoreAdapter adapter = new MockMapStoreAdapter();
         adapter.store(1, 1);
         adapter.store(2, 2);
-        Collection<Integer> keySet = new HashSet<Integer>();
+        Collection<Integer> keySet = new HashSet<>();
         keySet.add(1);
         keySet.add(2);
 
@@ -69,7 +69,7 @@ public class MapStoreAdapterTest extends HazelcastTestSupport {
         MockMapStoreAdapter adapter = new MockMapStoreAdapter();
         adapter.store(1, 1);
         adapter.store(2, 2);
-        Collection<Integer> keySet = new HashSet<Integer>();
+        Collection<Integer> keySet = new HashSet<>();
         keySet.add(1);
         keySet.add(2);
 
@@ -85,9 +85,9 @@ public class MapStoreAdapterTest extends HazelcastTestSupport {
         private List<Object> loaded;
 
         MockMapStoreAdapter() {
-            deleted = new LinkedList<Object>();
-            stored = new LinkedList<Object>();
-            loaded = new LinkedList<Object>();
+            deleted = new LinkedList<>();
+            stored = new LinkedList<>();
+            loaded = new LinkedList<>();
         }
 
         public void delete(Integer key) {

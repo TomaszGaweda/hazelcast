@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -297,7 +297,7 @@ public class DefaultAddressPickerTest {
 
 
     @Test
-    public void testPublicAddress_whenBlankViaProperty() throws Exception {
+    public void testPublicAddress_whenBlankViaProperty() {
         config.setProperty("hazelcast.local.publicAddress", " ");
 
         addressPicker = new DefaultAddressPicker(config, logger);
@@ -305,7 +305,7 @@ public class DefaultAddressPickerTest {
     }
 
     @Test
-    public void testPublicAddress_withInvalidAddress() throws Exception {
+    public void testPublicAddress_withInvalidAddress() {
         config.getNetworkConfig().setPublicAddress("invalid");
 
         addressPicker = new DefaultAddressPicker(config, logger);
@@ -313,7 +313,7 @@ public class DefaultAddressPickerTest {
     }
 
     @Test
-    public void testPublicAddress_withBlankAddress() throws Exception {
+    public void testPublicAddress_withBlankAddress() {
         config.getNetworkConfig().setPublicAddress(" ");
 
         addressPicker = new DefaultAddressPicker(config, logger);
@@ -400,7 +400,7 @@ public class DefaultAddressPickerTest {
     }
 
     @Test
-    public void testNotMatchingInterface_forNoConfigFile() throws Exception {
+    public void testNotMatchingInterface_forNoConfigFile() {
         Config config = new Config();
         config.getNetworkConfig().getInterfaces().setEnabled(true);
         config.getNetworkConfig().getInterfaces().addInterface("123.456.789");

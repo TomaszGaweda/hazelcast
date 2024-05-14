@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,13 +36,13 @@ import java.util.List;
  */
 public class WeightedEvictableList<T> {
 
-    private List<WeightedItem<T>> list = new ArrayList<WeightedItem<T>>();
+    private List<WeightedItem<T>> list = new ArrayList<>();
 
     private final int maxSize;
     private final int maxVotesBeforeReorganization;
     private int reorganizationCounter;
 
-    private final Comparator<WeightedItem<T>> itemComparator = new Comparator<WeightedItem<T>>() {
+    private final Comparator<WeightedItem<T>> itemComparator = new Comparator<>() {
         @Override
         public int compare(WeightedItem<T> o1, WeightedItem<T> o2) {
             return o2.weight - o1.weight;
@@ -125,7 +125,7 @@ public class WeightedEvictableList<T> {
         }
         WeightedItem<T> returnValue = null;
         if (item != null) {
-            returnValue = new WeightedItem<T>(item);
+            returnValue = new WeightedItem<>(item);
             returnValue.weight = 1;
             list.add(returnValue);
         }

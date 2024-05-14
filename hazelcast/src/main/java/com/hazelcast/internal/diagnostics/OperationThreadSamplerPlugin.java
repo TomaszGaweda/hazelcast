@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,8 +78,8 @@ public class OperationThreadSamplerPlugin extends DiagnosticsPlugin {
     public static final float HUNDRED = 100f;
 
     protected final long samplerPeriodMillis;
-    protected final ConcurrentItemCounter<String> partitionSpecificSamples = new ConcurrentItemCounter<String>();
-    protected final ConcurrentItemCounter<String> genericSamples = new ConcurrentItemCounter<String>();
+    protected final ConcurrentItemCounter<String> partitionSpecificSamples = new ConcurrentItemCounter<>();
+    protected final ConcurrentItemCounter<String> genericSamples = new ConcurrentItemCounter<>();
     protected final OperationExecutor executor;
     protected final NodeEngineImpl nodeEngine;
     protected final boolean includeName;
@@ -154,8 +154,8 @@ public class OperationThreadSamplerPlugin extends DiagnosticsPlugin {
         private String toKey(Object task) {
             String name;
             if (includeName) {
-                if (task instanceof NamedOperation) {
-                    name = task.getClass().getName() + "#" + ((NamedOperation) task).getName();
+                if (task instanceof NamedOperation operation) {
+                    name = task.getClass().getName() + "#" + operation.getName();
                 } else {
                     name = task.getClass().getName();
                 }

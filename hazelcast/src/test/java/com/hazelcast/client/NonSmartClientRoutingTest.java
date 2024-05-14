@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class NonSmartClientRoutingTest {
     public void test() {
         String mapName = randomString();
         // create some dummy data.
-        Map<String, String> origin = new HashMap<String, String>();
+        Map<String, String> origin = new HashMap<>();
         for (int k = 0; k < 1000; k++) {
             String value = randomString();
             origin.put(value, value);

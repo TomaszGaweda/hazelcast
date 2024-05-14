@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,15 +65,13 @@ public class WaitNotifySplitBrainTest extends SplitBrainTestSupport {
 
     private void startTakingFromQueue(final IQueue<Object> queue) {
         for (int i = 0; i < POLL_COUNT; i++) {
-            new Thread() {
-                public void run() {
-                    try {
-                        queue.take();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            new Thread(() -> {
+                try {
+                    queue.take();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            }.start();
+            }).start();
         }
     }
 

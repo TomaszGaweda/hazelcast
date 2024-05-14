@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,17 +220,14 @@ public class HazelcastXACompatibilityTest extends HazelcastTestSupport {
         map.put("key", "value");
 
         final CountDownLatch latch = new CountDownLatch(1);
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    xaResource.end(xid, XAResource.TMFAIL);
-                    latch.countDown();
-                } catch (XAException e) {
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            try {
+                xaResource.end(xid, XAResource.TMFAIL);
+                latch.countDown();
+            } catch (XAException e) {
+                e.printStackTrace();
             }
-        }.start();
+        }).start();
 
         assertOpenEventually(latch, 10);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -321,7 +321,9 @@ public class UnorderedIndexStore extends BaseSingleValueIndexStore {
      * @see IndexCopyBehavior
      */
     private class AddFunctor implements IndexFunctor<Comparable, QueryableEntry> {
-
+        // squid:S3824 ConcurrentHashMap.computeIfAbsent(K, Function<? super K, ? extends V>) locks the map, which *may* have an
+        // effect on throughput such that it's not a direct replacement
+        @SuppressWarnings("squid:S3824")
         @Override
         public Object invoke(Comparable value, QueryableEntry entry) {
             if (value == NULL) {
@@ -437,8 +439,8 @@ public class UnorderedIndexStore extends BaseSingleValueIndexStore {
     }
 
     private Comparable canonicalize(Comparable value) {
-        if (value instanceof CompositeValue) {
-            Comparable[] components = ((CompositeValue) value).getComponents();
+        if (value instanceof CompositeValue compositeValue) {
+            Comparable[] components = compositeValue.getComponents();
             for (int i = 0; i < components.length; ++i) {
                 components[i] = canonicalizeScalarForStorage(components[i]);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.impl.operationservice.OperationService;
 import com.hazelcast.spi.impl.operationservice.PartitionAwareOperation;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -111,13 +110,13 @@ public class Invocation_RetryTest extends HazelcastTestSupport {
 
         NodeEngineImpl localNodeEngine = getNodeEngineImpl(local);
         NodeEngineImpl remoteNodeEngine = getNodeEngineImpl(remote);
-        final OperationServiceImpl operationService = (OperationServiceImpl) localNodeEngine.getOperationService();
+        final OperationServiceImpl operationService = localNodeEngine.getOperationService();
 
         NonResponsiveOperation op = new NonResponsiveOperation();
         op.setValidateTarget(false);
         op.setPartitionId(1);
 
-        InvocationFuture future = (InvocationFuture) operationService.invokeOnTarget(null, op, remoteNodeEngine.getThisAddress());
+        InvocationFuture future = operationService.invokeOnTarget(null, op, remoteNodeEngine.getThisAddress());
 
         Field invocationField = InvocationFuture.class.getDeclaredField("invocation");
         invocationField.setAccessible(true);
@@ -126,12 +125,9 @@ public class Invocation_RetryTest extends HazelcastTestSupport {
         invocation.notifyError(new RetryableHazelcastException());
         invocation.notifyError(new RetryableHazelcastException());
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                Iterator<Invocation> invocations = operationService.invocationRegistry.iterator();
-                assertFalse(invocations.hasNext());
-            }
+        assertTrueEventually(() -> {
+            Iterator<Invocation> invocations = operationService.invocationRegistry.iterator();
+            assertFalse(invocations.hasNext());
         });
     }
 

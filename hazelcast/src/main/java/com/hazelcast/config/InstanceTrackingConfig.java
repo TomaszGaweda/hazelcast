@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -330,7 +330,7 @@ public class InstanceTrackingConfig {
      */
     private static boolean isOEMBuild() {
         try {
-            Class<?> helper = Class.forName("com.hazelcast.license.util.LicenseHelper");
+            Class<?> helper = Class.forName("com.hazelcast.instance.impl.BuiltInLicenseHolder");
             Method getLicense = helper.getMethod("getBuiltInLicense");
             // enabled for OEM/NLC build
             return getLicense.invoke(null) != null;

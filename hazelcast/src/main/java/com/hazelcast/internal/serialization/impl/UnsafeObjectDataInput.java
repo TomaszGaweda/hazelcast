@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,11 +74,13 @@ class UnsafeObjectDataInput extends ByteArrayObjectDataInput {
     }
 
     @Override
+    @SuppressWarnings("MagicNumber")
     public int read() {
         return (pos < size) ? MEM.getByte(data, ARRAY_BYTE_BASE_OFFSET + pos++) & 0xFF : -1;
     }
 
     @Override
+    @SuppressWarnings("MagicNumber")
     public int read(int position) {
         return (position < size) ? MEM.getByte(data, ARRAY_BYTE_BASE_OFFSET + position) & 0xFF : NULL_ARRAY_LENGTH;
     }

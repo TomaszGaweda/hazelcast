@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,15 +77,12 @@ public class InterceptorRegistryTest extends HazelcastTestSupport {
         thread.start();
 
         final CountDownLatch latch = new CountDownLatch(1);
-        Object task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    registry.register(interceptor.id, interceptor);
-                } catch (AssertionError e) {
-                    e.printStackTrace();
-                    latch.countDown();
-                }
+        Object task = (Runnable) () -> {
+            try {
+                registry.register(interceptor.id, interceptor);
+            } catch (AssertionError e) {
+                e.printStackTrace();
+                latch.countDown();
             }
         };
         queue.add(task, false);
@@ -122,15 +119,12 @@ public class InterceptorRegistryTest extends HazelcastTestSupport {
         registry.register(interceptor.id, interceptor);
 
         final CountDownLatch latch = new CountDownLatch(1);
-        Object task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    registry.deregister(interceptor.id);
-                } catch (AssertionError e) {
-                    e.printStackTrace();
-                    latch.countDown();
-                }
+        Object task = (Runnable) () -> {
+            try {
+                registry.deregister(interceptor.id);
+            } catch (AssertionError e) {
+                e.printStackTrace();
+                latch.countDown();
             }
         };
         queue.add(task, false);
@@ -147,16 +141,13 @@ public class InterceptorRegistryTest extends HazelcastTestSupport {
     public void test_afterConcurrentRegisterDeregister_thenInternalStructuresAreEmpty() throws Exception {
         final AtomicBoolean stop = new AtomicBoolean(false);
 
-        List<Thread> threads = new ArrayList<Thread>();
+        List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    TestMapInterceptor interceptor = new TestMapInterceptor();
-                    while (!stop.get()) {
-                        registry.register(interceptor.id, interceptor);
-                        registry.deregister(interceptor.id);
-                    }
+            Thread thread = new Thread(() -> {
+                TestMapInterceptor interceptor = new TestMapInterceptor();
+                while (!stop.get()) {
+                    registry.register(interceptor.id, interceptor);
+                    registry.deregister(interceptor.id);
                 }
             });
             thread.start();

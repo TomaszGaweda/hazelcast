@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.hazelcast.map.impl.MapPartitionLostEventFilter;
 import com.hazelcast.map.impl.MapService;
 import com.hazelcast.map.listener.EntryAddedListener;
 import com.hazelcast.partition.AbstractPartitionLostListenerTest;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -116,7 +115,7 @@ public class MapPartitionLostListenerTest extends AbstractPartitionLostListenerT
         final TestEventCollectingMapPartitionLostListener listener = new TestEventCollectingMapPartitionLostListener(0);
         survivingInstance.getMap(getIthMapName(0)).addPartitionLostListener(listener);
 
-        final Set<Integer> survivingPartitionIds = new HashSet<Integer>();
+        final Set<Integer> survivingPartitionIds = new HashSet<>();
         Node survivingNode = getNode(survivingInstance);
         Address survivingAddress = survivingNode.getThisAddress();
 
@@ -129,16 +128,12 @@ public class MapPartitionLostListenerTest extends AbstractPartitionLostListenerT
         terminatingInstance.getLifecycleService().terminate();
         waitAllForSafeState(survivingInstance);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run()
-                    throws Exception {
-                List<MapPartitionLostEvent> events = listener.getEvents();
-                assertFalse(events.isEmpty());
+        assertTrueEventually(() -> {
+            List<MapPartitionLostEvent> events = listener.getEvents();
+            assertFalse(events.isEmpty());
 
-                for (MapPartitionLostEvent event : events) {
-                    assertFalse(survivingPartitionIds.contains(event.getPartitionId()));
-                }
+            for (MapPartitionLostEvent event : events) {
+                assertFalse(survivingPartitionIds.contains(event.getPartitionId()));
             }
         });
     }
@@ -152,16 +147,12 @@ public class MapPartitionLostListenerTest extends AbstractPartitionLostListenerT
 
     private static void assertEventEventually(final TestEventCollectingMapPartitionLostListener listener,
                                               final IPartitionLostEvent internalEvent) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run()
-                    throws Exception {
-                List<MapPartitionLostEvent> events = listener.getEvents();
-                assertEquals(1, events.size());
-                MapPartitionLostEvent event = events.get(0);
-                assertEquals(internalEvent.getPartitionId(), event.getPartitionId());
-                assertNotNull(event.toString());
-            }
+        assertTrueEventually(() -> {
+            List<MapPartitionLostEvent> events = listener.getEvents();
+            assertEquals(1, events.size());
+            MapPartitionLostEvent event = events.get(0);
+            assertEquals(internalEvent.getPartitionId(), event.getPartitionId());
+            assertNotNull(event.toString());
         });
     }
 }

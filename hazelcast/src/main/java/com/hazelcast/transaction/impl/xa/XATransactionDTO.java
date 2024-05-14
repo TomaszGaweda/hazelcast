@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ public class XATransactionDTO implements IdentifiedDataSerializable {
         timeoutMilis = in.readLong();
         startTime = in.readLong();
         int size = in.readInt();
-        records = new ArrayList<TransactionLogRecord>(size);
+        records = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             TransactionLogRecord record = in.readObject();
             records.add(record);

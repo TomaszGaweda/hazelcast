@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.impl.operationservice.OperationService;
 import com.hazelcast.spi.impl.operationservice.impl.responses.NormalResponse;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -186,16 +185,11 @@ public class OperationServiceImpl_BasicTest extends HazelcastTestSupport {
     }
 
     public static void assertNoLitterInOpService(HazelcastInstance hz) {
-        final OperationServiceImpl operationService = (OperationServiceImpl) getNode(hz).nodeEngine.getOperationService();
+        final OperationServiceImpl operationService = getNode(hz).nodeEngine.getOperationService();
 
         // we need to do this with an assertTrueEventually because it can happen that system calls are being send
         // and this leads to the maps not being empty. But eventually they will be empty at some moment in time.
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals("invocations should be empty", 0, operationService.invocationRegistry.size());
-            }
-        });
+        assertTrueEventually(() -> assertEquals("invocations should be empty", 0, operationService.invocationRegistry.size()));
     }
 
     @Test(expected = HazelcastSerializationException.class)

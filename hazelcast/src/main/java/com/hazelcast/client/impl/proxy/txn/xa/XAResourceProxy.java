@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,11 +187,11 @@ public class XAResourceProxy extends ClientProxy implements HazelcastXAResource 
             return true;
         }
         String otherClusterName = null;
-        if (xaResource instanceof XAResourceProxy) {
-            otherClusterName = ((XAResourceProxy) xaResource).getClusterName();
+        if (xaResource instanceof XAResourceProxy proxy) {
+            otherClusterName = proxy.getClusterName();
         }
-        if (xaResource instanceof XAResourceImpl) {
-            otherClusterName = ((XAResourceImpl) xaResource).getClusterName();
+        if (xaResource instanceof XAResourceImpl impl) {
+            otherClusterName = impl.getClusterName();
         }
         return getClusterName().equals(otherClusterName);
     }

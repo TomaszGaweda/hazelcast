@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,11 @@ public final class FinalizeMigrationOperation extends AbstractPartitionOperation
             rollbackDestination();
         }
 
-        partitionStateManager.clearMigratingFlag(partitionId);
+        if (!isOldBackupReplicaOwner()) {
+            // see comment above: on old backup replica, migrating flag is not set during migration.
+            partitionStateManager.clearMigratingFlag(partitionId);
+        }
+
         if (success) {
             nodeEngine.onPartitionMigrate(migrationInfo);
         }
@@ -260,5 +264,12 @@ public final class FinalizeMigrationOperation extends AbstractPartitionOperation
     @Override
     public int getClassId() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void toString(StringBuilder sb) {
+        super.toString(sb);
+
+        sb.append(", migration=").append(migrationInfo);
     }
 }

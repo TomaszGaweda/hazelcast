@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.impl.eventservice.EventService;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.QuickTest;
@@ -61,7 +60,7 @@ public class EntryListenerConfigTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testMapListenerAddition_withClassName() throws Exception {
+    public void testMapListenerAddition_withClassName() {
         listenerConfig.setClassName(TestMapListener.class.getCanonicalName());
         createInstanceAndInitializeListeners();
 
@@ -69,7 +68,7 @@ public class EntryListenerConfigTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testMapListenerAddition_withImplementation() throws Exception {
+    public void testMapListenerAddition_withImplementation() {
         listenerConfig.setImplementation(new TestMapListener());
         createInstanceAndInitializeListeners();
 
@@ -77,7 +76,7 @@ public class EntryListenerConfigTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testHazelcastInstanceAwareness_whenMapListenerAdded_withImplementation() throws Exception {
+    public void testHazelcastInstanceAwareness_whenMapListenerAdded_withImplementation() {
         listenerConfig.setImplementation(new TestMapListener());
         createInstanceAndInitializeListeners();
 
@@ -85,7 +84,7 @@ public class EntryListenerConfigTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testHazelcastInstanceAwareness_whenMapListenerAdded_withClassName() throws Exception {
+    public void testHazelcastInstanceAwareness_whenMapListenerAdded_withClassName() {
         listenerConfig.setClassName(TestMapListener.class.getCanonicalName());
         createInstanceAndInitializeListeners();
 
@@ -93,7 +92,7 @@ public class EntryListenerConfigTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testEntryListenerAddition_withClassName() throws Exception {
+    public void testEntryListenerAddition_withClassName() {
         listenerConfig.setClassName(TestEntryListener.class.getCanonicalName());
         createInstanceAndInitializeListeners();
 
@@ -101,7 +100,7 @@ public class EntryListenerConfigTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testEntryListenerAddition_withImplementation() throws Exception {
+    public void testEntryListenerAddition_withImplementation() {
         listenerConfig.setImplementation(new TestEntryListener());
         createInstanceAndInitializeListeners();
 
@@ -109,13 +108,13 @@ public class EntryListenerConfigTest extends HazelcastTestSupport {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testListenerAddition_throwsException_withInvalidListener() throws Exception {
+    public void testListenerAddition_throwsException_withInvalidListener() {
         listenerConfig.setImplementation(new EventListener() {
         });
     }
 
     @Test
-    public void testHazelcastInstanceAwareness_whenEntryListenerAdded_withImplementation() throws Exception {
+    public void testHazelcastInstanceAwareness_whenEntryListenerAdded_withImplementation() {
         listenerConfig.setImplementation(new TestEntryListener());
         createInstanceAndInitializeListeners();
 
@@ -123,7 +122,7 @@ public class EntryListenerConfigTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testHazelcastInstanceAwareness_whenEntryListenerAdded_withClassName() throws Exception {
+    public void testHazelcastInstanceAwareness_whenEntryListenerAdded_withClassName() {
         listenerConfig.setClassName(TestEntryListener.class.getCanonicalName());
         createInstanceAndInitializeListeners();
 
@@ -145,12 +144,7 @@ public class EntryListenerConfigTest extends HazelcastTestSupport {
     }
 
     private void assertInstanceSet(final AtomicBoolean instanceSet) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertTrue(instanceSet.get());
-            }
-        });
+        assertTrueEventually(() -> assertTrue(instanceSet.get()));
     }
 
     private EventService getEventService() {

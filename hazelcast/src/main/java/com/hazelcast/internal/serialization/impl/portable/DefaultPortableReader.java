@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import static com.hazelcast.nio.serialization.FieldType.TIME_ARRAY;
 /**
  * Can't be accessed concurrently.
  */
+@SuppressWarnings("MethodCount")
 public class DefaultPortableReader implements PortableReader {
 
     protected final ClassDefinition cd;
@@ -58,6 +59,7 @@ public class DefaultPortableReader implements PortableReader {
     private final int offset;
     private boolean raw;
 
+    @SuppressWarnings("MagicNumber")
     DefaultPortableReader(PortableSerializer serializer, BufferObjectDataInput in, ClassDefinition cd) {
         this.in = in;
         this.serializer = serializer;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class HazelcastStarter {
      * Caches downloaded files and classloader used to load their classes per version string.
      */
     private static final ConcurrentMap<String, HazelcastVersionClassloaderFuture> LOADED_VERSIONS =
-            new ConcurrentHashMap<String, HazelcastVersionClassloaderFuture>();
+            new ConcurrentHashMap<>();
 
     /**
      * Starts a new open source {@link HazelcastInstance} of the given version.
@@ -180,7 +180,7 @@ public class HazelcastStarter {
         }
     }
 
-    private static HazelcastAPIDelegatingClassloader getHazelcastAPIDelegatingClassloader(HazelcastInstance hz) {
+    static HazelcastAPIDelegatingClassloader getHazelcastAPIDelegatingClassloader(HazelcastInstance hz) {
         ConcurrentMap<String, Object> userContext = hz.getConfig().getUserContext();
         HazelcastAPIDelegatingClassloader classloader
                 = (HazelcastAPIDelegatingClassloader) userContext.get("versionClassLoader");
@@ -190,7 +190,7 @@ public class HazelcastStarter {
         return classloader;
     }
 
-    private static Object getHazelcastInstanceImpl(HazelcastInstance hazelcastInstance, ClassLoader classloader)
+    static Object getHazelcastInstanceImpl(HazelcastInstance hazelcastInstance, ClassLoader classloader)
             throws Exception {
         if (isProxyClass(hazelcastInstance.getClass())) {
             InvocationHandler invocationHandler = Proxy.getInvocationHandler(hazelcastInstance);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public final class PendingInvocationsPlugin extends DiagnosticsPlugin {
             = new HazelcastProperty("hazelcast.diagnostics.pending.invocations.threshold", 1);
 
     private final InvocationRegistry invocationRegistry;
-    private final ItemCounter<String> occurrenceMap = new ItemCounter<String>();
+    private final ItemCounter<String> occurrenceMap = new ItemCounter<>();
     private final long periodMillis;
     private final int threshold;
 

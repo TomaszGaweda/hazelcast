@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,8 +59,7 @@ public class MapExecuteWithPredicateMessageTask
 
     @Override
     public PartitionIdSet getPartitions() {
-        if (predicate instanceof PartitionPredicate) {
-            PartitionPredicate partitionPredicate = (PartitionPredicate) predicate;
+        if (predicate instanceof PartitionPredicate partitionPredicate) {
             return clientEngine.getPartitionService().getPartitionIdSet(partitionPredicate.getPartitionKeys());
         }
 
@@ -73,8 +72,8 @@ public class MapExecuteWithPredicateMessageTask
     @Override
     protected OperationFactory createOperationFactory() {
         Predicate targetPredicate = predicate;
-        if (predicate instanceof PartitionPredicate) {
-            targetPredicate = ((PartitionPredicate) predicate).getTarget();
+        if (predicate instanceof PartitionPredicate partitionPredicate) {
+            targetPredicate = partitionPredicate.getTarget();
         }
 
         return createOperationFactory(targetPredicate);
@@ -94,7 +93,7 @@ public class MapExecuteWithPredicateMessageTask
     }
 
     protected Object reduce(Map<Integer, Object> map) {
-        List<Map.Entry<Data, Data>> dataMap = new ArrayList<Map.Entry<Data, Data>>();
+        List<Map.Entry<Data, Data>> dataMap = new ArrayList<>();
         MapService mapService = getService(MapService.SERVICE_NAME);
         for (Object o : map.values()) {
             if (o != null) {
@@ -139,5 +138,10 @@ public class MapExecuteWithPredicateMessageTask
     @Override
     public Object[] getParameters() {
         return new Object[]{parameters.entryProcessor, parameters.predicate};
+    }
+
+    @Override
+    protected String getUserCodeNamespace() {
+        return MapService.lookupNamespace(nodeEngine, getDistributedObjectName());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import static com.hazelcast.internal.util.JsonUtil.getString;
 /**
  * A Serializable DTO for {@link com.hazelcast.spi.impl.operationexecutor.slowoperationdetector.SlowOperationLog}.
  */
+@SuppressWarnings("VisibilityModifier")
 public class SlowOperationDTO implements JsonSerializable {
 
     public String operation;
@@ -72,7 +73,7 @@ public class SlowOperationDTO implements JsonSerializable {
         stackTrace = getString(json, "stackTrace");
         totalInvocations = getInt(json, "totalInvocations");
 
-        invocations = new ArrayList<SlowOperationInvocationDTO>();
+        invocations = new ArrayList<>();
         for (JsonValue jsonValue : getArray(json, "invocations")) {
             SlowOperationInvocationDTO slowOperationInvocationDTO = new SlowOperationInvocationDTO();
             slowOperationInvocationDTO.fromJson(jsonValue.asObject());

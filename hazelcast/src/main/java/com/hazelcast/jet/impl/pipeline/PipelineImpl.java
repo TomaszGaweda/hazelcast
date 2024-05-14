@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.hazelcast.jet.impl.pipeline;
 
+import com.hazelcast.jet.JetMemberSelector;
 import com.hazelcast.jet.core.DAG;
 import com.hazelcast.jet.impl.pipeline.transform.AbstractTransform;
 import com.hazelcast.jet.impl.pipeline.transform.BatchSourceTransform;
@@ -33,6 +34,7 @@ import com.hazelcast.jet.pipeline.StreamSourceStage;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,11 +55,13 @@ import static java.util.stream.Collectors.toList;
 
 public class PipelineImpl implements Pipeline {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final Map<Transform, List<Transform>> adjacencyMap = new LinkedHashMap<>();
     private final Map<String, File> attachedFiles = new HashMap<>();
     private boolean preserveOrder;
+    private JetMemberSelector memberSelector;
 
     @Nonnull
     @Override
@@ -87,6 +91,14 @@ public class PipelineImpl implements Pipeline {
     public PipelineImpl setPreserveOrder(boolean value) {
         preserveOrder = value;
         return this;
+    }
+
+    public JetMemberSelector memberSelector() {
+        return memberSelector;
+    }
+
+    public void setMemberSelector(JetMemberSelector memberSelector) {
+        this.memberSelector = memberSelector;
     }
 
     @Nonnull @Override
@@ -131,8 +143,6 @@ public class PipelineImpl implements Pipeline {
             }
         });
     }
-
-
 
     @SuppressWarnings("rawtypes")
     public void connect(

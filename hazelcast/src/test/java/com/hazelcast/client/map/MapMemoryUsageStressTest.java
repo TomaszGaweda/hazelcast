@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class MapMemoryUsageStressTest extends HazelcastTestSupport {
     public void voidCacher() {
         AtomicInteger counter = new AtomicInteger(200000);
         AtomicInteger errors = new AtomicInteger();
-        List<String> errorList = synchronizedList(new LinkedList<String>());
+        List<String> errorList = synchronizedList(new LinkedList<>());
 
         Thread[] threads = new Thread[8];
         for (int i = 0; i < threads.length; i++) {

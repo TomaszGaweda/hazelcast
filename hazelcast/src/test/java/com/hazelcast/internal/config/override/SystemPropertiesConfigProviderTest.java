@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,41 @@
 package com.hazelcast.internal.config.override;
 
 import com.hazelcast.test.HazelcastSerialClassRunner;
-import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.QuickTest;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.util.Properties;
 
-import static com.hazelcast.internal.config.override.ExternalConfigTestUtils.entry;
 import static com.hazelcast.internal.config.override.SystemPropertiesConfigParser.member;
+import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(HazelcastSerialClassRunner.class)
 @Category(QuickTest.class)
-public class SystemPropertiesConfigProviderTest extends HazelcastTestSupport {
+public class SystemPropertiesConfigProviderTest {
+    private Properties systemProperties;
+    private SystemPropertiesConfigProvider provider;
+
+    @Before
+    public void setUp() {
+        systemProperties = new Properties();
+        provider = new SystemPropertiesConfigProvider(member(), () -> systemProperties);
+    }
 
     @Test
     public void shouldParseClusternameConfigFromSystemProperties() {
-        Properties systemProperties = new Properties();
-        systemProperties.put("hz.cluster-name", "testcluster");
-        SystemPropertiesConfigProvider provider = new SystemPropertiesConfigProvider(member(), () -> systemProperties);
-        assertContains(provider.properties().entrySet(), entry("hazelcast.cluster-name", "testcluster"));
+        systemProperties.setProperty("hz.cluster-name", "testcluster");
+        assertThat(provider.properties()).containsEntry("hazelcast.cluster-name", "testcluster");
+    }
+
+    /** @see <a href="https://github.com/hazelcast/hazelcast/issues/26310">GitHub issue</a> */
+    @Test
+    public void testNonStringSystemPropertyValue() {
+        String key = getClass().getSimpleName();
+        systemProperties.put(key, true);
+        assertNull(provider.properties().get(key));
     }
 }

@@ -1,4 +1,5 @@
-name: gcp-test
+name: GCP Discovery Plugin Tests
+
 on:
   workflow_dispatch:
   pull_request_target:
@@ -8,8 +9,8 @@ on:
       - "master"
       - "*.z"
     paths:
-      - 'hazelcast/src/main/java/com/hazelcast/gcp/**'
-      - '.github/terraform/gcp/**'
+      - "hazelcast/src/main/java/com/hazelcast/gcp/**"
+      - ".github/terraform/gcp/**"
 
 jobs:
   build:
@@ -17,8 +18,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      GCP_KEY_FILE: ${{ secrets.GCP_KEY_FILE }}
     runs-on: ubuntu-latest
     if: >-
       github.repository_owner == 'hazelcast' && 
@@ -28,15 +27,9 @@ jobs:
           github.event.label.name == 'run-discovery-tests' 
         )
       )
+    env:
+      AWS_REGION: us-east-1
     steps:
-      - name: Setup JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          architecture: x64
-          distribution: adopt
-          cache: 'maven'
-
       - name: Decide which ref to checkout
         id: decide-ref
         run: |
@@ -51,33 +44,51 @@ jobs:
         with:
           ref: ${{steps.decide-ref.outputs.ref}}
 
+      - name: Read Java Config
+        uses: pietrobolcato/action-read-yaml@9f13718d61111b69f30ab4ac683e67a56d254e1d
+        id: java-config
+        with:
+          config: ${{ github.workspace }}/.github/java-config.yml
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ steps.java-config.outputs['java-version'] }}
+          distribution: ${{ steps.java-config.outputs['distribution'] }}
+          architecture: x64
+          cache: "maven"
+
       - name: Build hazelcast jar
         run: |
-          ./mvnw -T 4 -B -V -e clean package \
-          -Dfindbugs.skip \
-          -Dcheckstyle.skip \
-          -Dpmd.skip=true \
-          -Dspotbugs.skip \
-          -Denforcer.skip \
-          -Dmaven.javadoc.skip \
-          -DskipTests \
-          -Dlicense.skip=true \
-          -Drat.skip=true \
-          -Dspotless.check.skip=true \
-          -Dattribution.skip \
-          -Dmaven.source.skip=true
+          ./mvnw -T 4 -B -V -e clean package --activate-profiles quick \
           echo "Hazelcast jar is: " hazelcast/target/hazelcast-*-SNAPSHOT.jar
           cp hazelcast/target/hazelcast-*-SNAPSHOT.jar ~/hazelcast.jar
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get Secrets
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: |
+            GKE_SA_KEY,CN/GKE_SA_KEY
+
+      - name: Authenticate to GCP
+        uses: "google-github-actions/auth@v2.1.2"
+        with:
+          credentials_json: ${{ env.GKE_SA_KEY }}
+
       - name: Create GCP credentials file
         run: |
-          touch gcp_key_file.json
-          echo $GCP_KEY_FILE > ~/gcp_key_file.json
+          touch ~/gcp_key_file.json
+          echo $GKE_SA_KEY > ~/gcp_key_file.json
 
-      - name : Set-up Terraform
-        uses: hashicorp/setup-terraform@v2.0.0
-        with:
-          terraform_version: 1.1.8
+      - name: Set-up Terraform
+        uses: hashicorp/setup-terraform@v3.1.1
 
       - name: Terraform Init
         working-directory: .github/terraform/gcp
@@ -86,7 +97,7 @@ jobs:
       - name: Terraform Apply
         working-directory: .github/terraform/gcp
         run: |
-          project_id=$(echo $GCP_KEY_FILE | grep -Po '"project_id":\s"\K[-a-zA-Z0-9]+')
+          project_id=$(echo $GKE_SA_KEY | grep -Po '"project_id":\s"\K[-a-zA-Z0-9]+')
           terraform apply \
             -var="hazelcast_mancenter_version=latest-snapshot" \
             -var="hazelcast_path=~/hazelcast.jar" \

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -1067,6 +1067,8 @@ abstract class SqlPlanImpl extends SqlPlan {
         // map of per-table partition pruning candidates, structured as
         // mapName -> { columnName -> RexLiteralOrDynamicParam }
         private final Map<String, List<Map<String, Expression<?>>>> partitionStrategyCandidates;
+        private final boolean analyzed;
+        private final JobConfig analyzeJobConfig;
 
         @SuppressWarnings("checkstyle:ParameterNumber")
         SelectPlan(
@@ -1079,7 +1081,10 @@ abstract class SqlPlanImpl extends SqlPlan {
                 SqlRowMetadata rowMetadata,
                 PlanExecutor planExecutor,
                 List<Permission> permissions,
-                Map<String, List<Map<String, Expression<?>>>> partitionStrategyCandidates) {
+                Map<String, List<Map<String, Expression<?>>>> partitionStrategyCandidates,
+                final boolean analyzed,
+                final JobConfig analyzeJobConfig
+        ) {
             super(planKey);
 
             this.objectKeys = objectKeys;
@@ -1091,6 +1096,8 @@ abstract class SqlPlanImpl extends SqlPlan {
             this.planExecutor = planExecutor;
             this.permissions = permissions;
             this.partitionStrategyCandidates = partitionStrategyCandidates;
+            this.analyzed = analyzed;
+            this.analyzeJobConfig = analyzeJobConfig;
         }
 
         QueryParameterMetadata getParameterMetadata() {
@@ -1115,7 +1122,9 @@ abstract class SqlPlanImpl extends SqlPlan {
 
         @Override
         public boolean isCacheable() {
-            return !objectKeys.contains(PlanObjectKey.NON_CACHEABLE_OBJECT_KEY);
+            // Do not cache ANALYZE plan to give always the most up-to-date result
+            // and avoid race conditions due to shared, mutable analyzeJobConfig instance.
+            return !isAnalyzed() && !objectKeys.contains(PlanObjectKey.NON_CACHEABLE_OBJECT_KEY);
         }
 
         @Override
@@ -1125,6 +1134,14 @@ abstract class SqlPlanImpl extends SqlPlan {
 
         public Map<String, List<Map<String, Expression<?>>>> getPartitionStrategyCandidates() {
             return partitionStrategyCandidates;
+        }
+
+        public boolean isAnalyzed() {
+            return analyzed;
+        }
+
+        public JobConfig analyzeJobConfig() {
+            return analyzeJobConfig;
         }
 
         @Override
@@ -1153,7 +1170,10 @@ abstract class SqlPlanImpl extends SqlPlan {
         private final boolean infiniteRows;
         private final PlanExecutor planExecutor;
         private final List<Permission> permissions;
+        private final boolean analyzed;
+        private final JobConfig analyzeJobConfig;
 
+        @SuppressWarnings("checkstyle:ParameterNumber")
         DmlPlan(
                 Operation operation,
                 PlanKey planKey,
@@ -1163,8 +1183,9 @@ abstract class SqlPlanImpl extends SqlPlan {
                 String query,
                 boolean infiniteRows,
                 PlanExecutor planExecutor,
-                List<Permission> permissions
-        ) {
+                List<Permission> permissions,
+                boolean analyzed,
+                JobConfig analyzeJobConfig) {
             super(planKey);
 
             this.operation = operation;
@@ -1175,6 +1196,8 @@ abstract class SqlPlanImpl extends SqlPlan {
             this.infiniteRows = infiniteRows;
             this.planExecutor = planExecutor;
             this.permissions = permissions;
+            this.analyzed = analyzed;
+            this.analyzeJobConfig = analyzeJobConfig;
         }
 
         Operation getOperation() {
@@ -1199,12 +1222,22 @@ abstract class SqlPlanImpl extends SqlPlan {
 
         @Override
         public boolean isCacheable() {
-            return !objectKeys.contains(PlanObjectKey.NON_CACHEABLE_OBJECT_KEY);
+            // Do not cache ANALYZE plan to give always the most up-to-date result
+            // and avoid race conditions due to shared, mutable analyzeJobConfig instance.
+            return !isAnalyzed() && !objectKeys.contains(PlanObjectKey.NON_CACHEABLE_OBJECT_KEY);
         }
 
         @Override
         public boolean isPlanValid(PlanCheckContext context) {
             return context.isValid(objectKeys);
+        }
+
+        public boolean isAnalyzed() {
+            return analyzed;
+        }
+
+        public JobConfig analyzeJobConfig() {
+            return analyzeJobConfig;
         }
 
         @Override
@@ -1437,7 +1470,7 @@ abstract class SqlPlanImpl extends SqlPlan {
 
         @Override
         public void checkPermissions(SqlSecurityContext context) {
-            context.checkPermission(new MapPermission(mapName, ACTION_CREATE, ACTION_PUT, ACTION_REMOVE));
+            context.checkPermission(new MapPermission(mapName, ACTION_CREATE, ACTION_PUT));
             permissions.forEach(context::checkPermission);
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ public class MapNearCacheStaleReadTest extends HazelcastTestSupport {
         sleepMillis(300);
 
         // start numGetters getter threads (get0-numGetters)
-        List<Thread> threads = new ArrayList<Thread>();
+        List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < NUM_GETTERS; i++) {
             Thread thread = new Thread(new GetRunnable(), "get" + i);
             threads.add(thread);

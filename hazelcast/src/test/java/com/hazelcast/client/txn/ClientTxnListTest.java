@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,9 @@ public class ClientTxnListTest {
     }
 
     @Test
-    public void testAddRemove() throws Exception {
+    public void testAddRemove() {
         String listName = randomString();
-        final IList l = client.getList(listName);
+        final IList<String> l = client.getList(listName);
         l.add("item1");
 
         final TransactionContext context = client.newTransactionContext();
@@ -77,9 +77,9 @@ public class ClientTxnListTest {
     }
 
     @Test
-    public void testAddAndRoleBack() throws Exception {
+    public void testAddAndRoleBack() {
         final String listName = randomString();
-        final IList l = client.getList(listName);
+        final IList<String> l = client.getList(listName);
         l.add("item1");
 
         final TransactionContext context = client.newTransactionContext();

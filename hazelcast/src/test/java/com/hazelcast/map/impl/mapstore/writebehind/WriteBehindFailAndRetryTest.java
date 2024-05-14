@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.hazelcast.map.impl.MapServiceContext;
 import com.hazelcast.map.impl.PartitionContainer;
 import com.hazelcast.map.impl.proxy.MapProxyImpl;
 import com.hazelcast.map.impl.recordstore.RecordStore;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -108,8 +107,8 @@ public class WriteBehindFailAndRetryTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testStoreOperationDone_afterTemporaryMapStoreFailure() throws Exception {
-        final SelfHealingMapStore<Integer, Integer> mapStore = new SelfHealingMapStore<Integer, Integer>();
+    public void testStoreOperationDone_afterTemporaryMapStoreFailure() {
+        final SelfHealingMapStore<Integer, Integer> mapStore = new SelfHealingMapStore<>();
         final IMap<Integer, Integer> map = TestMapUsingMapStoreBuilder.<Integer, Integer>create()
                 .withMapStore(mapStore)
                 .withNodeCount(1)
@@ -120,17 +119,12 @@ public class WriteBehindFailAndRetryTest extends HazelcastTestSupport {
 
         map.put(1, 2);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(1, mapStore.size());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(1, mapStore.size()));
     }
 
     @Test
-    public void testStoreOperationDone_afterTemporaryMapStoreFailure_whenNonWriteCoalescingModeOn() throws Exception {
-        final SelfHealingMapStore<Integer, Integer> mapStore = new SelfHealingMapStore<Integer, Integer>();
+    public void testStoreOperationDone_afterTemporaryMapStoreFailure_whenNonWriteCoalescingModeOn() {
+        final SelfHealingMapStore<Integer, Integer> mapStore = new SelfHealingMapStore<>();
         final IMap<Integer, Integer> map = TestMapUsingMapStoreBuilder.<Integer, Integer>create()
                 .withMapStore(mapStore)
                 .withNodeCount(1)
@@ -144,17 +138,12 @@ public class WriteBehindFailAndRetryTest extends HazelcastTestSupport {
         map.put(1, 3);
         map.put(1, 4);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(1, mapStore.size());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(1, mapStore.size()));
     }
 
     static class SelfHealingMapStore<K, V> extends MapStoreAdapter<K, V> {
 
-        private final ConcurrentMap<K, V> store = new ConcurrentHashMap<K, V>();
+        private final ConcurrentMap<K, V> store = new ConcurrentHashMap<>();
         private final TemporarySuccessProducer temporarySuccessProducer = new TemporarySuccessProducer(4);
 
         @Override
@@ -204,8 +193,8 @@ public class WriteBehindFailAndRetryTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testOOMHandlerCalled_whenOOMEOccursDuringStoreOperations() throws Exception {
-        LeakyMapStore<Integer, Integer> mapStore = new LeakyMapStore<Integer, Integer>();
+    public void testOOMHandlerCalled_whenOOMEOccursDuringStoreOperations() {
+        LeakyMapStore<Integer, Integer> mapStore = new LeakyMapStore<>();
         IMap<Integer, Integer> map = TestMapUsingMapStoreBuilder.<Integer, Integer>create()
                 .withMapStore(mapStore)
                 .withNodeCount(1)
@@ -240,10 +229,10 @@ public class WriteBehindFailAndRetryTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testPartialStoreOperationDone_afterTemporaryMapStoreFailure() throws Exception {
+    public void testPartialStoreOperationDone_afterTemporaryMapStoreFailure() {
         final int numEntriesToStore = 6;
         final SequentialMapStore<Integer, Integer> mapStore
-                = new SequentialMapStore<Integer, Integer>(5, numEntriesToStore);
+                = new SequentialMapStore<>(5, numEntriesToStore);
         IMap<Integer, Integer> map = TestMapUsingMapStoreBuilder.<Integer, Integer>create()
                 .withMapStore(mapStore)
                 .withNodeCount(1)
@@ -255,12 +244,7 @@ public class WriteBehindFailAndRetryTest extends HazelcastTestSupport {
         for (int i = 0; i < numEntriesToStore; i++) {
             map.put(i, i);
         }
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertEquals(numEntriesToStore, mapStore.storeCount());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(numEntriesToStore, mapStore.storeCount()));
     }
 
     /**

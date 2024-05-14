@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ public class MergeBackupOperation extends AbstractMultiMapOperation implements B
         for (int i = 0; i < size; i++) {
             Data key = IOUtil.readData(in);
             int collectionSize = in.readInt();
-            Collection<MultiMapRecord> collection = new ArrayList<MultiMapRecord>(collectionSize);
+            Collection<MultiMapRecord> collection = new ArrayList<>(collectionSize);
             for (int j = 0; j < collectionSize; j++) {
                 MultiMapRecord record = in.readObject();
                 collection.add(record);

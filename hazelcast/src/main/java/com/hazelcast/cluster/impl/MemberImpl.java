@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,8 +91,8 @@ public final class MemberImpl
 
     @Override
     public void setHazelcastInstance(HazelcastInstance hazelcastInstance) {
-        if (hazelcastInstance instanceof HazelcastInstanceImpl) {
-            instance = (HazelcastInstanceImpl) hazelcastInstance;
+        if (hazelcastInstance instanceof HazelcastInstanceImpl impl) {
+            instance = impl;
             localMember = instance.node.address.equals(address);
             logger = instance.node.getLogger(this.getClass().getName());
         }

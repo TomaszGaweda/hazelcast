@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,16 +97,13 @@ public class InvocationUtilTest extends HazelcastTestSupport {
                 .setPartitionId(randomPartitionId);
         final LocalRetryableExecution execution = executeLocallyWithRetry(nodeEngineImpl, operation);
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    TimeUnit.SECONDS.sleep(10);
-                } catch (InterruptedException e) {
+        spawn((Runnable) () -> {
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch (InterruptedException e) {
 
-                }
-                partition.resetMigrating();
             }
+            partition.resetMigrating();
         });
 
         assertTrue(execution.awaitCompletion(1, TimeUnit.MINUTES));

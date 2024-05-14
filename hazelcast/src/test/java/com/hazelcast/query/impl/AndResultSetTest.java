@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -76,8 +75,8 @@ public class AndResultSetTest extends HazelcastTestSupport {
     // https://github.com/hazelcast/hazelcast/issues/9614
     public void size_matchingPredicate_notInResult() {
         Set<QueryableEntry> entries = generateEntries(100000);
-        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<Set<QueryableEntry>>();
-        otherIndexedResults.add(Collections.<QueryableEntry>emptySet());
+        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<>();
+        otherIndexedResults.add(Collections.emptySet());
         AndResultSet resultSet = new AndResultSet(entries, otherIndexedResults, asList(Predicates.alwaysTrue()));
 
         int size = resultSet.size();
@@ -94,7 +93,7 @@ public class AndResultSetTest extends HazelcastTestSupport {
     // https://github.com/hazelcast/hazelcast/issues/9614
     public void size_matchingPredicate_noOtherResult() {
         Set<QueryableEntry> entries = generateEntries(100000);
-        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<Set<QueryableEntry>>();
+        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<>();
         AndResultSet resultSet = new AndResultSet(entries, otherIndexedResults, asList(Predicates.alwaysTrue()));
 
         int size = resultSet.size();
@@ -111,9 +110,9 @@ public class AndResultSetTest extends HazelcastTestSupport {
     // https://github.com/hazelcast/hazelcast/issues/9614
     public void size_matchingPredicate_inOtherResult() {
         Set<QueryableEntry> entries = generateEntries(100000);
-        Set<QueryableEntry> otherIndexResult = new HashSet<QueryableEntry>();
+        Set<QueryableEntry> otherIndexResult = new HashSet<>();
         otherIndexResult.add(entries.iterator().next());
-        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<Set<QueryableEntry>>();
+        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<>();
         otherIndexedResults.add(otherIndexResult);
         AndResultSet resultSet = new AndResultSet(entries, otherIndexedResults, asList(Predicates.alwaysTrue()));
 
@@ -138,8 +137,8 @@ public class AndResultSetTest extends HazelcastTestSupport {
     @Test
     public void contains_matchingPredicate_notInResult() {
         Set<QueryableEntry> entries = generateEntries(100000);
-        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<Set<QueryableEntry>>();
-        otherIndexedResults.add(Collections.<QueryableEntry>emptySet());
+        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<>();
+        otherIndexedResults.add(Collections.emptySet());
         AndResultSet resultSet = new AndResultSet(entries, otherIndexedResults, asList(Predicates.alwaysTrue()));
 
         assertNotContains(resultSet, entries.iterator().next());
@@ -148,7 +147,7 @@ public class AndResultSetTest extends HazelcastTestSupport {
     @Test
     public void contains_matchingPredicate_noOtherResult() {
         Set<QueryableEntry> entries = generateEntries(100000);
-        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<Set<QueryableEntry>>();
+        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<>();
         AndResultSet resultSet = new AndResultSet(entries, otherIndexedResults, asList(Predicates.alwaysTrue()));
 
         for (QueryableEntry entry : entries) {
@@ -159,9 +158,9 @@ public class AndResultSetTest extends HazelcastTestSupport {
     @Test
     public void contains_matchingPredicate_inOtherResult() {
         Set<QueryableEntry> entries = generateEntries(100000);
-        Set<QueryableEntry> otherIndexResult = new HashSet<QueryableEntry>();
+        Set<QueryableEntry> otherIndexResult = new HashSet<>();
         otherIndexResult.add(entries.iterator().next());
-        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<Set<QueryableEntry>>();
+        List<Set<QueryableEntry>> otherIndexedResults = new ArrayList<>();
         otherIndexedResults.add(otherIndexResult);
         AndResultSet resultSet = new AndResultSet(entries, otherIndexedResults, asList(Predicates.alwaysTrue()));
 
@@ -173,7 +172,7 @@ public class AndResultSetTest extends HazelcastTestSupport {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void removeUnsupported() throws IOException {
+    public void removeUnsupported() {
         Set<QueryableEntry> entries = generateEntries(100000);
         AndResultSet resultSet = new AndResultSet(entries, null, asList(Predicates.alwaysTrue()));
 
@@ -181,7 +180,7 @@ public class AndResultSetTest extends HazelcastTestSupport {
     }
 
     private static Set<QueryableEntry> generateEntries(int count) {
-        Set<QueryableEntry> result = new HashSet<QueryableEntry>();
+        Set<QueryableEntry> result = new HashSet<>();
         for (int k = 0; k < count; k++) {
             QueryableEntry entry = new DummyEntry();
             result.add(entry);

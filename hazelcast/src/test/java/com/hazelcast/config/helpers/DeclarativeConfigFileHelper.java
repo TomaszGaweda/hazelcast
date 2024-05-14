@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
@@ -178,7 +179,7 @@ public class DeclarativeConfigFileHelper {
 
     public File givenConfigFileInWorkDir(String filename, String content) throws IOException {
         File file = new File(filename);
-        PrintWriter writer = new PrintWriter(file, "UTF-8");
+        PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8);
         writer.print(content);
         writer.close();
 
@@ -191,7 +192,7 @@ public class DeclarativeConfigFileHelper {
         URL classPathConfigUrl = Config.class.getClassLoader().getResource(".");
         String configFilePath = classPathConfigUrl.getFile() + "/" + filename;
         File file = new File(configFilePath);
-        PrintWriter writer = new PrintWriter(file, "UTF-8");
+        PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8);
         writer.println(content);
         writer.close();
 

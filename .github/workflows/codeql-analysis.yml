@@ -37,14 +37,14 @@ jobs:
         ref: ${{ github.event.inputs.reference }}
 
     - name: Setup local maven cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.m2/repository
         key: maven-cache-${{ hashFiles('**/pom.xml') }}
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         config-file: ./.github/codeql/codeql-config.yml
@@ -58,7 +58,7 @@ jobs:
         
     - name: Custom Java build
       run: |
-        ./mvnw -B -V -e clean package -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Dspotbugs.skip -Denforcer.skip -Dmaven.javadoc.skip -DskipTests -Dlicense.skip=true -Drat.skip=true -Dspotless.check.skip=true -Dattribution.skip -Dmaven.source.skip=true
+        ./mvnw -B -V -e clean package --activate-profiles quick
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3

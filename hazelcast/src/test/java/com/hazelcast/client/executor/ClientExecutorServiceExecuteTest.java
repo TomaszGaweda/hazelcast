@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ public class ClientExecutorServiceExecuteTest {
     public void testExecuteOnMembers() {
         IExecutorService service = client.getExecutorService(randomString());
         String mapName = randomString();
-        Collection<Member> collection = new ArrayList<Member>();
+        Collection<Member> collection = new ArrayList<>();
         final Member member1 = server1.getCluster().getLocalMember();
         final Member member2 = server2.getCluster().getLocalMember();
         collection.add(member1);
@@ -173,7 +173,7 @@ public class ClientExecutorServiceExecuteTest {
     public void testExecuteOnMembers_withEmptyCollection() {
         IExecutorService service = client.getExecutorService(randomString());
         String mapName = randomString();
-        Collection<Member> collection = new ArrayList<Member>();
+        Collection<Member> collection = new ArrayList<>();
 
         service.executeOnMembers(new MapPutRunnable(mapName), collection);
 

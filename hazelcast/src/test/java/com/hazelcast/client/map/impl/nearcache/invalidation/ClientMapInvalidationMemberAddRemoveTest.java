@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.map.impl.nearcache.NearCacheTestSupport;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.NightlyTest;
 import org.junit.After;
@@ -83,32 +82,27 @@ public class ClientMapInvalidationMemberAddRemoveTest extends NearCacheTestSuppo
         ClientConfig clientConfig = createClientConfig().addNearCacheConfig(createNearCacheConfig(mapName));
         final HazelcastInstance client = factory.newHazelcastClient(clientConfig);
         final IMap<Integer, Integer> clientMap = client.getMap(mapName);
-        ArrayList<Thread> threads = new ArrayList<Thread>();
+        ArrayList<Thread> threads = new ArrayList<>();
 
         // continuously adds and removes member
-        Thread shadowMember = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!stopTest.get()) {
-                    HazelcastInstance member = factory.newHazelcastInstance(config);
-                    sleepSeconds(5);
-                    member.getLifecycleService().terminate();
-                }
-
+        Thread shadowMember = new Thread(() -> {
+            while (!stopTest.get()) {
+                HazelcastInstance member1 = factory.newHazelcastInstance(config);
+                sleepSeconds(5);
+                member1.getLifecycleService().terminate();
             }
+
         });
         threads.add(shadowMember);
 
         // populates client Near Cache
         for (int i = 0; i < NEAR_CACHE_POPULATE_THREAD_COUNT; i++) {
-            Thread populateClientNearCache = new Thread(new Runnable() {
-                public void run() {
-                    int i = 0;
-                    while (!stopTest.get()) {
-                        clientMap.get(i++);
-                        if (i == KEY_COUNT) {
-                            i = 0;
-                        }
+            Thread populateClientNearCache = new Thread(() -> {
+                int key = 0;
+                while (!stopTest.get()) {
+                    clientMap.get(key++);
+                    if (key == KEY_COUNT) {
+                        key = 0;
                     }
                 }
             });
@@ -117,25 +111,21 @@ public class ClientMapInvalidationMemberAddRemoveTest extends NearCacheTestSuppo
         }
 
         // updates map data from member
-        Thread putFromMember = new Thread(new Runnable() {
-            public void run() {
-                while (!stopTest.get()) {
-                    int key = getInt(KEY_COUNT);
-                    int value = getInt(Integer.MAX_VALUE);
-                    memberMap.put(key, value);
+        Thread putFromMember = new Thread(() -> {
+            while (!stopTest.get()) {
+                int key = getInt(KEY_COUNT);
+                int value = getInt(Integer.MAX_VALUE);
+                memberMap.put(key, value);
 
-                    sleepAtLeastMillis(2);
-                }
+                sleepAtLeastMillis(2);
             }
         });
         threads.add(putFromMember);
 
-        Thread clearFromMember = new Thread(new Runnable() {
-            public void run() {
-                while (!stopTest.get()) {
-                    memberMap.clear();
-                    sleepSeconds(5);
-                }
+        Thread clearFromMember = new Thread(() -> {
+            while (!stopTest.get()) {
+                memberMap.clear();
+                sleepSeconds(5);
             }
         });
         threads.add(clearFromMember);
@@ -151,18 +141,15 @@ public class ClientMapInvalidationMemberAddRemoveTest extends NearCacheTestSuppo
             assertJoinable(thread);
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                for (int i = 0; i < KEY_COUNT; i++) {
-                    Integer valueSeenFromMember = memberMap.get(i);
-                    Integer valueSeenFromClient = clientMap.get(i);
+        assertTrueEventually(() -> {
+            for (int i = 0; i < KEY_COUNT; i++) {
+                Integer valueSeenFromMember = memberMap.get(i);
+                Integer valueSeenFromClient = clientMap.get(i);
 
-                    int nearCacheSize = ((NearCachedClientMapProxy) clientMap).getNearCache().size();
+                int nearCacheSize = ((NearCachedClientMapProxy) clientMap).getNearCache().size();
 
-                    assertEquals("Stale value found. (nearCacheSize=" + nearCacheSize + ")",
-                            valueSeenFromMember, valueSeenFromClient);
-                }
+                assertEquals("Stale value found. (nearCacheSize=" + nearCacheSize + ")",
+                        valueSeenFromMember, valueSeenFromClient);
             }
         });
     }

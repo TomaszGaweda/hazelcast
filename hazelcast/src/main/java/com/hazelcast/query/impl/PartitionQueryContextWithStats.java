@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import java.util.HashSet;
  */
 public class PartitionQueryContextWithStats extends QueryContext {
 
-    private final HashSet<PerIndexStats> trackedStats = new HashSet<PerIndexStats>(8);
+    private final HashSet<PerIndexStats> trackedStats = new HashSet<>(8);
 
     /**
      * Constructs a new partition query context with stats for the given indexes.

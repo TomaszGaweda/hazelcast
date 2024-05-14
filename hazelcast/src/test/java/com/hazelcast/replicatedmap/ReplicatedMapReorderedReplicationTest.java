@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import com.hazelcast.spi.exception.RetryableHazelcastException;
 import com.hazelcast.spi.impl.InternalCompletableFuture;
 import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.impl.NodeEngineImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -92,12 +91,9 @@ public class ReplicatedMapReorderedReplicationTest extends HazelcastTestSupport 
         final Thread[] threads = new Thread[threadCount];
         for (int i = 0; i < threadCount; i++) {
             final int startIndex = i;
-            threads[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (int j = startIndex; j < keyCount; j += threadCount) {
-                        put(nodeEngine, mapName, partitionId, j, j);
-                    }
+            threads[i] = new Thread(() -> {
+                for (int j = startIndex; j < keyCount; j += threadCount) {
+                    put(nodeEngine, mapName, partitionId, j, j);
                 }
             });
         }
@@ -117,15 +113,12 @@ public class ReplicatedMapReorderedReplicationTest extends HazelcastTestSupport 
             stores[i] = service.getReplicatedRecordStore(mapName, false, partitionId);
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                long version = stores[0].getVersion();
+        assertTrueEventually(() -> {
+            long version = stores[0].getVersion();
 
-                for (ReplicatedRecordStore store : stores) {
-                    assertEquals(version, store.getVersion());
-                    assertFalse(store.isStale(version));
-                }
+            for (ReplicatedRecordStore store : stores) {
+                assertEquals(version, store.getVersion());
+                assertFalse(store.isStale(version));
             }
         });
 

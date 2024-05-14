@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import com.hazelcast.instance.BuildInfoProvider;
 import com.hazelcast.instance.EndpointQualifier;
 import com.hazelcast.internal.cluster.fd.ClusterFailureDetectorType;
 import com.hazelcast.internal.diagnostics.HealthMonitorLevel;
-import com.hazelcast.internal.util.OsHelper;
+import com.hazelcast.internal.tpcengine.util.OS;
 import com.hazelcast.internal.util.RuntimeAvailableProcessors;
 import com.hazelcast.map.IMap;
 import com.hazelcast.map.QueryResultSizeExceededException;
@@ -920,6 +920,13 @@ public final class ClusterProperty {
             = new HazelcastProperty("hazelcast.metrics.datastructures.enabled", "true");
 
     /**
+     * Enables/disables collecting metrics from user code namespaces.
+     * By default, user code namespaces metrics collection is enabled.
+     */
+    public static final HazelcastProperty METRICS_USER_CODE_NAMESPACES
+            = new HazelcastProperty("hazelcast.metrics.user.code.namespaces.enabled", "true");
+
+    /**
      * Sets the metrics collection frequency in seconds.
      * <p>
      * NOTE: This property overrides {@link MetricsConfig#getCollectionFrequencySeconds()}.
@@ -1024,6 +1031,17 @@ public final class ClusterProperty {
      */
     public static final HazelcastProperty GLOBAL_HD_INDEX_ENABLED
             = new HazelcastProperty("hazelcast.hd.global.index.enabled", true);
+
+    /**
+     * Page size for every instance of Hybrid Log on member.
+     * <p>
+     * Default value is 1MB, must be a power of 2, the minimum value is 1MB,
+     * the maximum is 16MB.
+     *
+     * @since 5.4
+     */
+    public static final HazelcastProperty TIERED_STORE_HYBRID_LOG_PAGE_SIZE_IN_MEGABYTES
+            = new HazelcastProperty("hazelcast.tiered.store.hybridlog.page.size.in.mb", 1);
 
     /**
      * Result size limit for query operations on maps.
@@ -1634,6 +1652,20 @@ public final class ClusterProperty {
             = new HazelcastProperty("hazelcast.logging.details.enabled", true);
 
     /**
+     * Controls whether Hazelcast will explicitly shutdown the logging implementation as part of
+     * Hazelcast graceful shutdown procedure. Default value is {@code false}.
+     * <p/>
+     * This property can be enabled when Hazelcast is the only application being executed in the JVM,
+     * for example, when running a Hazelcast cluster member in its own process.
+     * If the JVM process is expected to continue executing other application bits after Hazelcast is shut down, then
+     * if this property is {@code true}, logging may be disrupted.
+     *
+     * @since 5.4.0
+     */
+    public static final HazelcastProperty LOGGING_SHUTDOWN
+            = new HazelcastProperty("hazelcast.logging.shutdown", false);
+
+    /**
      * All locks which are acquired without an explicit lease time use this value
      * (in seconds) as the lease time. When you want to set an explicit lease
      * time for your locks, you cannot set it to a longer time than this value.
@@ -1642,7 +1674,7 @@ public final class ClusterProperty {
             = new HazelcastProperty("hazelcast.lock.max.lease.time.seconds", Long.MAX_VALUE, SECONDS);
 
     /**
-     * Hazelcast IMDG Enterprise license key.
+     * Hazelcast Enterprise license key.
      */
     public static final HazelcastProperty ENTERPRISE_LICENSE_KEY = new HazelcastProperty("hazelcast.enterprise.license.key")
             // Print a warning when British spelling of "License" is used
@@ -1845,7 +1877,7 @@ public final class ClusterProperty {
      * @since 5.0
      */
     public static final HazelcastProperty LOG_EMOJI_ENABLED = new HazelcastProperty("hazelcast.logging.emoji.enabled",
-            StandardCharsets.UTF_8.equals(Charset.defaultCharset()) && !OsHelper.isWindows());
+            StandardCharsets.UTF_8.equals(Charset.defaultCharset()) && !OS.isWindows());
 
     /**
      * When set to any not-{@code null} value, security recommendations are logged on INFO level during the node start. The
@@ -1857,15 +1889,24 @@ public final class ClusterProperty {
             "hazelcast.security.recommendations");
 
     /**
-     * Enable experimental support for accessing nested fields by using custom
-     * types in SQL. The feature is unstable in 5.2, this property will be
+     * Enable experimental support for accessing cyclic nested fields by using custom
+     * types in SQL. The feature is unstable in 5.4, this property will be
      * removed once the feature is stable.
      *
-     * @since 5.2
+     * @since 5.4
      */
     @Beta
-    public static final HazelcastProperty SQL_CUSTOM_TYPES_ENABLED = new HazelcastProperty(
-            "hazelcast.sql.experimental.custom.types.enabled", false);
+    public static final HazelcastProperty SQL_CUSTOM_CYCLIC_TYPES_ENABLED = new HazelcastProperty(
+            "hazelcast.sql.experimental.custom.cyclic.types.enabled", false);
+
+    /**
+     * Enable experimental support for querying Tiered Storage IMaps via SQL.
+     * @since 5.4
+     */
+    @Beta
+    public static final HazelcastProperty SQL_TSTORE_ENABLED = new HazelcastProperty(
+            "hazelcast.sql.tstore.enabled", false);
+
 
     /**
      * When {@code true}, enables monitoring of the runtime environment to detect the intent of shutdown
@@ -1939,6 +1980,14 @@ public final class ClusterProperty {
      */
     public static final HazelcastProperty WAN_REPLICATE_ICACHE_EVICTIONS
             = new HazelcastProperty("hazelcast.wan.replicate.icache.evictions", false);
+
+    /**
+     * Maximum wait in seconds during member demotion to a lite member.
+     *
+     * @since 5.4
+     */
+    public static final HazelcastProperty DEMOTE_MAX_WAIT
+            = new HazelcastProperty("hazelcast.member.demote.max.wait", 600, SECONDS);
 
     private ClusterProperty() {
     }

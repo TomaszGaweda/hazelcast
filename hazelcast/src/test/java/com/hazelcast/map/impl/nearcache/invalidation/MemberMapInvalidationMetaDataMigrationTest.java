@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.hazelcast.map.impl.MapService;
 import com.hazelcast.map.impl.MapServiceContext;
 import com.hazelcast.map.impl.nearcache.MapNearCacheManager;
 import com.hazelcast.spi.impl.NodeEngineImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -225,12 +224,9 @@ public class MemberMapInvalidationMetaDataMigrationTest extends HazelcastTestSup
 
     private void assertInvalidationCountEventually(final String mapName, final int expectedInvalidationCount,
                                                    final HazelcastInstance instance) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                long invalidationCount = calculateNumberOfInvalidationsSoFar(mapName, instance);
-                assertEquals(expectedInvalidationCount, invalidationCount);
-            }
+        assertTrueEventually(() -> {
+            long invalidationCount = calculateNumberOfInvalidationsSoFar(mapName, instance);
+            assertEquals(expectedInvalidationCount, invalidationCount);
         });
     }
 

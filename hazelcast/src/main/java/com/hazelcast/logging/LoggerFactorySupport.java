@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,8 +77,8 @@ public abstract class LoggerFactorySupport implements LoggerFactory, InternalLog
     }
 
     private InternalLogger obtainInternalLogger(ILogger logger) {
-        if (logger instanceof InternalLogger) {
-            return (InternalLogger) logger;
+        if (logger instanceof InternalLogger internalLogger) {
+            return internalLogger;
         } else {
             throw new HazelcastException("Logger doesn't support dynamic log level changes: " + logger.getClass());
         }

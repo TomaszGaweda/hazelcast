@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -589,7 +589,7 @@ public class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
         void setTable(HashEntry<K, V>[] newTable) {
             threshold = (int) (newTable.length * loadFactor);
             table = newTable;
-            refQueue = new ReferenceQueue<Object>();
+            refQueue = new ReferenceQueue<>();
         }
 
         /**
@@ -601,7 +601,7 @@ public class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
         }
 
         HashEntry<K, V> newHashEntry(K key, int hash, HashEntry<K, V> next, V value) {
-            return new HashEntry<K, V>(key, hash, next, value, keyType, valueType, refQueue);
+            return new HashEntry<>(key, hash, next, value, keyType, valueType, refQueue);
         }
 
         /**
@@ -987,7 +987,7 @@ public class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
                     }
                     ++modCount;
                     // replace the reference queue to avoid unnecessary stale cleanups
-                    refQueue = new ReferenceQueue<Object>();
+                    refQueue = new ReferenceQueue<>();
                     // write-volatile
                     count = 0;
                 } finally {
@@ -1054,7 +1054,7 @@ public class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
         }
         identityComparisons = options != null && options.contains(Option.IDENTITY_COMPARISONS);
         for (int i = 0; i < this.segments.length; ++i) {
-            this.segments[i] = new Segment<K, V>(cap, loadFactor, keyType, valueType, identityComparisons);
+            this.segments[i] = new Segment<>(cap, loadFactor, keyType, valueType, identityComparisons);
         }
     }
 
@@ -1760,63 +1760,6 @@ public class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
             return super.nextEntry().value();
         }
     }
-
-    /*
-     * This class is needed for JDK5 compatibility.
-     */
-    @SerializableByConvention
-    protected static class SimpleEntry<K, V> implements Entry<K, V>, java.io.Serializable {
-        private static final long serialVersionUID = -8499721149061103585L;
-
-        protected final K key;
-        protected V value;
-
-        public SimpleEntry(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public SimpleEntry(Entry<? extends K, ? extends V> entry) {
-            this.key = entry.getKey();
-            this.value = entry.getValue();
-        }
-
-        public K getKey() {
-            return key;
-        }
-
-        public V getValue() {
-            return value;
-        }
-
-        public V setValue(V value) {
-            V oldValue = this.value;
-            this.value = value;
-            return oldValue;
-        }
-
-        public boolean equals(Object o) {
-            if (!(o instanceof Map.Entry)) {
-                return false;
-            }
-            @SuppressWarnings("unchecked")
-            Map.Entry e = (Map.Entry) o;
-            return eq(key, e.getKey()) && eq(value, e.getValue());
-        }
-
-        public int hashCode() {
-            return (key == null ? 0 : key.hashCode()) ^ (value == null ? 0 : value.hashCode());
-        }
-
-        public String toString() {
-            return key + "=" + value;
-        }
-
-        private static boolean eq(Object o1, Object o2) {
-            return o1 == null ? o2 == null : o1.equals(o2);
-        }
-    }
-
 
     /**
      * Custom Entry class used by EntryIterator.next(), that relays setValue

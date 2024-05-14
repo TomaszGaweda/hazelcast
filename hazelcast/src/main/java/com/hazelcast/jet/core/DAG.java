@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.hazelcast.internal.json.JsonArray;
 import com.hazelcast.internal.json.JsonObject;
 import com.hazelcast.internal.util.IterableUtil;
 import com.hazelcast.internal.util.StringUtil;
+import com.hazelcast.jet.JetMemberSelector;
 import com.hazelcast.jet.core.Edge.RoutingPolicy;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
@@ -29,6 +30,7 @@ import com.hazelcast.spi.annotation.PrivateApi;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,6 +79,9 @@ import static java.util.stream.Collectors.joining;
  * </li></ol>
  * Data travels from sources to sinks and is transformed and reshaped
  * as it passes through the processors.
+ * <p>
+ * Note that {@link #iterator()) must be invoked at least once in order to
+ * validate the DAG and check against cycles.
  *
  * @since Jet 3.0
  */
@@ -89,6 +94,7 @@ public class DAG implements IdentifiedDataSerializable, Iterable<Vertex> {
     private final Map<String, Vertex> nameToVertex = new HashMap<>();
     // Transient field:
     private final Set<Vertex> verticesByIdentity = newSetFromMap(new IdentityHashMap<>());
+    private JetMemberSelector memberSelector;
 
     /**
      * Creates a vertex from a {@code Supplier<Processor>} and adds it to this DAG.
@@ -299,7 +305,10 @@ public class DAG implements IdentifiedDataSerializable, Iterable<Vertex> {
     }
 
     /**
-     * Returns an iterator over the DAG's vertices in topological order.
+     * Validates the DAG and returns an iterator over the DAG's vertices in topological order.
+     * <p>
+     * Note that this method must be invoked at least once in order to validate
+     * the DAG and check against cycles.
      */
     @Nonnull @Override
     public Iterator<Vertex> iterator() {
@@ -566,6 +575,14 @@ public class DAG implements IdentifiedDataSerializable, Iterable<Vertex> {
         return String.join("-", labels);
     }
 
+    public JetMemberSelector memberSelector() {
+        return memberSelector;
+    }
+
+    public void setMemberSelector(JetMemberSelector memberSelector) {
+        this.memberSelector = memberSelector;
+    }
+
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
         out.writeInt(nameToVertex.size());
@@ -580,6 +597,8 @@ public class DAG implements IdentifiedDataSerializable, Iterable<Vertex> {
         for (Edge edge : edges) {
             out.writeObject(edge);
         }
+
+        out.writeObject(memberSelector);
     }
 
     @Override
@@ -601,6 +620,14 @@ public class DAG implements IdentifiedDataSerializable, Iterable<Vertex> {
         }
 
         verticesByIdentity.addAll(nameToVertex.values());
+
+        // RU_COMPAT_5_4
+        try {
+            memberSelector = in.readObject();
+        } catch (EOFException e) {
+            // ignore, memberSelector was added in version 5.5. We were not able to deal
+            // with Versioned interface properly, so we just do try-catch here.
+        }
     }
 
     @Override

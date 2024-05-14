@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import com.hazelcast.test.SplitBrainTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
 import org.junit.Before;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -112,8 +113,9 @@ public abstract class JetSplitBrainTestSupport extends JetTestSupport {
         checkPositive(secondSubClusterSize, "invalid second sub cluster size: " + secondSubClusterSize);
 
         config = createConfig();
+        Config liteMemberConfig = createConfig().setLiteMember(true);
         int clusterSize = firstSubClusterSize + secondSubClusterSize;
-        HazelcastInstance[] instances = startInitialCluster(config, clusterSize);
+        HazelcastInstance[] instances = startInitialCluster(config, liteMemberConfig, clusterSize);
 
         if (beforeSplit != null) {
             beforeSplit.accept(instances);
@@ -140,7 +142,7 @@ public abstract class JetSplitBrainTestSupport extends JetTestSupport {
         }
     }
 
-    protected HazelcastInstance[] startInitialCluster(Config config, int clusterSize) {
+    protected HazelcastInstance[] startInitialCluster(Config config, @Nullable Config liteConfig, int clusterSize) {
         HazelcastInstance[] instances = new HazelcastInstance[clusterSize];
         for (int i = 0; i < clusterSize; i++) {
             instances[i] = createHazelcastInstance(config);
@@ -245,9 +247,9 @@ public abstract class JetSplitBrainTestSupport extends JetTestSupport {
     }
 
     private static boolean isInstanceActive(HazelcastInstance instance) {
-        if (instance instanceof HazelcastInstanceProxy) {
+        if (instance instanceof HazelcastInstanceProxy proxy) {
             try {
-                ((HazelcastInstanceProxy) instance).getOriginal();
+                proxy.getOriginal();
                 return true;
             } catch (HazelcastInstanceNotActiveException exception) {
                 return false;

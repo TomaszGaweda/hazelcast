@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class ICacheDataStructureAdapterTest extends HazelcastTestSupport {
         HazelcastServerCachingProvider cachingProvider = createServerCachingProvider(hazelcastInstance);
         CacheManager cacheManager = cachingProvider.getCacheManager();
 
-        CacheConfig<Integer, String> cacheConfig = new CacheConfig<Integer, String>();
+        CacheConfig<Integer, String> cacheConfig = new CacheConfig<>();
 
         CacheConfiguration<Integer, String> cacheConfigWithLoader = new CacheConfig<Integer, String>()
                 .setReadThrough(true)
@@ -80,8 +80,8 @@ public class ICacheDataStructureAdapterTest extends HazelcastTestSupport {
         cacheWithLoader = (ICache<Integer, String>) cacheManager.createCache("CacheDataStructureAdapterLoaderTest",
                 cacheConfigWithLoader);
 
-        adapter = new ICacheDataStructureAdapter<Integer, String>(cache);
-        adapterWithLoader = new ICacheDataStructureAdapter<Integer, String>(cacheWithLoader);
+        adapter = new ICacheDataStructureAdapter<>(cache);
+        adapterWithLoader = new ICacheDataStructureAdapter<>(cacheWithLoader);
     }
 
     @Test
@@ -309,7 +309,7 @@ public class ICacheDataStructureAdapterTest extends HazelcastTestSupport {
 
     @Test(expected = MethodNotAvailableException.class)
     public void testExecuteOnKeys() {
-        Set<Integer> keys = new HashSet<Integer>(singleton(23));
+        Set<Integer> keys = new HashSet<>(singleton(23));
         adapter.executeOnKeys(keys, new IMapReplaceEntryProcessor("value", "newValue"));
     }
 
@@ -338,7 +338,7 @@ public class ICacheDataStructureAdapterTest extends HazelcastTestSupport {
 
     @Test(expected = MethodNotAvailableException.class)
     public void testLoadAllWithKeys() {
-        adapterWithLoader.loadAll(Collections.<Integer>emptySet(), true);
+        adapterWithLoader.loadAll(Collections.emptySet(), true);
     }
 
     @Test
@@ -357,7 +357,7 @@ public class ICacheDataStructureAdapterTest extends HazelcastTestSupport {
         cache.put(23, "value-23");
         cache.put(42, "value-42");
 
-        Map<Integer, String> expectedResult = new HashMap<Integer, String>();
+        Map<Integer, String> expectedResult = new HashMap<>();
         expectedResult.put(23, "value-23");
         expectedResult.put(42, "value-42");
 
@@ -367,7 +367,7 @@ public class ICacheDataStructureAdapterTest extends HazelcastTestSupport {
 
     @Test
     public void testPutAll() {
-        Map<Integer, String> expectedResult = new HashMap<Integer, String>();
+        Map<Integer, String> expectedResult = new HashMap<>();
         expectedResult.put(23, "value-23");
         expectedResult.put(42, "value-42");
 
@@ -412,7 +412,7 @@ public class ICacheDataStructureAdapterTest extends HazelcastTestSupport {
         cache.put(42, "value-42");
         cache.put(65, "value-65");
 
-        Set<Integer> keys = new HashSet<Integer>(asList(23, 65, 88));
+        Set<Integer> keys = new HashSet<>(asList(23, 65, 88));
         Map<Integer, EntryProcessorResult<String>> resultMap = adapter.invokeAll(keys, new ICacheReplaceEntryProcessor(),
                 "value", "newValue");
         assertEquals(2, resultMap.size());

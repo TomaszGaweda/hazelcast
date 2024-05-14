@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class MulticastDiscoveryStrategy extends AbstractDiscoveryStrategy {
         if (multicastMemberInfo == null) {
             return null;
         }
-        ArrayList<DiscoveryNode> arrayList = new ArrayList<DiscoveryNode>();
+        ArrayList<DiscoveryNode> arrayList = new ArrayList<>();
         try {
             discoveryNode = new SimpleDiscoveryNode(new Address(multicastMemberInfo.getHost(), multicastMemberInfo.getPort()));
             arrayList.add(discoveryNode);

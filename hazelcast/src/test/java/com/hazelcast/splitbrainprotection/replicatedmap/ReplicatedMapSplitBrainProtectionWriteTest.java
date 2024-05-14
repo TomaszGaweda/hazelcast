@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,14 +87,14 @@ public class ReplicatedMapSplitBrainProtectionWriteTest extends AbstractSplitBra
 
     @Test
     public void putAll_successful_whenSplitBrainProtectionSize_met() {
-        HashMap<Object, Object> map = new HashMap<Object, Object>();
+        HashMap<Object, Object> map = new HashMap<>();
         map.put("foo", "bar");
         map(0).putAll(map);
     }
 
     @Test(expected = SplitBrainProtectionException.class)
     public void putAll_failing_whenSplitBrainProtectionSize_notMet() {
-        HashMap<Object, Object> map = new HashMap<Object, Object>();
+        HashMap<Object, Object> map = new HashMap<>();
         map.put("foo", "bar");
         map(3).putAll(map);
     }

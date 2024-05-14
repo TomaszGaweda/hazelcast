@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,18 +47,10 @@ public final class EventJournalDataSerializerHook implements DataSerializerHook 
 
     @Override
     public DataSerializableFactory createFactory() {
-        return new DataSerializableFactory() {
-            @Override
-            public IdentifiedDataSerializable create(int typeId) {
-                switch (typeId) {
-                    case EVENT_JOURNAL_INITIAL_SUBSCRIBER_STATE:
-                        return new EventJournalInitialSubscriberState();
-                    case DESERIALIZING_ENTRY:
-                        return new DeserializingEntry();
-                    default:
-                        return null;
-                }
-            }
+        return typeId -> switch (typeId) {
+            case EVENT_JOURNAL_INITIAL_SUBSCRIBER_STATE -> new EventJournalInitialSubscriberState();
+            case DESERIALIZING_ENTRY -> new DeserializingEntry<>();
+            default -> null;
         };
     }
 }

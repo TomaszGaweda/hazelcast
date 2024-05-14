@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 
 package com.hazelcast.internal.tpcengine;
 
-import com.hazelcast.internal.tpcengine.util.JVM;
+import com.hazelcast.internal.tpcengine.util.OS;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -37,18 +38,25 @@ public class TpcTestSupport {
 
     // the unit of the above 2 timeouts is milliseconds.
     public static final int ASSERT_TRUE_EVENTUALLY_TIMEOUT = getInteger("hazelcast.assertTrueEventually.timeout", 120);
-    public static final int ASSERT_TRUE_EVENTUALLY_TIMEOUT_NIGHTLY = getInteger("hazelcast.assertTrueEventually.timeout.nightly", 240);
+    public static final int ASSERT_TRUE_EVENTUALLY_TIMEOUT_NIGHTLY =
+            getInteger("hazelcast.assertTrueEventually.timeout.nightly", 240);
 
     public static final int TERMINATION_TIMEOUT_SECONDS = 30;
 
     public static void assumeNotWindows() {
-        String property = System.getProperty("os.name");
-        boolean windowsOS = property.toLowerCase().startsWith("win");
-        assumeFalse("Skipping on Windows", windowsOS);
+        assumeFalse("Skipping on Windows", OS.isWindows());
     }
 
     public static void assertCompletesEventually(final Future future) {
         assertTrueEventually(() -> assertTrue("Future has not completed", future.isDone()));
+    }
+
+    public static void assertCompletesEventually(final List<Future> futures, long timeoutSeconds) {
+        assertTrueEventually(() -> {
+            for (Future future : futures) {
+                assertTrue(future.isDone());
+            }
+        }, timeoutSeconds);
     }
 
     public static void terminateAll(Collection<? extends Reactor> reactors) {
@@ -170,12 +178,7 @@ public class TpcTestSupport {
     }
 
     public static void assertEqualsEventually(final int expected, final AtomicInteger value) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(expected, value.get());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(expected, value.get()));
     }
 
     public static void assertTrueEventually(AssertTask task) {
@@ -221,12 +224,5 @@ public class TpcTestSupport {
 
     public static void assertTrueEventually(AssertTask task, long timeoutSeconds) {
         assertTrueEventually(null, task, timeoutSeconds);
-    }
-
-    public static void assumeNotIbmJDK8() {
-        String vendor = System.getProperty("java.vendor");
-        boolean isIbmJDK = vendor.toLowerCase().contains("ibm");
-        boolean isIbmJDK8 = isIbmJDK && (JVM.getMajorVersion() == 8);
-        assumeFalse(isIbmJDK8);
     }
 }

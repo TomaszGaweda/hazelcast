@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,11 @@ public final class CoreQueryUtils {
     }
 
     public static HazelcastSqlException toPublicException(@Nonnull Throwable e, @Nonnull UUID localMemberId) {
-        if (e instanceof HazelcastSqlException) {
-            return (HazelcastSqlException) e;
+        if (e instanceof HazelcastSqlException exception) {
+            return exception;
         }
 
-        if (e instanceof QueryException) {
-            QueryException e0 = (QueryException) e;
+        if (e instanceof QueryException e0) {
 
             UUID originatingMemberId = e0.getOriginatingMemberId();
 

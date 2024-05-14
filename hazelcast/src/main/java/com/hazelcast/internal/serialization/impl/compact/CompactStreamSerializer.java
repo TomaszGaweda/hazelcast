@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,8 +110,8 @@ public class CompactStreamSerializer implements StreamSerializer<Object> {
     }
 
     void write(BufferObjectDataOutput out, Object o, boolean includeSchemaOnBinary) throws IOException {
-        if (o instanceof CompactGenericRecord) {
-            writeGenericRecord(out, (CompactGenericRecord) o, includeSchemaOnBinary);
+        if (o instanceof CompactGenericRecord compactGenericRecord) {
+            writeGenericRecord(out, compactGenericRecord, includeSchemaOnBinary);
         } else {
             writeObject(out, o, includeSchemaOnBinary);
         }
@@ -130,6 +130,10 @@ public class CompactStreamSerializer implements StreamSerializer<Object> {
             fieldOperations(fieldKind).writeFieldFromRecordToWriter(writer, record, fieldName);
         }
         writer.end();
+    }
+
+    public List<Schema> allSchemas() {
+        return List.copyOf(classToSchemaMap.values());
     }
 
     private void putToSchemaService(boolean includeSchemaOnBinary, Schema schema) {

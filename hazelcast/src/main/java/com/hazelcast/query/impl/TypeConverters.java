@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import static com.hazelcast.query.impl.AbstractIndex.NULL;
 
+@SuppressWarnings("ClassDataAbstractionCoupling")
 public final class TypeConverters {
 
     public static final TypeConverter BIG_INTEGER_CONVERTER = new BigIntegerConverter();
@@ -90,11 +91,10 @@ public final class TypeConverters {
             if (value instanceof java.util.Date) {
                 return value;
             }
-            if (value instanceof String) {
-                return DateHelper.parseSqlDate((String) value);
+            if (value instanceof String string) {
+                return DateHelper.parseSqlDate(string);
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return new java.sql.Date(number.longValue());
             }
             throw new IllegalArgumentException("Cannot convert [" + value + "] to java.sql.Date");
@@ -109,14 +109,13 @@ public final class TypeConverters {
             if (value instanceof Timestamp) {
                 return value;
             }
-            if (value instanceof java.util.Date) {
-                return new Timestamp(((Date) value).getTime());
+            if (value instanceof java.util.Date date) {
+                return new Timestamp(date.getTime());
             }
-            if (value instanceof String) {
-                return DateHelper.parseTimeStamp((String) value);
+            if (value instanceof String string) {
+                return DateHelper.parseTimeStamp(string);
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return new Timestamp(number.longValue());
             }
             throw new IllegalArgumentException("Cannot convert [" + value + "] to java.sql.Timestamp");
@@ -131,11 +130,10 @@ public final class TypeConverters {
             if (value instanceof Date) {
                 return value;
             }
-            if (value instanceof String) {
-                return DateHelper.parseDate((String) value);
+            if (value instanceof String string) {
+                return DateHelper.parseDate(string);
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return new Date(number.longValue());
             }
             throw new IllegalArgumentException("Cannot convert [" + value + "] to java.util.Date");
@@ -153,8 +151,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
 
                 if (clazz == Long.class) {
                     double doubleValue = number.doubleValue();
@@ -168,8 +165,8 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof String) {
-                return Double.parseDouble((String) value);
+            if (value instanceof String string) {
+                return Double.parseDouble(string);
             }
 
             throw new IllegalArgumentException("Cannot convert [" + value + "] to number");
@@ -188,8 +185,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
 
                 if (clazz == Double.class) {
                     long longValue = number.longValue();
@@ -208,8 +204,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof String) {
-                String string = (String) value;
+            if (value instanceof String string) {
 
                 try {
                     return Long.parseLong(string);
@@ -237,16 +232,14 @@ public final class TypeConverters {
             if (value instanceof BigInteger) {
                 return value;
             }
-            if (value instanceof BigDecimal) {
-                BigDecimal decimal = (BigDecimal) value;
-                return decimal.toBigInteger();
+            if (value instanceof BigDecimal bigDecimal) {
+                return bigDecimal.toBigInteger();
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return BigInteger.valueOf(number.longValue());
             }
-            if (value instanceof Boolean) {
-                return ((Boolean) value) ? BigInteger.ONE : BigInteger.ZERO;
+            if (value instanceof Boolean bool) {
+                return bool ? BigInteger.ONE : BigInteger.ZERO;
             }
             return new BigInteger(value.toString());
         }
@@ -260,8 +253,8 @@ public final class TypeConverters {
             if (value instanceof BigDecimal) {
                 return value;
             }
-            if (value instanceof BigInteger) {
-                return new BigDecimal((BigInteger) value);
+            if (value instanceof BigInteger bigInteger) {
+                return new BigDecimal(bigInteger);
             }
             if (isIntegralDataType(value)) {
                 Number number = (Number) value;
@@ -271,8 +264,8 @@ public final class TypeConverters {
                 Number number = (Number) value;
                 return BigDecimal.valueOf(number.doubleValue());
             }
-            if (value instanceof Boolean) {
-                return ((Boolean) value) ? BigDecimal.ONE : BigDecimal.ZERO;
+            if (value instanceof Boolean bool) {
+                return bool ? BigDecimal.ONE : BigDecimal.ZERO;
             }
             return new BigDecimal(value.toString());
         }
@@ -298,8 +291,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
 
                 if (clazz == Long.class) {
                     int intValue = number.intValue();
@@ -323,8 +315,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof String) {
-                String string = (String) value;
+            if (value instanceof String string) {
 
                 try {
                     return Integer.parseInt(string);
@@ -372,8 +363,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
 
                 if (clazz == Double.class) {
                     float floatValue = number.floatValue();
@@ -400,10 +390,10 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof String) {
+            if (value instanceof String string) {
                 // Using parseDouble instead of parseFloat to guarantee the most
                 // precise representation.
-                double parsedDouble = Double.parseDouble((String) value);
+                double parsedDouble = Double.parseDouble(string);
 
                 float floatValue = (float) parsedDouble;
                 if (parsedDouble == (double) floatValue) {
@@ -429,8 +419,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
 
                 if (clazz == Long.class) {
                     short shortValue = number.shortValue();
@@ -459,8 +448,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof String) {
-                String string = (String) value;
+            if (value instanceof String string) {
 
                 try {
                     return Short.parseShort(string);
@@ -492,11 +480,10 @@ public final class TypeConverters {
             if (value instanceof Boolean) {
                 return value;
             }
-            if (value instanceof String) {
-                return Boolean.parseBoolean((String) value);
+            if (value instanceof String string) {
+                return Boolean.parseBoolean(string);
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return number.intValue() != 0;
             }
             throw new IllegalArgumentException("Cannot convert [" + value + "] to boolean");
@@ -515,8 +502,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
 
                 if (clazz == Long.class) {
                     byte byteValue = number.byteValue();
@@ -548,8 +534,7 @@ public final class TypeConverters {
                 return value;
             }
 
-            if (value instanceof String) {
-                String string = (String) value;
+            if (value instanceof String string) {
 
                 try {
                     return Byte.parseByte(string);
@@ -584,12 +569,10 @@ public final class TypeConverters {
             if (value instanceof Character) {
                 return value;
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return (char) number.intValue();
             }
-            if (value instanceof String) {
-                String string = (String) value;
+            if (value instanceof String string) {
                 if (string.length() == 1) {
                     return string.charAt(0);
                 }
@@ -621,11 +604,10 @@ public final class TypeConverters {
             if (value instanceof LocalTime) {
                 return value;
             }
-            if (value instanceof String) {
-                return LocalTime.parse((String) value);
+            if (value instanceof String string) {
+                return LocalTime.parse(string);
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return convertNumberToLocalTime(number);
             }
             throw new IllegalArgumentException("Cannot convert [" + value + "] to java.time.LocalTime");
@@ -648,11 +630,10 @@ public final class TypeConverters {
             if (value instanceof LocalDate) {
                 return value;
             }
-            if (value instanceof String) {
-                return LocalDate.parse((String) value);
+            if (value instanceof String string) {
+                return LocalDate.parse(string);
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return convertNumberToLocalTime(number);
             }
             throw new IllegalArgumentException("Cannot convert [" + value + "] to java.time.LocalTime");
@@ -675,11 +656,10 @@ public final class TypeConverters {
             if (value instanceof LocalDateTime) {
                 return value;
             }
-            if (value instanceof String) {
-                return LocalDateTime.parse((String) value);
+            if (value instanceof String string) {
+                return LocalDateTime.parse(string);
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return convertNumberToLocalDateTime(number);
             }
             throw new IllegalArgumentException("Cannot convert [" + value + "] to java.time.LocalDateTime");
@@ -701,11 +681,10 @@ public final class TypeConverters {
             if (value instanceof OffsetDateTime) {
                 return value;
             }
-            if (value instanceof String) {
-                return OffsetDateTime.parse((String) value);
+            if (value instanceof String string) {
+                return OffsetDateTime.parse(string);
             }
-            if (value instanceof Number) {
-                Number number = (Number) value;
+            if (value instanceof Number number) {
                 return convertNumberToOffsetDateTime(number);
             }
             throw new IllegalArgumentException("Cannot convert [" + value + "] to java.time.OffsetDateTime");

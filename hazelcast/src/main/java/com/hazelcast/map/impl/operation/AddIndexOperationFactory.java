@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,21 @@ import com.hazelcast.config.IndexConfig;
 import com.hazelcast.map.impl.MapDataSerializerHook;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.query.impl.IndexUtils;
 import com.hazelcast.spi.impl.operationservice.Operation;
 
 import java.io.IOException;
 
 public class AddIndexOperationFactory extends AbstractMapOperationFactory {
 
-    private String name;
     private IndexConfig config;
 
     public AddIndexOperationFactory() {
     }
 
     public AddIndexOperationFactory(String name, IndexConfig config) {
-        this.name = name;
-        this.config = config;
+        super(name);
+        this.config = IndexUtils.validateAndNormalize(name, config);
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,7 +150,9 @@ public class PlanExecutorTest extends SimpleTestInClusterSupport {
                 null,
                 false,
                 planExecutor,
-                Collections.emptyList()
+                Collections.emptyList(),
+                false,
+                null
         );
 
         given(hazelcastInstance.getJet()).willReturn(jetInstance);

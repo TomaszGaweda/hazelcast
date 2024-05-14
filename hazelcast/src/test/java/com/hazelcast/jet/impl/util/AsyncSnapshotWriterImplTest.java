@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,14 +39,11 @@ import com.hazelcast.test.annotation.QuickTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
@@ -66,9 +63,6 @@ import static org.junit.Assert.assertFalse;
 public class AsyncSnapshotWriterImplTest extends JetTestSupport {
 
     private static final String ALWAYS_FAILING_MAP = "alwaysFailingMap";
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private NodeEngineImpl nodeEngine;
     private AsyncSnapshotWriterImpl writer;
@@ -187,7 +181,7 @@ public class AsyncSnapshotWriterImplTest extends JetTestSupport {
     }
 
     @Test
-    public void when_singleLargeEntry_then_flushedImmediatelyAndDeserializesCorrectly() throws IOException {
+    public void when_singleLargeEntry_then_flushedImmediatelyAndDeserializesCorrectly() {
         // When
         String key = "k";
         String value = generate(() -> "a").limit(128).collect(joining());
@@ -270,7 +264,7 @@ public class AsyncSnapshotWriterImplTest extends JetTestSupport {
     }
 
     @Test
-    public void test_serializeAndDeserialize() throws Exception {
+    public void test_serializeAndDeserialize() {
         // This is the way we serialize and deserialize objects into the snapshot. We depend on some internals of IMDG:
         // - using the HeapData.toByteArray() from offset 4
         // - concatenate them into one array
@@ -327,10 +321,8 @@ public class AsyncSnapshotWriterImplTest extends JetTestSupport {
         os.write(1);
         os.write(1);
 
-        // Then
-        exception.expect(RuntimeException.class);
         // When
-        os.write(1);
+        assertThrows(RuntimeException.class, () -> os.write(1));
     }
 
     static class AlwaysFailingMapStore extends AMapStore implements Serializable {

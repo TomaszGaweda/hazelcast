@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public final class EntryListUUIDListIntegerCodec {
         ListUUIDCodec.encode(clientMessage, keyList);
     }
 
-    public static Collection<Map.Entry<UUID, List<Integer>>> decode(ClientMessage.ForwardFrameIterator iterator) {
+    public static List<Map.Entry<UUID, List<Integer>>> decode(ClientMessage.ForwardFrameIterator iterator) {
         List<List<Integer>> listv = ListMultiFrameCodec.decode(iterator, ListIntegerCodec::decode);
         List<UUID> listK = ListUUIDCodec.decode(iterator);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,6 @@ import static com.hazelcast.jet.Traversers.traverseStream;
 import static com.hazelcast.jet.Util.entry;
 import static com.hazelcast.jet.config.ProcessingGuarantee.EXACTLY_ONCE;
 import static com.hazelcast.jet.core.BroadcastKey.broadcastKey;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFine;
 import static com.hazelcast.jet.impl.util.Util.logLateEvent;
 import static com.hazelcast.jet.impl.util.Util.toLocalDateTime;
 import static java.lang.Math.min;
@@ -257,8 +256,7 @@ public class SessionWindowP<K, A, R, OUT> extends AbstractProcessor {
     @Override
     @SuppressWarnings("unchecked")
     protected void restoreFromSnapshot(@Nonnull Object key, @Nonnull Object value) {
-        if (key instanceof BroadcastKey) {
-            BroadcastKey bcastKey = (BroadcastKey) key;
+        if (key instanceof BroadcastKey bcastKey) {
             if (!Keys.CURRENT_WATERMARK.equals(bcastKey.key())) {
                 throw new JetException("Unexpected broadcast key: " + bcastKey.key());
             }
@@ -288,7 +286,7 @@ public class SessionWindowP<K, A, R, OUT> extends AbstractProcessor {
         }
         currentWatermark = minRestoredCurrentWatermark;
         totalKeys.set(keyToWindows.size());
-        logFine(getLogger(), "Restored currentWatermark from snapshot to: %s", currentWatermark);
+        getLogger().fine("Restored currentWatermark from snapshot to: %s", currentWatermark);
         return true;
     }
 
@@ -302,7 +300,7 @@ public class SessionWindowP<K, A, R, OUT> extends AbstractProcessor {
     }
 
     private Traverser<OUT> earlyWindows(K key, Windows<A> w) {
-        return new Traverser<OUT>() {
+        return new Traverser<>() {
             private int i;
 
             @Override

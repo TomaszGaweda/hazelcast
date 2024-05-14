@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.hazelcast.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.sql.DataSource;
+import java.io.Serial;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -66,6 +67,11 @@ public final class ReadJdbcP<T> extends AbstractProcessor {
     private Traverser<? extends T> traverser;
     private int parallelism;
     private int index;
+
+    static {
+        // workaround for https://github.com/hazelcast/hazelcast-jet/issues/2603
+        DriverManager.getDrivers();
+    }
 
     public ReadJdbcP(
             @Nonnull SupplierEx<? extends Connection> newConnectionFn,
@@ -148,6 +154,8 @@ public final class ReadJdbcP<T> extends AbstractProcessor {
 
         return ProcessorMetaSupplier.preferLocalParallelismOne(
                 new ProcessorSupplier() {
+                    @Serial
+                    private static final long serialVersionUID = 1L;
 
                     private transient JdbcDataConnection dataConnection;
 
@@ -180,6 +188,8 @@ public final class ReadJdbcP<T> extends AbstractProcessor {
             FunctionEx<? super ResultSet, ? extends T> mapOutputFn
     ) {
         return new ProcessorSupplier() {
+            @Serial
+            private static final long serialVersionUID = 1L;
 
             private transient Context context;
 
@@ -200,8 +210,6 @@ public final class ReadJdbcP<T> extends AbstractProcessor {
 
     @Override
     protected void init(@Nonnull Context context) {
-        // workaround for https://github.com/hazelcast/hazelcast-jet/issues/2603
-        DriverManager.getDrivers();
         this.connection = newConnectionFn.get();
         this.parallelism = context.totalParallelism();
         this.index = context.globalProcessorIndex();

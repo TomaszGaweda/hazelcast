@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ public class RingbufferDestroyTest extends HazelcastTestSupport {
 
     private static class AssertNoRingbufferContainerTask implements AssertTask {
         @Override
-        public void run() throws Exception {
+        public void run() {
             for (HazelcastInstance instance : instances) {
                 final RingbufferService ringbufferService
                         = getNodeEngineImpl(instance).getService(RingbufferService.SERVICE_NAME);

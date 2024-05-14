@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class TransactionalMapValuesMessageTask
         final TransactionContext context = endpoint.getTransactionContext(parameters.txnId);
         final TransactionalMap map = context.getMap(parameters.name);
         Collection values = map.values();
-        List<Data> list = new ArrayList<Data>(values.size());
+        List<Data> list = new ArrayList<>(values.size());
         for (Object o : values) {
             list.add(serializationService.toData(o));
         }

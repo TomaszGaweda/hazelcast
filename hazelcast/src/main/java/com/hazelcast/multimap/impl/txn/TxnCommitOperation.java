@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,10 +65,9 @@ public class TxnCommitOperation extends AbstractBackupAwareMultiMapOperation imp
 
     @Override
     public Operation getBackupOperation() {
-        List<Operation> backupOpList = new ArrayList<Operation>();
+        List<Operation> backupOpList = new ArrayList<>();
         for (Operation operation : opList) {
-            if (operation instanceof BackupAwareOperation) {
-                BackupAwareOperation backupAwareOperation = (BackupAwareOperation) operation;
+            if (operation instanceof BackupAwareOperation backupAwareOperation) {
                 if (backupAwareOperation.shouldBackup()) {
                     backupOpList.add(backupAwareOperation.getBackupOperation());
                 }
@@ -105,7 +104,7 @@ public class TxnCommitOperation extends AbstractBackupAwareMultiMapOperation imp
     protected void readInternal(ObjectDataInput in) throws IOException {
         super.readInternal(in);
         int size = in.readInt();
-        opList = new ArrayList<Operation>(size);
+        opList = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             opList.add((Operation) in.readObject());
         }

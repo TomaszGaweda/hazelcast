@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ public class EndpointConfig implements NamedConfig {
 
     public EndpointConfig addOutboundPortDefinition(String portDef) {
         if (outboundPortDefinitions == null) {
-            outboundPortDefinitions = new HashSet<String>();
+            outboundPortDefinitions = new HashSet<>();
         }
         outboundPortDefinitions.add(portDef);
         return this;
@@ -186,7 +186,7 @@ public class EndpointConfig implements NamedConfig {
 
     public EndpointConfig addOutboundPort(int port) {
         if (outboundPorts == null) {
-            outboundPorts = new HashSet<Integer>();
+            outboundPorts = new HashSet<>();
         }
         outboundPorts.add(port);
         return this;

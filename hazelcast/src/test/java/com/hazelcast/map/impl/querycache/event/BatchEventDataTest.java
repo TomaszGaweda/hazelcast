@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,12 +52,12 @@ public class BatchEventDataTest extends HazelcastTestSupport {
 
     @Before
     public void setUp() {
-        eventData = new DefaultQueryCacheEventData();
+        eventData = prepareDefaultQueryCacheEventDataWithMapName();
         eventData.setSequence(1);
-        otherEventData = new DefaultQueryCacheEventData();
+        otherEventData = prepareDefaultQueryCacheEventDataWithMapName();
         eventData.setSequence(2);
 
-        ArrayList<QueryCacheEventData> events = new ArrayList<QueryCacheEventData>();
+        ArrayList<QueryCacheEventData> events = new ArrayList<>();
         events.add(eventData);
 
         batchEventData = new BatchEventData(events, "source", 1);
@@ -66,7 +66,13 @@ public class BatchEventDataTest extends HazelcastTestSupport {
         batchEventDataOtherSource = new BatchEventData(events, "otherSource", 1);
         batchEventDataOtherPartitionId = new BatchEventData(events, "source", 2);
         batchEventDataOtherEvent = new BatchEventData(singleton(otherEventData), "source", 1);
-        batchEventDataNoEvent = new BatchEventData(Collections.<QueryCacheEventData>emptyList(), "source", 1);
+        batchEventDataNoEvent = new BatchEventData(Collections.emptyList(), "source", 1);
+    }
+
+    private DefaultQueryCacheEventData prepareDefaultQueryCacheEventDataWithMapName() {
+        DefaultQueryCacheEventData data = new DefaultQueryCacheEventData();
+        data.setMapName("myMap");
+        return data;
     }
 
     @Test
@@ -120,9 +126,9 @@ public class BatchEventDataTest extends HazelcastTestSupport {
         assertEquals("source", batchEventDataNoEvent.getSource());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testGetMapName() {
-        batchEventData.getMapName();
+        assertEquals("myMap", batchEventData.getMapName());
     }
 
     @Test(expected = UnsupportedOperationException.class)

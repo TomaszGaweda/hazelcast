@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.hazelcast.config;
 
+import com.hazelcast.client.impl.protocol.util.PropertiesUtil;
 import com.hazelcast.internal.config.ConfigDataSerializerHook;
 import com.hazelcast.map.MapStore;
 import com.hazelcast.nio.ObjectDataInput;
@@ -64,7 +65,7 @@ public class MapStoreConfig implements IdentifiedDataSerializable, Versioned {
     private String factoryClassName;
     private Object implementation;
     private Object factoryImplementation;
-    private Properties properties = new Properties();
+    private Properties properties;
     private InitialLoadMode initialLoadMode = InitialLoadMode.LAZY;
 
     /**
@@ -82,6 +83,7 @@ public class MapStoreConfig implements IdentifiedDataSerializable, Versioned {
     }
 
     public MapStoreConfig() {
+        properties = new Properties();
     }
 
     public MapStoreConfig(MapStoreConfig config) {
@@ -95,7 +97,7 @@ public class MapStoreConfig implements IdentifiedDataSerializable, Versioned {
         initialLoadMode = config.getInitialLoadMode();
         writeCoalescing = config.isWriteCoalescing();
         offload = config.isOffload();
-        properties.putAll(config.getProperties());
+        properties = PropertiesUtil.clone(config.getProperties());
     }
 
     /**
@@ -282,7 +284,7 @@ public class MapStoreConfig implements IdentifiedDataSerializable, Versioned {
     }
 
     public MapStoreConfig setProperty(String name, String value) {
-        properties.put(name, value);
+        properties.setProperty(name, value);
         return this;
     }
 

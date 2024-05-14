@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,12 +47,8 @@ class NewIdBatchOperation extends Operation implements IdentifiedDataSerializabl
         if (result.waitTimeMillis == 0) {
             sendResponse(result.idBatch.base());
         } else {
-            getNodeEngine().getExecutionService().schedule(new Runnable() {
-                @Override
-                public void run() {
-                    sendResponse(result.idBatch.base());
-                }
-            }, result.waitTimeMillis, TimeUnit.MILLISECONDS);
+            getNodeEngine().getExecutionService().schedule(() -> sendResponse(result.idBatch.base()),
+                    result.waitTimeMillis, TimeUnit.MILLISECONDS);
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class KubernetesTopologyIntentTrackerTest {
 
     private Node setupMockNode() {
         Node node = mock(Node.class);
-        properties.put(ClusterProperty.CLUSTER_SHUTDOWN_TIMEOUT_SECONDS.getName(), "2");
+        properties.setProperty(ClusterProperty.CLUSTER_SHUTDOWN_TIMEOUT_SECONDS.getName(), "2");
         HazelcastProperties hazelcastProperties = new HazelcastProperties(properties);
         when(node.getProperties()).thenReturn(hazelcastProperties);
         when(node.getLogger(ArgumentMatchers.any(Class.class)))
@@ -64,14 +64,14 @@ public class KubernetesTopologyIntentTrackerTest {
 
     @Test
     public void testConstructor_whenClusterAutoStateStrategyActive() {
-        properties.put(ClusterProperty.PERSISTENCE_AUTO_CLUSTER_STATE_STRATEGY.getName(), "ACTIVE");
+        properties.setProperty(ClusterProperty.PERSISTENCE_AUTO_CLUSTER_STATE_STRATEGY.getName(), "ACTIVE");
         assertThrows(InvalidConfigurationException.class,
                 () -> new KubernetesTopologyIntentTracker(setupMockNode()));
     }
 
     @Test
     public void testConstructor_whenInvalidClusterAutoStateStrategy() {
-        properties.put(ClusterProperty.PERSISTENCE_AUTO_CLUSTER_STATE_STRATEGY.getName(), "NOT_A_CLUSTER_STATE");
+        properties.setProperty(ClusterProperty.PERSISTENCE_AUTO_CLUSTER_STATE_STRATEGY.getName(), "NOT_A_CLUSTER_STATE");
         assertThrows(IllegalArgumentException.class,
                 () -> new KubernetesTopologyIntentTracker(setupMockNode()));
     }

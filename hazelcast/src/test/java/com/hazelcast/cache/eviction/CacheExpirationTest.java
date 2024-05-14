@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ public class CacheExpirationTest extends CacheTestSupport {
     protected <K, V, M extends Serializable & ExpiryPolicy, T extends Serializable & CacheEntryListener<K, V>>
     CacheConfig<K, V> createCacheConfig(M expiryPolicy, T listener) {
         CacheConfig<K, V> cacheConfig = createCacheConfig(expiryPolicy);
-        MutableCacheEntryListenerConfiguration<K, V> listenerConfiguration = new MutableCacheEntryListenerConfiguration<K, V>(
+        MutableCacheEntryListenerConfiguration<K, V> listenerConfiguration = new MutableCacheEntryListenerConfiguration<>(
                 FactoryBuilder.factoryOf(listener), null, true, true
         );
         cacheConfig.addCacheEntryListenerConfiguration(listenerConfiguration);
@@ -169,7 +169,7 @@ public class CacheExpirationTest extends CacheTestSupport {
         CacheConfig<String, String> cacheConfig = createCacheConfig(new HazelcastExpiryPolicy(1, 1, 1), listener);
         Cache<String, String> cache = createCache(cacheConfig);
 
-        Map<String, String> entries = new HashMap<String, String>();
+        Map<String, String> entries = new HashMap<>();
         entries.put("key1", "value1");
         entries.put("key2", "value2");
         cache.putAll(entries);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ import com.hazelcast.test.starter.answer.DelegatingAnswer;
 import static org.mockito.Mockito.mock;
 
 @HazelcastStarterConstructor(classNames = {"com.hazelcast.spi.impl.operationservice.impl.InvocationFuture",
-                                           "com.hazelcast.spi.impl.InternalCompletableFuture"})
+                                           "com.hazelcast.spi.impl.InternalCompletableFuture",
+                                           "com.hazelcast.spi.impl.DeserializingCompletableFuture"})
 public class DelegatingObjectConstructor extends AbstractStarterObjectConstructor {
 
     public DelegatingObjectConstructor(Class<?> targetClass) {

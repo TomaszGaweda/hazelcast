@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import static java.util.Arrays.asList;
 @Category({QuickTest.class, ParallelJVMTest.class})
 public class StreamKafkaP_TimestampModesTest extends StreamSourceStageTestBase {
 
-    private static KafkaTestSupport kafkaTestSupport = KafkaTestSupport.create();
+    private static final KafkaTestSupport kafkaTestSupport = KafkaTestSupport.create();
 
     private static Properties properties;
 

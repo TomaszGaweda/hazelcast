@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,8 +58,8 @@ final class ClientCacheProxySupportUtil {
     static void handleFailureOnCompletionListener(CompletionListener completionListener, Throwable t) {
         if (t instanceof Exception) {
             Throwable cause = t.getCause();
-            if (t instanceof ExecutionException && cause instanceof CacheException) {
-                completionListener.onException((CacheException) cause);
+            if (t instanceof ExecutionException && cause instanceof CacheException exception) {
+                completionListener.onException(exception);
             } else {
                 completionListener.onException((Exception) t);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.hazelcast.logging.ILogger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,11 +67,11 @@ public final class InstanceTrackingUtil {
             String trackingFileContents = getInstanceTrackingContent(formatPattern, placeholderValues);
             Path file = getInstanceTrackingFilePath(fileName, placeholderValues);
 
-            // Set the instance tracking file path to a system property so it can be audited
+            // Set the instance tracking file path to a system property, so it can be audited
             System.setProperty(HAZELCAST_CONFIG_INSTANCE_TRACKING_FILE, file.toString());
 
             logger.fine("Writing instance tracking information to " + file);
-            Files.write(file, trackingFileContents.getBytes(StandardCharsets.UTF_8));
+            Files.writeString(file, trackingFileContents);
         } catch (Exception e) {
             logger.warning("Failed to write instance tracking information", e);
         }
@@ -102,12 +101,12 @@ public final class InstanceTrackingUtil {
         if (formatPattern == null) {
             JsonObject jsonObject = new JsonObject();
             propertyValues.forEach((prop, value) -> {
-                if (value instanceof Boolean) {
-                    jsonObject.add(prop, (boolean) value);
-                } else if (value instanceof Integer) {
-                    jsonObject.add(prop, (int) value);
-                } else if (value instanceof Long) {
-                    jsonObject.add(prop, (long) value);
+                if (value instanceof Boolean booleanValue) {
+                    jsonObject.add(prop, booleanValue);
+                } else if (value instanceof Integer integerValue) {
+                    jsonObject.add(prop, integerValue);
+                } else if (value instanceof Long longValue) {
+                    jsonObject.add(prop, longValue);
                 } else {
                     jsonObject.add(prop, value.toString());
                 }

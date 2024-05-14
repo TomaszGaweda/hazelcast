@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -73,7 +74,7 @@ public class SimpleClientMapInterceptorTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void clientMapInterceptorTestIssue1238() throws InterruptedException {
+    public void clientMapInterceptorTestIssue1238() {
         final IMap<Object, Object> map = client.getMap("clientMapInterceptorTest");
 
         String id = map.addInterceptor(interceptor);
@@ -96,7 +97,7 @@ public class SimpleClientMapInterceptorTest extends HazelcastTestSupport {
         }
 
         assertEquals(6, map.size());
-        assertEquals(null, map.get(1));
+        assertNull(map.get(1));
         assertEquals("ISTANBUL:", map.get(2));
         assertEquals("TOKYO:", map.get(3));
         assertEquals("LONDON:", map.get(4));
@@ -108,7 +109,7 @@ public class SimpleClientMapInterceptorTest extends HazelcastTestSupport {
         map.put(8, "Moscow");
 
         assertEquals("Moscow", map.get(8));
-        assertEquals(null, map.get(1));
+        assertNull(map.get(1));
         assertEquals("ISTANBUL", map.get(2));
         assertEquals("TOKYO", map.get(3));
         assertEquals("LONDON", map.get(4));

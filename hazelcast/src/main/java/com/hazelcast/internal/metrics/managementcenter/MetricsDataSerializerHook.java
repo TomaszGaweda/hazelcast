@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,10 @@ public final class MetricsDataSerializerHook implements DataSerializerHook {
     private static class Factory implements DataSerializableFactory {
         @Override
         public IdentifiedDataSerializable create(int typeId) {
-            switch (typeId) {
-                case READ_METRICS:
-                    return new ReadMetricsOperation();
-                default:
-                    throw new IllegalArgumentException("Unknown type id " + typeId);
+            if (typeId == READ_METRICS) {
+                return new ReadMetricsOperation();
             }
+            throw new IllegalArgumentException("Unknown type id " + typeId);
         }
     }
 }

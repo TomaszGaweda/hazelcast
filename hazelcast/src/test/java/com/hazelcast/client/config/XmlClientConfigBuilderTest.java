@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ public class XmlClientConfigBuilderTest extends AbstractClientConfigBuilderTest 
 
         File file = File.createTempFile("foo", ".xml");
         file.deleteOnExit();
-        PrintWriter writer = new PrintWriter(file, "UTF-8");
+        PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8);
         writer.println(xml);
         writer.close();
 
@@ -142,14 +142,14 @@ public class XmlClientConfigBuilderTest extends AbstractClientConfigBuilderTest 
 
     @Override
     @Test(expected = HazelcastException.class)
-    public void loadingThroughSystemProperty_nonExistingClasspathResource() throws IOException {
+    public void loadingThroughSystemProperty_nonExistingClasspathResource() {
         System.setProperty("hazelcast.client.config", "classpath:idontexist.xml");
         new XmlClientConfigBuilder();
     }
 
     @Override
     @Test
-    public void loadingThroughSystemProperty_existingClasspathResource() throws IOException {
+    public void loadingThroughSystemProperty_existingClasspathResource() {
         System.setProperty("hazelcast.client.config", "classpath:test-hazelcast-client.xml");
 
         XmlClientConfigBuilder configBuilder = new XmlClientConfigBuilder();
@@ -389,8 +389,8 @@ public class XmlClientConfigBuilderTest extends AbstractClientConfigBuilderTest 
     @Test
     public void testLoadBalancerCustom() {
         String xml = HAZELCAST_CLIENT_START_TAG
-                     + "<load-balancer type=\"custom\">com.hazelcast.client.test.CustomLoadBalancer</load-balancer>"
-                     + HAZELCAST_CLIENT_END_TAG;
+                + "<load-balancer type=\"custom\">com.hazelcast.client.test.CustomLoadBalancer</load-balancer>"
+                + HAZELCAST_CLIENT_END_TAG;
 
         ClientConfig config = buildConfig(xml);
 
@@ -525,8 +525,8 @@ public class XmlClientConfigBuilderTest extends AbstractClientConfigBuilderTest 
         ClientConfig xmlConfig = buildConfig(xml);
 
         List<PersistentMemoryDirectoryConfig> directoryConfigs = xmlConfig.getNativeMemoryConfig()
-                                                                          .getPersistentMemoryConfig()
-                                                                          .getDirectoryConfigs();
+                .getPersistentMemoryConfig()
+                .getDirectoryConfigs();
         assertEquals(2, directoryConfigs.size());
         PersistentMemoryDirectoryConfig dir0Config = directoryConfigs.get(0);
         PersistentMemoryDirectoryConfig dir1Config = directoryConfigs.get(1);
@@ -864,6 +864,21 @@ public class XmlClientConfigBuilderTest extends AbstractClientConfigBuilderTest 
                 .hasMessageContaining("Cannot load");
     }
 
+    @Override
+    public void testDefaultRoutingStrategyIsPicked_whenNoRoutingStrategyIsSetToSubsetRoutingConfig() {
+        String xml = HAZELCAST_CLIENT_START_TAG
+                + "     <network>\n"
+                + "         <subset-routing enabled=\"true\" />\n"
+                + "     </network>\n"
+                + HAZELCAST_CLIENT_END_TAG;
+
+        ClientConfig clientConfig = buildConfig(xml);
+
+        assertTrue(clientConfig.getNetworkConfig().getSubsetRoutingConfig().isEnabled());
+        assertEquals(SubsetRoutingConfig.DEFAULT_ROUTING_STRATEGY,
+                clientConfig.getNetworkConfig().getSubsetRoutingConfig().getRoutingStrategy());
+    }
+
     static ClientConfig buildConfig(String xml, Properties properties) {
         ByteArrayInputStream bis = new ByteArrayInputStream(xml.getBytes());
         XmlClientConfigBuilder configBuilder = new XmlClientConfigBuilder(bis);
@@ -894,7 +909,7 @@ public class XmlClientConfigBuilderTest extends AbstractClientConfigBuilderTest 
         try {
             validator.validate(source);
         } catch (SAXException ex) {
-            fail(xmlFileName + " is not valid because: " + ex.toString());
+            fail(xmlFileName + " is not valid because: " + ex);
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -838,6 +838,21 @@ public class YamlClientConfigBuilderTest extends AbstractClientConfigBuilderTest
         emptyConfig.setClassLoader(defaultConfig.getClassLoader());
 
         assertEquals(defaultConfig, emptyConfig);
+    }
+
+    @Override
+    public void testDefaultRoutingStrategyIsPicked_whenNoRoutingStrategyIsSetToSubsetRoutingConfig() {
+        String yaml = ""
+                + "hazelcast-client:\n"
+                + "  network:\n"
+                + "    subset-routing:\n"
+                + "      enabled: true\n";
+
+        ClientConfig clientConfig = buildConfig(yaml);
+
+        assertTrue(clientConfig.getNetworkConfig().getSubsetRoutingConfig().isEnabled());
+        assertEquals(SubsetRoutingConfig.DEFAULT_ROUTING_STRATEGY,
+                clientConfig.getNetworkConfig().getSubsetRoutingConfig().getRoutingStrategy());
     }
 
     public static ClientConfig buildConfig(String yaml) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,26 @@ package com.hazelcast.internal.management.operation;
 
 import com.hazelcast.config.EvictionConfig;
 import com.hazelcast.config.EvictionPolicy;
+import com.hazelcast.config.InvalidConfigurationException;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MaxSizePolicy;
+import com.hazelcast.config.WanReplicationRef;
 import com.hazelcast.internal.config.MapConfigReadOnly;
 import com.hazelcast.internal.management.ManagementDataSerializerHook;
 import com.hazelcast.map.impl.MapContainer;
 import com.hazelcast.map.impl.MapService;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.impl.Versioned;
 
 import java.io.IOException;
+
+import static com.hazelcast.internal.cluster.Versions.V5_4;
 
 /**
  * Operation to update map configuration from Management Center.
  */
-public class UpdateMapConfigOperation extends AbstractManagementOperation {
+public class UpdateMapConfigOperation extends AbstractManagementOperation implements Versioned {
 
     private boolean readBackupData;
     private int timeToLiveSeconds;
@@ -40,14 +45,19 @@ public class UpdateMapConfigOperation extends AbstractManagementOperation {
     private int maxSize;
     private int maxSizePolicyId;
     private int evictionPolicyId;
+    private WanReplicationRef wanReplicationRef;
     private String mapName;
+
+    // RU_COMPAT 5.3: Required for backwards compatibility
+    private transient boolean applyWanReplicationRef;
 
     public UpdateMapConfigOperation() {
     }
 
     public UpdateMapConfigOperation(String mapName, int timeToLiveSeconds, int maxIdleSeconds,
                                     int maxSize, int maxSizePolicyId, boolean readBackupData,
-                                    int evictionPolicyId) {
+                                    int evictionPolicyId, boolean applyWanReplicationRef,
+                                    WanReplicationRef wanReplicationRef) {
         this.mapName = mapName;
         this.timeToLiveSeconds = timeToLiveSeconds;
         this.maxIdleSeconds = maxIdleSeconds;
@@ -55,6 +65,8 @@ public class UpdateMapConfigOperation extends AbstractManagementOperation {
         this.maxSizePolicyId = maxSizePolicyId;
         this.readBackupData = readBackupData;
         this.evictionPolicyId = evictionPolicyId;
+        this.applyWanReplicationRef = applyWanReplicationRef;
+        this.wanReplicationRef = wanReplicationRef;
     }
 
     @Override
@@ -65,6 +77,9 @@ public class UpdateMapConfigOperation extends AbstractManagementOperation {
         newConfig.setTimeToLiveSeconds(timeToLiveSeconds);
         newConfig.setMaxIdleSeconds(maxIdleSeconds);
         newConfig.setReadBackupData(readBackupData);
+        if (applyWanReplicationRef) {
+            newConfig.setWanReplicationRef(wanReplicationRef);
+        }
 
         EvictionConfig evictionConfig = newConfig.getEvictionConfig();
         evictionConfig.setEvictionPolicy(EvictionPolicy.getById(evictionPolicyId));
@@ -72,8 +87,24 @@ public class UpdateMapConfigOperation extends AbstractManagementOperation {
         evictionConfig.setSize(maxSize);
 
         MapContainer mapContainer = service.getMapServiceContext().getMapContainer(mapName);
-        mapContainer.setMapConfig(new MapConfigReadOnly(newConfig));
+        // It is possible for applying the config to fail (i.e. due to invalid WanReplicationRef merge policy),
+        //  so it's important we restore the config to its previous version in this scenario
+        try {
+            MapConfigReadOnly readOnlyConfig = new MapConfigReadOnly(newConfig);
+            applyMapConfig(mapContainer, readOnlyConfig);
+        } catch (Exception ex) {
+            applyMapConfig(mapContainer, oldConfig);
+            throw new InvalidConfigurationException("Applying the MapConfig failed: " + ex.getMessage(), ex);
+        }
+    }
+
+    private void applyMapConfig(MapContainer mapContainer, MapConfig config) {
+        mapContainer.setMapConfig(config);
         mapContainer.initEvictor();
+        if (applyWanReplicationRef) {
+            mapContainer.getWanContext().setMapConfig(config);
+            mapContainer.getWanContext().start();
+        }
     }
 
     @Override
@@ -85,6 +116,11 @@ public class UpdateMapConfigOperation extends AbstractManagementOperation {
         out.writeInt(maxSizePolicyId);
         out.writeBoolean(readBackupData);
         out.writeInt(evictionPolicyId);
+
+        // RU_COMPAT_5_3
+        if (out.getVersion().isGreaterOrEqual(V5_4)) {
+            out.writeObject(wanReplicationRef);
+        }
     }
 
     @Override
@@ -96,6 +132,15 @@ public class UpdateMapConfigOperation extends AbstractManagementOperation {
         maxSizePolicyId = in.readInt();
         readBackupData = in.readBoolean();
         evictionPolicyId = in.readInt();
+
+        // RU_COMPAT_5_3
+        if (in.getVersion().isGreaterOrEqual(V5_4)) {
+            wanReplicationRef = in.readObject();
+            applyWanReplicationRef = true;
+        } else {
+            wanReplicationRef = null;
+            applyWanReplicationRef = false;
+        }
     }
 
     @Override

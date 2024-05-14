@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,10 @@ package com.hazelcast.collection.impl.set;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.SetConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.cp.IAtomicLong;
 import com.hazelcast.collection.ISet;
 import com.hazelcast.transaction.TransactionalSet;
 import com.hazelcast.test.HazelcastTestSupport;
-import com.hazelcast.transaction.TransactionException;
 import com.hazelcast.transaction.TransactionalTask;
-import com.hazelcast.transaction.TransactionalTaskContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,7 +39,6 @@ import static org.junit.Assert.assertTrue;
 public abstract class SetAbstractTest extends HazelcastTestSupport {
 
     protected HazelcastInstance[] instances;
-    protected IAtomicLong atomicLong;
 
     private ISet<String> set;
     private Config config;
@@ -105,7 +101,7 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
 
     @Test
     public void testAddAll_Basic() {
-        Set<String> added = new HashSet<String>();
+        Set<String> added = new HashSet<>();
         added.add("item1");
         added.add("item2");
         set.addAll(added);
@@ -114,7 +110,7 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
 
     @Test
     public void testAddAll_whenAllElementsSame() {
-        Set<String> added = new HashSet<String>();
+        Set<String> added = new HashSet<>();
         for (int i = 1; i <= 10; i++) {
             added.add("item");
         }
@@ -124,7 +120,7 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
 
     @Test
     public void testAddAll_whenCollectionContainsNull() {
-        Set<String> added = new HashSet<String>();
+        Set<String> added = new HashSet<>();
         added.add("item1");
         added.add(null);
         try {
@@ -158,7 +154,7 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
 
     @Test
     public void testRemoveAll() {
-        Set<String> removed = new HashSet<String>();
+        Set<String> removed = new HashSet<>();
         for (int i = 1; i <= 10; i++) {
             set.add("item" + i);
             removed.add("item" + i);
@@ -172,7 +168,7 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
     @Test
     public void testIterator() {
         set.add("item");
-        Iterator iterator = set.iterator();
+        Iterator<String> iterator = set.iterator();
         assertEquals("item", iterator.next());
         assertFalse(iterator.hasNext());
     }
@@ -181,7 +177,7 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
     public void testIteratorRemoveThrowsUnsupportedOperationException() {
         set.add("item");
 
-        Iterator iterator = set.iterator();
+        Iterator<String> iterator = set.iterator();
         iterator.next();
         iterator.remove();
     }
@@ -219,7 +215,7 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
 
     @Test
     public void testRetainAll_whenArgumentHasSameElements() {
-        Set<String> retained = new HashSet<String>();
+        Set<String> retained = new HashSet<>();
 
         for (int i = 1; i <= 10; i++) {
             set.add("item" + i);
@@ -255,7 +251,7 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
 
     @Test
     public void testContainsAll() {
-        Set<String> contains = new HashSet<String>();
+        Set<String> contains = new HashSet<>();
 
         contains.add("item1");
         contains.add("item2");
@@ -268,7 +264,7 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
 
     @Test
     public void testContainsAll_whenSetNotContains() {
-        Set<String> contains = new HashSet<String>();
+        Set<String> contains = new HashSet<>();
         contains.add("item1");
         contains.add("item100");
         for (int i = 1; i <= 10; i++) {
@@ -297,13 +293,10 @@ public abstract class SetAbstractTest extends HazelcastTestSupport {
         }
 
         for (final ISet set : localSets) {
-            TransactionalTask task = new TransactionalTask() {
-                @Override
-                public Object execute(TransactionalTaskContext context) throws TransactionException {
-                    TransactionalSet<String> txSet = context.getSet(set.getName());
-                    txSet.add("Hello");
-                    return null;
-                }
+            TransactionalTask task = context -> {
+                TransactionalSet<String> txSet = context.getSet(set.getName());
+                txSet.add("Hello");
+                return null;
             };
             local.executeTransaction(task);
         }

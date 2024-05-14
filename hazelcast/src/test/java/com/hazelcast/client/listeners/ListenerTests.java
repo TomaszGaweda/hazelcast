@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,16 +63,11 @@ public class ListenerTests extends ClientTestSupport {
 
 
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.schedule(new Runnable() {
-            @Override
-            public void run() {
-                node.getLifecycleService().terminate();
-            }
-        }, 500, TimeUnit.MILLISECONDS);
+        executorService.schedule(() -> node.getLifecycleService().terminate(), 500, TimeUnit.MILLISECONDS);
 
         EntryAdapter listener = new EntryAdapter();
 
-        LinkedList<UUID> registrationIds = new LinkedList<UUID>();
+        LinkedList<UUID> registrationIds = new LinkedList<>();
         while (client.getCluster().getMembers().size() == nodeCount) {
             registrationIds.add(map.addEntryListener(listener, false));
         }
@@ -95,16 +90,13 @@ public class ListenerTests extends ClientTestSupport {
         IMap<Object, Object> map = client.getMap("test");
 
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.schedule(new Runnable() {
-            @Override
-            public void run() {
-                factory.newHazelcastInstance();
-            }
+        executorService.schedule(() -> {
+            factory.newHazelcastInstance();
         }, 500, TimeUnit.MILLISECONDS);
 
         EntryAdapter listener = new EntryAdapter();
 
-        LinkedList<UUID> registrationIds = new LinkedList<UUID>();
+        LinkedList<UUID> registrationIds = new LinkedList<>();
 
         HazelcastClientInstanceImpl clientInstance = getHazelcastClientInstanceImpl(client);
         while (clientInstance.getConnectionManager().getActiveConnections().size() < nodeCount) {

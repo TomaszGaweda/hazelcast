@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.hazelcast.map.impl.mapstore.writebehind;
 
 import com.hazelcast.map.IMap;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.QuickTest;
@@ -32,9 +31,9 @@ import static org.junit.Assert.assertTrue;
 public class WriteBehindWriteBatchingTest extends HazelcastTestSupport {
 
     @Test
-    public void testWriteBatching() throws Exception {
+    public void testWriteBatching() {
         final int writeBatchSize = 8;
-        final MapStoreWithCounter<Integer, Integer> mapStore = new MapStoreWithCounter<Integer, Integer>();
+        final MapStoreWithCounter<Integer, Integer> mapStore = new MapStoreWithCounter<>();
         final IMap<Integer, Integer> map = TestMapUsingMapStoreBuilder.<Integer, Integer>create()
                 .withMapStore(mapStore)
                 .withNodeCount(1)
@@ -46,16 +45,13 @@ public class WriteBehindWriteBatchingTest extends HazelcastTestSupport {
 
         final int numberOfItems = 1024;
         populateMap(map, numberOfItems);
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                // expecting more than half of operations should have the write batch size.
-                // takes this a lower bound.
-                final int expectedBatchOpCount = (numberOfItems / writeBatchSize) / 2;
-                final int numberOfBatchOperationsEqualWriteBatchSize
-                        = mapStore.findNumberOfBatchsEqualWriteBatchSize(writeBatchSize);
-                assertTrue(numberOfBatchOperationsEqualWriteBatchSize >= expectedBatchOpCount);
-            }
+        assertTrueEventually(() -> {
+            // expecting more than half of operations should have the write batch size.
+            // takes this a lower bound.
+            final int expectedBatchOpCount = (numberOfItems / writeBatchSize) / 2;
+            final int numberOfBatchOperationsEqualWriteBatchSize
+                    = mapStore.findNumberOfBatchsEqualWriteBatchSize(writeBatchSize);
+            assertTrue(numberOfBatchOperationsEqualWriteBatchSize >= expectedBatchOpCount);
         }, 20);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package com.hazelcast.internal.partition.impl;
 
 import com.hazelcast.instance.impl.OutOfMemoryErrorDispatcher;
-import com.hazelcast.internal.partition.impl.MigrationManager.MigrationPlanTask;
+import com.hazelcast.internal.partition.impl.MigrationManagerImpl.MigrationPlanTask;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.spi.properties.ClusterProperty;
 
@@ -54,7 +54,7 @@ class MigrationThread extends Thread implements Runnable {
 
         this.migrationManager = migrationManager;
         this.queue = queue;
-        this.partitionMigrationInterval = migrationManager.partitionMigrationInterval;
+        this.partitionMigrationInterval = migrationManager.getPartitionMigrationInterval();
         this.sleepTime = max(DEFAULT_MIGRATION_SLEEP_INTERVAL, partitionMigrationInterval);
         this.logger = logger;
     }
@@ -115,8 +115,8 @@ class MigrationThread extends Thread implements Runnable {
 
     void abortMigrationTask() {
         MigrationRunnable task = activeTask;
-        if (task instanceof MigrationPlanTask) {
-            ((MigrationPlanTask) task).abort();
+        if (task instanceof MigrationPlanTask planTask) {
+            planTask.abort();
         }
     }
 

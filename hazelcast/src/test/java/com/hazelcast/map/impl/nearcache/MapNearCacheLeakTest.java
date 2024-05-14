@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class MapNearCacheLeakTest extends AbstractNearCacheLeakTest<Data, String
 
         HazelcastInstance dataInstance = hazelcastFactory.newHazelcastInstance(config);
         IMap<K, V> dataMap = dataInstance.getMap(DEFAULT_NEAR_CACHE_NAME);
-        IMapDataStructureAdapter<K, V> dataAdapter = new IMapDataStructureAdapter<K, V>(dataMap);
+        IMapDataStructureAdapter<K, V> dataAdapter = new IMapDataStructureAdapter<>(dataMap);
 
         // wait until the initial load is done
         dataAdapter.waitUntilLoaded();
@@ -135,7 +135,7 @@ public class MapNearCacheLeakTest extends AbstractNearCacheLeakTest<Data, String
 
         return new NearCacheTestContextBuilder<K, V, Data, String>(nearCacheConfig, getSerializationService(nearCacheInstance))
                 .setNearCacheInstance(nearCacheInstance)
-                .setNearCacheAdapter(new IMapDataStructureAdapter<K, V>(nearCacheMap))
+                .setNearCacheAdapter(new IMapDataStructureAdapter<>(nearCacheMap))
                 .setNearCache(nearCache)
                 .setNearCacheManager(nearCacheManager)
                 .setHasLocalData(true)

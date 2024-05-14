@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
 import java.nio.ByteOrder;
 
 import static org.junit.Assert.assertEquals;
@@ -41,14 +40,14 @@ public class EmptyObjectDataOutputTest {
     }
 
     @Test
-    public void testEmptyMethodsDoNothing() throws IOException {
+    public void testEmptyMethodsDoNothing() {
         ByteOrder byteOrder = out.getByteOrder();
         out.close();
         assertEquals(ByteOrder.BIG_ENDIAN, byteOrder);
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testToByteArray() throws IOException {
+    public void testToByteArray() {
         out.toByteArray();
     }
 

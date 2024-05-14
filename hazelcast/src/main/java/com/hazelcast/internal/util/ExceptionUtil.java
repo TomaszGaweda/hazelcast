@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,11 +155,11 @@ public final class ExceptionUtil {
     }
 
     public static void rethrowIfError(final Throwable t) {
-        if (t instanceof Error) {
-            if (t instanceof OutOfMemoryError) {
-                OutOfMemoryErrorDispatcher.onOutOfMemory((OutOfMemoryError) t);
+        if (t instanceof Error error) {
+            if (t instanceof OutOfMemoryError outOfMemoryError) {
+                OutOfMemoryErrorDispatcher.onOutOfMemory(outOfMemoryError);
             }
-            throw (Error) t;
+            throw error;
         }
     }
 
@@ -377,13 +377,13 @@ public final class ExceptionUtil {
     public static void rethrowFromCollection(Collection<?> values, Class<? extends Throwable> ... ignored) throws Throwable {
         outerLoop:
         for (Object value : values) {
-            if (value instanceof Throwable) {
+            if (value instanceof Throwable throwable) {
                 for (Class<? extends Throwable> ignoredClass : ignored) {
                     if (ignoredClass.isAssignableFrom(value.getClass())) {
                         continue outerLoop;
                     }
                 }
-                throw (Throwable) value;
+                throw throwable;
             }
         }
     }

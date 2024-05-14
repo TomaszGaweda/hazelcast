@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.test.TestHazelcastFactory;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.durableexecutor.DurableExecutorService;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.NightlyTest;
@@ -49,7 +48,7 @@ public class ClientDurableExecutionDelayTest extends HazelcastTestSupport {
     private static final int CLUSTER_SIZE = 3;
     private static final AtomicInteger COUNTER = new AtomicInteger();
 
-    private final List<HazelcastInstance> instances = new ArrayList<HazelcastInstance>(CLUSTER_SIZE);
+    private final List<HazelcastInstance> instances = new ArrayList<>(CLUSTER_SIZE);
 
     private TestHazelcastFactory hazelcastFactory;
 
@@ -71,22 +70,14 @@ public class ClientDurableExecutionDelayTest extends HazelcastTestSupport {
         final int taskCount = 20;
         ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
         try {
-            ex.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    instances.get(1).getLifecycleService().terminate();
-                }
-            }, 1000, TimeUnit.MILLISECONDS);
+            ex.schedule(() -> instances.get(1).getLifecycleService().terminate(), 1000, TimeUnit.MILLISECONDS);
 
             Task task = new Task();
             runClient(task, taskCount);
 
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() throws Exception {
-                    final int taskExecutions = COUNTER.get();
-                    assertTrue(taskExecutions >= taskCount);
-                }
+            assertTrueEventually(() -> {
+                final int taskExecutions = COUNTER.get();
+                assertTrue(taskExecutions >= taskCount);
             });
         } finally {
             ex.shutdown();
@@ -98,22 +89,14 @@ public class ClientDurableExecutionDelayTest extends HazelcastTestSupport {
         final int taskCount = 20;
         ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
         try {
-            ex.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    instances.get(1).shutdown();
-                }
-            }, 1000, TimeUnit.MILLISECONDS);
+            ex.schedule(() -> instances.get(1).shutdown(), 1000, TimeUnit.MILLISECONDS);
 
             Task task = new Task();
             runClient(task, taskCount);
 
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() throws Exception {
-                    final int taskExecutions = COUNTER.get();
-                    assertTrue(taskExecutions >= taskCount);
-                }
+            assertTrueEventually(() -> {
+                final int taskExecutions = COUNTER.get();
+                assertTrue(taskExecutions >= taskCount);
             });
         } finally {
             ex.shutdown();

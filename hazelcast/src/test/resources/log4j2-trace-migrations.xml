@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+  ~ Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@
             <AppenderRef ref="Console"/>
         </Root>
         <!-- Configured to troubleshoot MigrationCorrectnessTest -->
-        <!--        <Logger name="com.hazelcast.internal.partition.impl" level="trace"/>-->
-        <Logger name="com.hazelcast.internal.cluster.ClusterService" level="trace"/>
-        <Logger name="com.hazelcast.internal.cluster.impl.MembershipManager" level="trace"/>
-        <Logger name="com.hazelcast.internal.cluster.impl.ClusterJoinManager" level="trace"/>
+        <!--        <Logger name="com.hazelcast.internal.partition.impl" level="TRACE"/>-->
+        <Logger name="com.hazelcast.internal.cluster.ClusterService" level="TRACE"/>
+        <Logger name="com.hazelcast.internal.cluster.impl.MembershipManager" level="TRACE"/>
+        <Logger name="com.hazelcast.internal.cluster.impl.ClusterJoinManager" level="TRACE"/>
     </Loggers>
 </Configuration>

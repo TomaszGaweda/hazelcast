@@ -1,6 +1,6 @@
 /*
  * Original work Copyright 2015 Real Logic Ltd.
- * Modified work Copyright (c) 2015-2023, Hazelcast, Inc. All Rights Reserved.
+ * Modified work Copyright (c) 2015-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import static com.hazelcast.internal.util.HashUtil.fastLongMix;
 public final class Hashing {
     private Hashing() { }
 
-    static int intHash(final int value, final int mask) {
+    public static int intHash(final int value, final int mask) {
         return fastIntMix(value) & mask;
     }
 

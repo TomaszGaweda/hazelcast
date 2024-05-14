@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,8 +78,7 @@ public final class ElasticSources {
 
     /**
      * Creates a source which queries local instance of Elasticsearch for all
-     * documents. Uses {@link SearchHit#getSourceAsString()} as mapping
-     * function
+     * documents. Uses provided {@code mapToItemFn} to map results.
      * <p>
      * For example:
      * <pre>{@code

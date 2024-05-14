@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.client;
 import com.hazelcast.client.impl.clientside.HazelcastClientProxy;
 import com.hazelcast.client.test.TestHazelcastFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.ParallelJVMTest;
@@ -63,11 +62,6 @@ public class ClientOutOfMemoryHandlerTest extends HazelcastTestSupport {
     public void testOnOutOfMemory() {
         outOfMemoryHandler.onOutOfMemory(new OutOfMemoryError(), instances);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                assertFalse("The client should be shutdown", client.getLifecycleService().isRunning());
-            }
-        });
+        assertTrueEventually(() -> assertFalse("The client should be shutdown", client.getLifecycleService().isRunning()));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.hazelcast.cache.CacheEventType;
 import com.hazelcast.config.BitmapIndexOptions.UniqueKeyTransformation;
 import com.hazelcast.config.CacheSimpleConfig.ExpiryPolicyFactoryConfig.TimedExpiryPolicyFactoryConfig.ExpiryPolicyType;
 import com.hazelcast.config.IndexType;
+import com.hazelcast.config.vector.Metric;
 import com.hazelcast.instance.ProtocolType;
 import com.hazelcast.internal.management.dto.ClientBwListEntryDTO;
 import com.hazelcast.internal.nio.Bits;
@@ -88,6 +89,7 @@ public final class FixedSizeTypesCodec {
         encodeInt(buffer, pos, fieldKind.getId());
     }
 
+    @SuppressWarnings("MagicNumber")
     public static void encodeInt(byte[] buffer, int pos, TimeUnit timeUnit) {
         int timeUnitId;
         if (TimeUnit.NANOSECONDS.equals(timeUnit)) {
@@ -124,6 +126,10 @@ public final class FixedSizeTypesCodec {
 
     public static void encodeInt(byte[] buffer, int pos, JobStatus jobStatus) {
         encodeInt(buffer, pos, jobStatus.getId());
+    }
+
+    public static void encodeInt(byte[] buffer, int pos, Metric metric) {
+        encodeInt(buffer, pos, metric.getId());
     }
 
     public static void encodeShort(byte[] buffer, int pos, short value) {

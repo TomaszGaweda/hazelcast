@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -495,8 +495,8 @@ public class ExecutionPlan implements IdentifiedDataSerializable {
                 .map(EdgeDef::partitioner)
                 .filter(Objects::nonNull)
                 .forEach(partitioner -> {
-                            if (partitioner instanceof SerializationServiceAware) {
-                                ((SerializationServiceAware) partitioner).setSerializationService(jobSerializationService);
+                            if (partitioner instanceof SerializationServiceAware serializationServiceAware) {
+                                serializationServiceAware.setSerializationService(jobSerializationService);
                             }
                             partitioner.init(object -> partitionService.getPartitionId(jobSerializationService.toData(object)));
                         }
@@ -504,10 +504,11 @@ public class ExecutionPlan implements IdentifiedDataSerializable {
     }
 
     private static Collection<? extends Processor> createProcessors(VertexDef vertexDef, int parallelism) {
-        final Collection<? extends Processor> processors = vertexDef.processorSupplier().get(parallelism);
+        ProcessorSupplier processorSupplier = vertexDef.processorSupplier();
+        final Collection<? extends Processor> processors = processorSupplier.get(parallelism);
         if (processors.size() != parallelism) {
             throw new JetException("ProcessorSupplier failed to return the requested number of processors." +
-                    " Requested: " + parallelism + ", returned: " + processors.size());
+                                   " Requested: " + parallelism + ", returned: " + processors.size());
         }
         return processors;
     }

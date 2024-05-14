@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.internal.services.ServiceNamespace;
 import com.hazelcast.map.impl.MapService;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelParametersRunnerFactory;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.HazelcastTestSupport;
@@ -78,13 +77,10 @@ public class AntiEntropyCleanupTest extends HazelcastTestSupport {
             final InternalPartitionService partitionService = getPartitionService(instance);
             final PartitionReplicaVersionManager replicaVersionManager = partitionService.getPartitionReplicaVersionManager();
 
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() throws Exception {
-                    for (int partitionId = 0; partitionId < partitionService.getPartitionCount(); partitionId++) {
-                        for (ServiceNamespace namespace : replicaVersionManager.getNamespaces(partitionId)) {
-                            assertFalse(namespace.getServiceName().equals(MapService.SERVICE_NAME));
-                        }
+            assertTrueEventually(() -> {
+                for (int partitionId = 0; partitionId < partitionService.getPartitionCount(); partitionId++) {
+                    for (ServiceNamespace namespace : replicaVersionManager.getNamespaces(partitionId)) {
+                        assertFalse(namespace.getServiceName().equals(MapService.SERVICE_NAME));
                     }
                 }
             });

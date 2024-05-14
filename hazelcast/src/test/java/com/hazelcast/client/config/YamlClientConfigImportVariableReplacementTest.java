@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public class YamlClientConfigImportVariableReplacementTest extends AbstractClien
             + "  cluster-name: ${java.version} $ID{dev}\n";
 
         Properties properties = new Properties(System.getProperties());
-        properties.put("config.location", configLocation);
+        properties.setProperty("config.location", configLocation);
         ClientConfig groupConfig = buildConfig(clusterName, properties);
         assertEquals(System.getProperty("java.version") + " dev", groupConfig.getClusterName());
     }
@@ -131,7 +131,7 @@ public class YamlClientConfigImportVariableReplacementTest extends AbstractClien
             + "    - " + "${config.location}\n";
 
         Properties properties = new Properties(System.getProperties());
-        properties.put("config.location", clusterNameLocation);
+        properties.setProperty("config.location", clusterNameLocation);
         ClientConfig groupConfig = buildConfig(yaml, properties);
         assertEquals(System.getProperty("java.version") + " dev", groupConfig.getClusterName());
     }
@@ -167,8 +167,8 @@ public class YamlClientConfigImportVariableReplacementTest extends AbstractClien
             + "    - " + "${config.location}\n";
 
         Properties properties = new Properties(System.getProperties());
-        properties.put("config.location", clusterNameLocation);
-        properties.put("p1", "a property");
+        properties.setProperty("config.location", clusterNameLocation);
+        properties.setProperty("p1", "a property");
         ClientConfig config = buildConfig(yaml, properties);
         assertEquals("a property  another property <test/> $T{p5}", config.getClusterName());
     }
@@ -182,6 +182,9 @@ public class YamlClientConfigImportVariableReplacementTest extends AbstractClien
                 + "    cluster-members:\n"
                 + "      - 192.168.100.100\n"
                 + "      - 127.0.0.10\n"
+                + "    subset-routing:\n"
+                + "      enabled: true\n"
+                + "      routing-strategy: PARTITION_GROUPS\n"
                 + "    smart-routing: false\n"
                 + "    redo-operation: true\n"
                 + "    socket-interceptor:\n"
@@ -197,6 +200,9 @@ public class YamlClientConfigImportVariableReplacementTest extends AbstractClien
                 + "    - ${config.location}";
 
         ClientConfig config = buildConfig(yaml, "config.location", networkConfigPath);
+        assertTrue(config.getNetworkConfig().getSubsetRoutingConfig().isEnabled());
+        assertEquals(RoutingStrategy.PARTITION_GROUPS, config.getNetworkConfig()
+                .getSubsetRoutingConfig().getRoutingStrategy());
         assertFalse(config.getNetworkConfig().isSmartRouting());
         assertTrue(config.getNetworkConfig().isRedoOperation());
         assertContains(config.getNetworkConfig().getAddresses(), "192.168.100.100");
@@ -399,7 +405,7 @@ public class YamlClientConfigImportVariableReplacementTest extends AbstractClien
     @Test
     public void testReplaceVariablesWithClasspathConfig() {
         Properties properties = new Properties();
-        properties.put("variable", "foobar");
+        properties.setProperty("variable", "foobar");
         ClientConfig config = new ClientClasspathYamlConfig("test-hazelcast-client-variable.yaml", properties);
 
         assertEquals("foobar", config.getProperty("prop"));

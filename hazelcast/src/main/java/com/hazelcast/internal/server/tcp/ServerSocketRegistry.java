@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,12 @@ public class ServerSocketRegistry
     private final boolean unifiedSocket;
     private final AtomicBoolean isOpen = new AtomicBoolean(true);
     private final Map<EndpointQualifier, ServerSocketChannel> serverSocketChannelMap;
-    private final Set<Pair> entries = new HashSet<Pair>();
+    private final Set<Pair> entries = new HashSet<>();
 
     public ServerSocketRegistry(Map<EndpointQualifier, ServerSocketChannel> map, boolean unifiedSocket) {
         this.unifiedSocket = unifiedSocket;
         this.serverSocketChannelMap = map == null
-                ? Collections.<EndpointQualifier, ServerSocketChannel>emptyMap()
+                ? Collections.emptyMap()
                 : map;
         buildEntries();
     }

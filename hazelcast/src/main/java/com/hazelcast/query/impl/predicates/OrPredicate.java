@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,10 +57,9 @@ public final class OrPredicate
 
     @Override
     public Set<QueryableEntry> filter(QueryContext queryContext) {
-        List<Set<QueryableEntry>> indexedResults = new LinkedList<Set<QueryableEntry>>();
+        List<Set<QueryableEntry>> indexedResults = new LinkedList<>();
         for (Predicate predicate : predicates) {
-            if (predicate instanceof IndexAwarePredicate) {
-                IndexAwarePredicate iap = (IndexAwarePredicate) predicate;
+            if (predicate instanceof IndexAwarePredicate iap) {
                 if (iap.isIndexed(queryContext)) {
                     // Avoid checking indexed partitions count twice to prevent
                     // scenario when the owner partitions count changes concurrently and null
@@ -84,8 +83,7 @@ public final class OrPredicate
     @Override
     public boolean isIndexed(QueryContext queryContext) {
         for (Predicate predicate : predicates) {
-            if (predicate instanceof IndexAwarePredicate) {
-                IndexAwarePredicate iap = (IndexAwarePredicate) predicate;
+            if (predicate instanceof IndexAwarePredicate iap) {
                 if (!iap.isIndexed(queryContext)) {
                     return false;
                 }
@@ -155,8 +153,8 @@ public final class OrPredicate
         for (int i = 0; i < size; i++) {
             Predicate original = predicates[i];
             Predicate negated;
-            if (original instanceof NegatablePredicate) {
-                negated = ((NegatablePredicate) original).negate();
+            if (original instanceof NegatablePredicate predicate) {
+                negated = predicate.negate();
             } else {
                 negated = new NotPredicate(original);
             }

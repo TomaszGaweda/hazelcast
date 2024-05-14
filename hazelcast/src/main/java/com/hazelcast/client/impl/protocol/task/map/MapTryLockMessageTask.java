@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class MapTryLockMessageTask
 
     @Override
     protected Operation prepareOperation() {
-        return new LockOperation(getNamespace(), parameters.key,
+        return new LockOperation(getObjectNamespace(), parameters.key,
                 parameters.threadId, parameters.lease, parameters.timeout, parameters.referenceId, true);
     }
 
@@ -71,7 +71,7 @@ public class MapTryLockMessageTask
         return new MapPermission(parameters.name, ActionConstants.ACTION_LOCK);
     }
 
-    private ObjectNamespace getNamespace() {
+    private ObjectNamespace getObjectNamespace() {
         return MapService.getObjectNamespace(parameters.name);
     }
 
@@ -91,5 +91,11 @@ public class MapTryLockMessageTask
             return new Object[]{parameters.key};
         }
         return new Object[]{parameters.key, parameters.timeout, TimeUnit.MILLISECONDS};
+    }
+
+    @Override
+    protected String getUserCodeNamespace() {
+        // This task is not Namespace-aware so it doesn't matter
+        return null;
     }
 }

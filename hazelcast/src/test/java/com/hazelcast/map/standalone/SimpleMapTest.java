@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,28 +124,26 @@ public final class SimpleMapTest {
     private void run(ExecutorService es) {
         final IMap<String, Object> map = instance.getMap(NAMESPACE);
         for (int i = 0; i < threadCount; i++) {
-            es.execute(new Runnable() {
-                public void run() {
-                    try {
-                        while (true) {
-                            int key = (int) (random.nextFloat() * entryCount);
-                            int operation = ((int) (random.nextFloat() * 100));
-                            if (operation < getPercentage) {
-                                map.get(String.valueOf(key));
-                                stats.gets.incrementAndGet();
-                            } else if (operation < getPercentage + putPercentage) {
-                                map.put(String.valueOf(key), createValue());
-                                stats.puts.incrementAndGet();
-                            } else {
-                                map.remove(String.valueOf(key));
-                                stats.removes.incrementAndGet();
-                            }
+            es.execute(() -> {
+                try {
+                    while (true) {
+                        int key = (int) (random.nextFloat() * entryCount);
+                        int operation = ((int) (random.nextFloat() * 100));
+                        if (operation < getPercentage) {
+                            map.get(String.valueOf(key));
+                            stats.gets.incrementAndGet();
+                        } else if (operation < getPercentage + putPercentage) {
+                            map.put(String.valueOf(key), createValue());
+                            stats.puts.incrementAndGet();
+                        } else {
+                            map.remove(String.valueOf(key));
+                            stats.removes.incrementAndGet();
                         }
-                    } catch (HazelcastInstanceNotActiveException e) {
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
+                } catch (HazelcastInstanceNotActiveException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             });
         }
@@ -162,7 +160,7 @@ public final class SimpleMapTest {
 
         final IMap<String, Object> map = instance.getMap(NAMESPACE);
         final Member thisMember = instance.getCluster().getLocalMember();
-        List<String> lsOwnedEntries = new LinkedList<String>();
+        List<String> lsOwnedEntries = new LinkedList<>();
         for (int i = 0; i < entryCount; i++) {
             final String key = String.valueOf(i);
             Partition partition = instance.getPartitionService().getPartition(key);
@@ -172,11 +170,9 @@ public final class SimpleMapTest {
         }
         final CountDownLatch latch = new CountDownLatch(lsOwnedEntries.size());
         for (final String ownedKey : lsOwnedEntries) {
-            es.execute(new Runnable() {
-                public void run() {
-                    map.put(ownedKey, createValue());
-                    latch.countDown();
-                }
+            es.execute(() -> {
+                map.put(ownedKey, createValue());
+                latch.countDown();
             });
         }
         latch.await();

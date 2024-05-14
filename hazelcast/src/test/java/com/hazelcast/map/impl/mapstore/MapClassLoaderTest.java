@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,11 +87,11 @@ public class MapClassLoaderTest extends HazelcastTestSupport {
 
     private class InMemoryMapStore implements MapStore<String, String> {
 
-        private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<String, String>();
-        private final ConcurrentHashMap<String, Boolean> contextClassLoaders = new ConcurrentHashMap<String, Boolean>();
+        private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, Boolean> contextClassLoaders = new ConcurrentHashMap<>();
 
         public TreeMap<String, Boolean> getContextClassLoaders() {
-            return new TreeMap<String, Boolean>(contextClassLoaders);
+            return new TreeMap<>(contextClassLoaders);
         }
 
         public void preload(int size) {
@@ -116,7 +116,7 @@ public class MapClassLoaderTest extends HazelcastTestSupport {
         @Override
         public Map<String, String> loadAll(Collection<String> keys) {
             saveInfoAboutCurrentLoaderThread();
-            Map<String, String> result = new HashMap<String, String>();
+            Map<String, String> result = new HashMap<>();
             for (String key : keys) {
                 sleepMillis(MS_PER_LOAD);
                 String value = store.get(key);

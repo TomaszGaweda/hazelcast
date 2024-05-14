@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import static com.hazelcast.internal.util.Preconditions.checkNotNull;
  */
 public final class CallsPerMember implements LiveOperations {
     private final Address localAddress;
-    private final Map<Address, CategorizedCallIds> callIdsByMember = new HashMap<Address, CategorizedCallIds>();
+    private final Map<Address, CategorizedCallIds> callIdsByMember = new HashMap<>();
 
     public CallsPerMember(Address localAddress) {
         this.localAddress = checkNotNull(localAddress, "local address can't be null");
@@ -87,11 +87,7 @@ public final class CallsPerMember implements LiveOperations {
     }
 
     public CategorizedCallIds getOrCreateCallIdsForMember(Address address) {
-        CategorizedCallIds callIds = callIdsByMember.get(address);
-        if (callIds == null) {
-            callIds = new CategorizedCallIds();
-            callIdsByMember.put(address, callIds);
-        }
+        CategorizedCallIds callIds = callIdsByMember.computeIfAbsent(address, x -> new CategorizedCallIds());
         return callIds;
     }
 
@@ -104,7 +100,7 @@ public final class CallsPerMember implements LiveOperations {
     }
 
     private static final class CategorizedCallIds {
-        final List<Long> liveOps = new ArrayList<Long>();
-        final List<Long> opsToCancel = new ArrayList<Long>();
+        final List<Long> liveOps = new ArrayList<>();
+        final List<Long> opsToCancel = new ArrayList<>();
     }
 }

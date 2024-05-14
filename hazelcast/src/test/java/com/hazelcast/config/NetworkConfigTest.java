@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,39 +39,39 @@ public class NetworkConfigTest extends HazelcastTestSupport {
     private NetworkConfig networkConfig = new NetworkConfig();
 
     @Test
-    public void testPort() throws Exception {
+    public void testPort() {
         int port = RandomPicker.getInt(0, 65536);
         networkConfig.setPort(port);
         assertEquals(port, networkConfig.getPort());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNegativePort() throws Exception {
+    public void testNegativePort() {
         int port = -1;
         networkConfig.setPort(port);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testOverLimitPort() throws Exception {
+    public void testOverLimitPort() {
         int port = 65536;
         networkConfig.setPort(port);
     }
 
     @Test
-    public void testPortCount() throws Exception {
+    public void testPortCount() {
         int portCount = 111;
         networkConfig.setPortCount(portCount);
         assertEquals(portCount, networkConfig.getPortCount());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNegativePortCount() throws Exception {
+    public void testNegativePortCount() {
         int portCount = -1;
         networkConfig.setPortCount(portCount);
     }
 
     @Test
-    public void testPortAutoIncrement() throws Exception {
+    public void testPortAutoIncrement() {
         networkConfig.setPortAutoIncrement(true);
         assertTrue(networkConfig.isPortAutoIncrement());
 
@@ -80,7 +80,7 @@ public class NetworkConfigTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testReuseAddress() throws Exception {
+    public void testReuseAddress() {
         networkConfig.setReuseAddress(true);
         assertTrue(networkConfig.isReuseAddress());
 
@@ -89,7 +89,7 @@ public class NetworkConfigTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void testPublicAddress() throws Exception {
+    public void testPublicAddress() {
         String publicAddress = "hazelcast.org";
         networkConfig.setPublicAddress(publicAddress);
         assertEquals(publicAddress, networkConfig.getPublicAddress());

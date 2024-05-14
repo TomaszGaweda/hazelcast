@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,18 @@ import com.hazelcast.cardinality.impl.CardinalityEstimatorService;
 import com.hazelcast.collection.impl.list.ListService;
 import com.hazelcast.collection.impl.queue.QueueService;
 import com.hazelcast.collection.impl.set.SetService;
-import com.hazelcast.cp.internal.datastructures.atomiclong.AtomicLongService;
-import com.hazelcast.cp.internal.datastructures.atomicref.AtomicRefService;
-import com.hazelcast.cp.internal.datastructures.countdownlatch.CountDownLatchService;
-import com.hazelcast.cp.internal.datastructures.lock.LockService;
-import com.hazelcast.cp.internal.datastructures.semaphore.SemaphoreService;
+import com.hazelcast.cp.internal.datastructures.atomiclong.AtomicLongServiceUtil;
+import com.hazelcast.cp.internal.datastructures.atomicref.AtomicRefServiceUtil;
+import com.hazelcast.cp.internal.datastructures.countdownlatch.CountDownLatchServiceUtil;
+import com.hazelcast.cp.internal.datastructures.cpmap.CPMapServiceUtil;
+import com.hazelcast.cp.internal.datastructures.lock.LockServiceUtil;
+import com.hazelcast.cp.internal.datastructures.semaphore.SemaphoreServiceUtil;
 import com.hazelcast.durableexecutor.impl.DistributedDurableExecutorService;
 import com.hazelcast.executor.impl.DistributedExecutorService;
 import com.hazelcast.flakeidgen.impl.FlakeIdGeneratorService;
 import com.hazelcast.internal.crdt.pncounter.PNCounterService;
 import com.hazelcast.internal.locksupport.LockSupportService;
+import com.hazelcast.internal.namespace.UserCodeNamespaceService;
 import com.hazelcast.internal.usercodedeployment.UserCodeDeploymentService;
 import com.hazelcast.jet.impl.JetServiceBackend;
 import com.hazelcast.map.impl.MapService;
@@ -67,6 +69,7 @@ public final class ActionConstants {
     public static final String ACTION_AGGREGATE = "aggregate";
     public static final String ACTION_PROJECTION = "projection";
     public static final String ACTION_USER_CODE_DEPLOY = "deploy";
+    public static final String ACTION_USE = "use";
 
     public static final String ACTION_SUBMIT = "submit";
     public static final String ACTION_CANCEL = "cancel";
@@ -97,16 +100,16 @@ public final class ActionConstants {
         PERMISSION_FACTORY_MAP.put(MultiMapService.SERVICE_NAME, MultiMapPermission::new);
         PERMISSION_FACTORY_MAP.put(ListService.SERVICE_NAME, ListPermission::new);
         PERMISSION_FACTORY_MAP.put(SetService.SERVICE_NAME, SetPermission::new);
-        PERMISSION_FACTORY_MAP.put(AtomicLongService.SERVICE_NAME, AtomicLongPermission::new);
-        PERMISSION_FACTORY_MAP.put(CountDownLatchService.SERVICE_NAME, CountDownLatchPermission::new);
-        PERMISSION_FACTORY_MAP.put(SemaphoreService.SERVICE_NAME, SemaphorePermission::new);
+        PERMISSION_FACTORY_MAP.put(AtomicLongServiceUtil.SERVICE_NAME, AtomicLongPermission::new);
+        PERMISSION_FACTORY_MAP.put(CountDownLatchServiceUtil.SERVICE_NAME, CountDownLatchPermission::new);
+        PERMISSION_FACTORY_MAP.put(SemaphoreServiceUtil.SERVICE_NAME, SemaphorePermission::new);
         PERMISSION_FACTORY_MAP.put(TopicService.SERVICE_NAME, TopicPermission::new);
         PERMISSION_FACTORY_MAP.put(LockSupportService.SERVICE_NAME, LockPermission::new);
-        PERMISSION_FACTORY_MAP.put(LockService.SERVICE_NAME, LockPermission::new);
+        PERMISSION_FACTORY_MAP.put(LockServiceUtil.SERVICE_NAME, LockPermission::new);
         PERMISSION_FACTORY_MAP.put(DistributedExecutorService.SERVICE_NAME, ExecutorServicePermission::new);
         PERMISSION_FACTORY_MAP.put(FlakeIdGeneratorService.SERVICE_NAME, FlakeIdGeneratorPermission::new);
         PERMISSION_FACTORY_MAP.put(ReplicatedMapService.SERVICE_NAME, ReplicatedMapPermission::new);
-        PERMISSION_FACTORY_MAP.put(AtomicRefService.SERVICE_NAME, AtomicReferencePermission::new);
+        PERMISSION_FACTORY_MAP.put(AtomicRefServiceUtil.SERVICE_NAME, AtomicReferencePermission::new);
         PERMISSION_FACTORY_MAP.put(CacheService.SERVICE_NAME, CachePermission::new);
         PERMISSION_FACTORY_MAP.put(RingbufferService.SERVICE_NAME, RingBufferPermission::new);
         PERMISSION_FACTORY_MAP.put(DistributedDurableExecutorService.SERVICE_NAME, DurableExecutorServicePermission::new);
@@ -118,6 +121,8 @@ public final class ActionConstants {
         PERMISSION_FACTORY_MAP.put(JetServiceBackend.SERVICE_NAME, (name, actions) -> new JobPermission(actions));
         PERMISSION_FACTORY_MAP.put(InternalSqlService.SERVICE_NAME, SqlPermission::new);
         PERMISSION_FACTORY_MAP.put(DistributedScheduledExecutorService.SERVICE_NAME, ScheduledExecutorPermission::new);
+        PERMISSION_FACTORY_MAP.put(CPMapServiceUtil.SERVICE_NAME, CPMapPermission::new);
+        PERMISSION_FACTORY_MAP.put(UserCodeNamespaceService.SERVICE_NAME, UserCodeNamespacePermission::new);
     }
 
     private ActionConstants() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.impl.operationservice.WaitNotifyKey;
 import com.hazelcast.spi.impl.operationservice.impl.OperationServiceImpl;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -37,7 +36,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -98,12 +96,9 @@ public class ClusterShutdownTest extends HazelcastTestSupport {
         final Address address = getAddress(hz);
 
         for (int i = 0; i < 10; i++) {
-            Future<Object> future = spawn(new Callable<Object>() {
-                @Override
-                public Object call() {
-                    operationService.invokeOnTarget(null, new AlwaysBlockingOperation(), address);
-                    return null;
-                }
+            Future<Object> future = spawn(() -> {
+                operationService.invokeOnTarget(null, new AlwaysBlockingOperation(), address);
+                return null;
             });
             try {
                 future.get();
@@ -147,12 +142,9 @@ public class ClusterShutdownTest extends HazelcastTestSupport {
 
         for (int i = 0; i < nodeCountToTriggerShutdown; i++) {
             final HazelcastInstance instance = instances[i];
-            final Runnable shutdownRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    assertOpenEventually(latch);
-                    instance.getCluster().shutdown();
-                }
+            final Runnable shutdownRunnable = () -> {
+                assertOpenEventually(latch);
+                instance.getCluster().shutdown();
             };
 
             new Thread(shutdownRunnable).start();
@@ -172,19 +164,14 @@ public class ClusterShutdownTest extends HazelcastTestSupport {
 
     public static void assertNodesShutDownEventually(Node[] nodes) {
         for (final Node node : nodes) {
-            assertTrueEventually(new AssertTask() {
-                @Override
-                public void run() {
-                    assertEquals(NodeState.SHUT_DOWN, node.getState());
-                }
-            });
+            assertTrueEventually(() -> assertEquals(NodeState.SHUT_DOWN, node.getState()));
         }
     }
 
     private static class AlwaysBlockingOperation extends Operation implements BlockingOperation {
 
         @Override
-        public void run() throws Exception {
+        public void run() {
         }
 
         @Override

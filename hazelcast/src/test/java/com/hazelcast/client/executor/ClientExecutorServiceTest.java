@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import com.hazelcast.core.ExecutionCallback;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.nio.serialization.HazelcastSerializationException;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.annotation.ParallelJVMTest;
 import com.hazelcast.test.annotation.QuickTest;
@@ -119,11 +118,7 @@ public class ClientExecutorServiceTest {
 
         service.shutdownNow();
 
-        assertTrueEventually(new AssertTask() {
-            public void run() {
-                assertTrue(service.isShutdown());
-            }
-        });
+        assertTrueEventually(() -> assertTrue(service.isShutdown()));
     }
 
     @Test
@@ -132,11 +127,7 @@ public class ClientExecutorServiceTest {
         service.shutdownNow();
         service.shutdown();
 
-        assertTrueEventually(new AssertTask() {
-            public void run() {
-                assertTrue(service.isShutdown());
-            }
-        });
+        assertTrueEventually(() -> assertTrue(service.isShutdown()));
     }
 
     @Test(expected = TimeoutException.class)
@@ -213,11 +204,10 @@ public class ClientExecutorServiceTest {
     }
 
     @Test
-    public void testSubmitFailingCallableException_withExecutionCallback()
-            throws InterruptedException {
+    public void testSubmitFailingCallableException_withExecutionCallback() {
         IExecutorService service = client.getExecutorService(randomString());
         final CountDownLatch latch = new CountDownLatch(1);
-        service.submit(new FailingCallable(), new ExecutionCallback<String>() {
+        service.submit(new FailingCallable(), new ExecutionCallback<>() {
             @Override
             public void onResponse(String response) {
             }
@@ -291,7 +281,7 @@ public class ClientExecutorServiceTest {
         IExecutorService service = client.getExecutorService("executor");
         TaskWithUnserializableResponse counterCallable = new TaskWithUnserializableResponse();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        final AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
+        final AtomicReference<Throwable> throwable = new AtomicReference<>();
         service.submit(counterCallable, new ExecutionCallback() {
             @Override
             public void onResponse(Object response) {
@@ -330,7 +320,7 @@ public class ClientExecutorServiceTest {
             didShutdown.countDown();
         });
         t.start();
-        executorService.submit(new ExecutionRejectedRunnable(), new ExecutionCallback<Object>() {
+        executorService.submit(new ExecutionRejectedRunnable(), new ExecutionCallback<>() {
             @Override
             public void onResponse(Object response) {
             }

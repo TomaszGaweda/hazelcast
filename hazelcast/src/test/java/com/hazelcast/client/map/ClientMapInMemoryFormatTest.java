@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class ClientMapInMemoryFormatTest extends HazelcastTestSupport {
     }
 
     @Test(expected = InvalidConfigurationException.class)
-    public void testIMapCreation_throwsException_whenInMemoryFormat_NATIVE() throws Exception {
+    public void testIMapCreation_throwsException_whenInMemoryFormat_NATIVE() {
         Config config = getConfig();
         config.getMapConfig("default").setInMemoryFormat(InMemoryFormat.NATIVE);
 
@@ -60,7 +60,7 @@ public class ClientMapInMemoryFormatTest extends HazelcastTestSupport {
 
 
     @Test(expected = InvalidConfigurationException.class)
-    public void testNearCacheCreation_throwsException_whenInMemoryFormat_NATIVE() throws Exception {
+    public void testNearCacheCreation_throwsException_whenInMemoryFormat_NATIVE() {
         NearCacheConfig nearCacheConfig = new NearCacheConfig();
         nearCacheConfig.setInMemoryFormat(InMemoryFormat.NATIVE);
 

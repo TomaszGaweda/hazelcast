@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class LazySetTest {
     public void setUp() {
         KeySetIteratorFactory<Object, Object> keySetIteratorFactory = mock(KeySetIteratorFactory.class);
         InternalReplicatedMapStorage<Object, Object> storage = mock(InternalReplicatedMapStorage.class);
-        set = new LazySet<Object, Object, Object>(keySetIteratorFactory, storage);
+        set = new LazySet<>(keySetIteratorFactory, storage);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -51,7 +51,7 @@ public class LazySetTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void testContainsAll_throwsException() {
-        set.containsAll(Collections.EMPTY_LIST);
+        set.containsAll(Collections.emptyList());
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -61,7 +61,7 @@ public class LazySetTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void testAddAll_throwsException() {
-        set.addAll(Collections.EMPTY_LIST);
+        set.addAll(Collections.emptyList());
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -71,12 +71,12 @@ public class LazySetTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void testRemoveAll_throwsException() {
-        set.removeAll(Collections.EMPTY_LIST);
+        set.removeAll(Collections.emptyList());
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void testRetainAll_throwsException() {
-        set.retainAll(Collections.EMPTY_LIST);
+        set.retainAll(Collections.emptyList());
     }
 
     @Test(expected = UnsupportedOperationException.class)

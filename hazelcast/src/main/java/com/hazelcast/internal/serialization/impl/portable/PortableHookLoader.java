@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ public final class PortableHookLoader {
     private static final String FACTORY_ID = "com.hazelcast.PortableHook";
 
     private final Map<Integer, ? extends PortableFactory> configuredFactories;
-    private final Map<Integer, PortableFactory> factories = new HashMap<Integer, PortableFactory>();
-    private final Collection<ClassDefinition> definitions = new HashSet<ClassDefinition>();
+    private final Map<Integer, PortableFactory> factories = new HashMap<>();
+    private final Collection<ClassDefinition> definitions = new HashSet<>();
     private final ClassLoader classLoader;
 
     public PortableHookLoader(Map<Integer, ? extends PortableFactory> configuredFactories, ClassLoader classLoader) {

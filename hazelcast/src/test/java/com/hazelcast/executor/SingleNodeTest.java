@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ public class SingleNodeTest extends ExecutorServiceTestSupport {
     public void executionCallback_notifiedOnSuccess() {
         final CountDownLatch latch = new CountDownLatch(1);
         Callable<String> task = new BasicTestCallable();
-        ExecutionCallback<String> executionCallback = new ExecutionCallback<String>() {
+        ExecutionCallback<String> executionCallback = new ExecutionCallback<>() {
             public void onResponse(String response) {
                 latch.countDown();
             }
@@ -108,7 +108,7 @@ public class SingleNodeTest extends ExecutorServiceTestSupport {
     public void executionCallback_notifiedOnFailure() {
         final CountDownLatch latch = new CountDownLatch(1);
         FailingTestTask task = new FailingTestTask();
-        ExecutionCallback<String> executionCallback = new ExecutionCallback<String>() {
+        ExecutionCallback<String> executionCallback = new ExecutionCallback<>() {
             public void onResponse(String response) {
             }
 

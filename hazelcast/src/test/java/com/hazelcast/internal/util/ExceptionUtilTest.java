@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,17 +122,11 @@ public class ExceptionUtilTest extends HazelcastTestSupport {
     @Test
     public void testRethrowFromCollection_when_notIgnoredThrowableOnList_then_isRethrown() {
         assertThatExceptionOfType(TestException.class)
-                .isThrownBy(() -> {
-                    rethrowFromCollection(Collections.singleton(new TestException()));
-                });
+                .isThrownBy(() -> rethrowFromCollection(Collections.singleton(new TestException())));
         assertThatExceptionOfType(TestException.class)
-                .isThrownBy(() -> {
-                    rethrowFromCollection(Collections.singleton(new TestException()), NullPointerException.class);
-                });
+                .isThrownBy(() -> rethrowFromCollection(Collections.singleton(new TestException()), NullPointerException.class));
         assertThatExceptionOfType(TestException.class)
-                .isThrownBy(() -> {
-                    rethrowFromCollection(asList(new NullPointerException(), new TestException()), NullPointerException.class);
-                });
+                .isThrownBy(() -> rethrowFromCollection(asList(new NullPointerException(), new TestException()), NullPointerException.class));
     }
 
     @Test

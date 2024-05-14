@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,7 +148,7 @@ public class OperationServiceImpl_invokeOnPartitionsTest extends HazelcastTestSu
         HazelcastInstance hz = createHazelcastInstance(config);
         OperationServiceImpl opService = getOperationService(hz);
 
-        final AtomicReference<Map<Integer, Object>> resultReference = new AtomicReference<Map<Integer, Object>>();
+        final AtomicReference<Map<Integer, Object>> resultReference = new AtomicReference<>();
         final CountDownLatch responseLatch = new CountDownLatch(1);
         opService.invokeOnAllPartitionsAsync(null, new OperationFactoryImpl()).whenComplete((v, t) -> {
             if (t == null) {

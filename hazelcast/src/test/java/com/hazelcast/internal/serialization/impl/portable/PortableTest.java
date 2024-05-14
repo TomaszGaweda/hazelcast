@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -197,7 +197,7 @@ public class PortableTest {
     }
 
     @Test
-    public void testClassDefinitionConfigWithErrors() throws Exception {
+    public void testClassDefinitionConfigWithErrors() {
         SerializationConfig serializationConfig = new SerializationConfig();
         serializationConfig.addPortableFactory(PORTABLE_FACTORY_ID, new TestPortableFactory());
         serializationConfig.setPortableVersion(1);
@@ -220,7 +220,7 @@ public class PortableTest {
     }
 
     @Test
-    public void testClassDefinitionConfig() throws Exception {
+    public void testClassDefinitionConfig() {
         int portableVersion = 1;
         SerializationConfig serializationConfig = new SerializationConfig();
         serializationConfig.addPortableFactory(PORTABLE_FACTORY_ID, new TestPortableFactory());

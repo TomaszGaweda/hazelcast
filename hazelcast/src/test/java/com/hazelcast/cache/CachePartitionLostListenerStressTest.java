@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.hazelcast.cache.impl.event.CachePartitionLostEvent;
 import com.hazelcast.config.CacheConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.partition.AbstractPartitionLostListenerTest;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.HazelcastSerialParametersRunnerFactory;
 import com.hazelcast.test.annotation.SlowTest;
@@ -92,7 +91,7 @@ public class CachePartitionLostListenerStressTest extends AbstractPartitionLostL
     public void testCachePartitionLostListener() {
         List<HazelcastInstance> instances = getCreatedInstancesShuffledAfterWarmedUp();
 
-        List<HazelcastInstance> survivingInstances = new ArrayList<HazelcastInstance>(instances);
+        List<HazelcastInstance> survivingInstances = new ArrayList<>(instances);
         List<HazelcastInstance> terminatingInstances = survivingInstances.subList(0, numberOfNodesToCrash);
         survivingInstances = survivingInstances.subList(numberOfNodesToCrash, instances.size());
 
@@ -122,13 +121,7 @@ public class CachePartitionLostListenerStressTest extends AbstractPartitionLostL
             }
         } else {
             for (final EventCollectingCachePartitionLostListener listener : listeners) {
-                assertTrueAllTheTime(new AssertTask() {
-                    @Override
-                    public void run()
-                            throws Exception {
-                        assertTrue(listener.getEvents().isEmpty());
-                    }
-                }, 1);
+                assertTrueAllTheTime(() -> assertTrue(listener.getEvents().isEmpty()), 1);
             }
         }
 
@@ -141,8 +134,8 @@ public class CachePartitionLostListenerStressTest extends AbstractPartitionLostL
     }
 
     private List<EventCollectingCachePartitionLostListener> registerListeners(CacheManager cacheManager) {
-        CacheConfig<Integer, Integer> config = new CacheConfig<Integer, Integer>();
-        List<EventCollectingCachePartitionLostListener> listeners = new ArrayList<EventCollectingCachePartitionLostListener>();
+        CacheConfig<Integer, Integer> config = new CacheConfig<>();
+        List<EventCollectingCachePartitionLostListener> listeners = new ArrayList<>();
         for (int i = 0; i < getNodeCount(); i++) {
             EventCollectingCachePartitionLostListener listener = new EventCollectingCachePartitionLostListener(i);
             listeners.add(listener);
@@ -157,16 +150,12 @@ public class CachePartitionLostListenerStressTest extends AbstractPartitionLostL
     private void assertListenerInvocationsEventually(final String log, final int index, final int numberOfNodesToCrash,
                                                      final EventCollectingCachePartitionLostListener listener,
                                                      final Map<Integer, Integer> survivingPartitions) {
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run()
-                    throws Exception {
-                if (index < numberOfNodesToCrash) {
-                    assertLostPartitions(log, listener, survivingPartitions);
-                } else {
-                    String message = log + " listener-" + index + " should not be invoked!";
-                    assertTrue(message, listener.getEvents().isEmpty());
-                }
+        assertTrueEventually(() -> {
+            if (index < numberOfNodesToCrash) {
+                assertLostPartitions(log, listener, survivingPartitions);
+            } else {
+                String message = log + " listener-" + index + " should not be invoked!";
+                assertTrue(message, listener.getEvents().isEmpty());
             }
         });
     }

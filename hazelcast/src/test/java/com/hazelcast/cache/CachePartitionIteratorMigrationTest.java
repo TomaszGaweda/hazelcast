@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,17 +66,17 @@ public class CachePartitionIteratorMigrationTest extends HazelcastTestSupport {
     private <K, V> CacheProxy<K, V> getCacheProxy(CachingProvider cachingProvider) {
         String cacheName = randomString();
         CacheManager cacheManager = cachingProvider.getCacheManager();
-        CacheConfig<K, V> config = new CacheConfig<K, V>();
+        CacheConfig<K, V> config = new CacheConfig<>();
         config.getEvictionConfig().setMaxSizePolicy(MaxSizePolicy.ENTRY_COUNT).setSize(10000000);
         return (CacheProxy<K, V>) cacheManager.createCache(cacheName, config);
 
     }
 
     @Test
-    public void test_DoesNotReturn_DuplicateEntry_When_Rehashing_Happens() throws Exception {
+    public void test_DoesNotReturn_DuplicateEntry_When_Rehashing_Happens() {
         HazelcastInstance instance = createHazelcastInstance();
         CacheProxy<String, String> proxy = getCacheProxy(createCachingProvider(instance));
-        HashSet<String> readKeys = new HashSet<String>();
+        HashSet<String> readKeys = new HashSet<>();
 
         String value = "initialValue";
         putValuesToPartition(instance, proxy, value, 1, 100);
@@ -89,15 +89,15 @@ public class CachePartitionIteratorMigrationTest extends HazelcastTestSupport {
     }
 
     @Test
-    public void test_DoesNotReturn_DuplicateEntry_When_Migration_Happens() throws Exception {
+    public void test_DoesNotReturn_DuplicateEntry_When_Migration_Happens() {
         Config config = getConfig();
         config.setProperty(ClusterProperty.PARTITION_COUNT.getName(), "2");
         TestHazelcastInstanceFactory factory = createHazelcastInstanceFactory();
         HazelcastInstance instance = factory.newHazelcastInstance(config);
         CacheProxy<String, String> proxy = getCacheProxy(createCachingProvider(instance));
 
-        HashSet<String> readKeysP1 = new HashSet<String>();
-        HashSet<String> readKeysP2 = new HashSet<String>();
+        HashSet<String> readKeysP1 = new HashSet<>();
+        HashSet<String> readKeysP2 = new HashSet<>();
 
         String value = "value";
         putValuesToPartition(instance, proxy, value, 0, 100);

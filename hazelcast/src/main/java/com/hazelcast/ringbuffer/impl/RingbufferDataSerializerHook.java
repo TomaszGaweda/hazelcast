@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.hazelcast.ringbuffer.impl;
 import com.hazelcast.internal.serialization.DataSerializerHook;
 import com.hazelcast.internal.serialization.impl.FactoryIdHelper;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
-import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.ringbuffer.impl.operations.AddAllBackupOperation;
 import com.hazelcast.ringbuffer.impl.operations.AddAllOperation;
 import com.hazelcast.ringbuffer.impl.operations.AddBackupOperation;
@@ -60,39 +59,22 @@ public class RingbufferDataSerializerHook implements DataSerializerHook {
     }
 
     @Override
+    @SuppressWarnings({"AnonInnerLength", "CyclomaticComplexity", "ReturnCount"})
     public DataSerializableFactory createFactory() {
-        return new DataSerializableFactory() {
-            @Override
-            public IdentifiedDataSerializable create(int typeId) {
-                switch (typeId) {
-                    case ADD_BACKUP_OPERATION:
-                        return new AddBackupOperation();
-                    case ADD_OPERATION:
-                        return new AddOperation();
-                    case READ_ONE_OPERATION:
-                        return new ReadOneOperation();
-                    case REPLICATION_OPERATION:
-                        return new ReplicationOperation();
-                    case GENERIC_OPERATION:
-                        return new GenericOperation();
-                    case READ_MANY_OPERATION:
-                        return new ReadManyOperation();
-                    case ADD_ALL_OPERATION:
-                        return new AddAllOperation();
-                    case ADD_ALL_BACKUP_OPERATION:
-                        return new AddAllBackupOperation();
-                    case READ_RESULT_SET:
-                        return new ReadResultSetImpl();
-                    case RINGBUFFER_CONTAINER:
-                        return new RingbufferContainer();
-                    case MERGE_OPERATION:
-                        return new MergeOperation();
-                    case MERGE_BACKUP_OPERATION:
-                        return new MergeBackupOperation();
-                    default:
-                        return null;
-                }
-            }
+        return typeId -> switch (typeId) {
+            case ADD_BACKUP_OPERATION -> new AddBackupOperation();
+            case ADD_OPERATION -> new AddOperation();
+            case READ_ONE_OPERATION -> new ReadOneOperation();
+            case REPLICATION_OPERATION -> new ReplicationOperation();
+            case GENERIC_OPERATION -> new GenericOperation();
+            case READ_MANY_OPERATION -> new ReadManyOperation<>();
+            case ADD_ALL_OPERATION -> new AddAllOperation();
+            case ADD_ALL_BACKUP_OPERATION -> new AddAllBackupOperation();
+            case READ_RESULT_SET -> new ReadResultSetImpl<>();
+            case RINGBUFFER_CONTAINER -> new RingbufferContainer<>();
+            case MERGE_OPERATION -> new MergeOperation();
+            case MERGE_BACKUP_OPERATION -> new MergeBackupOperation();
+            default -> null;
         };
     }
 }

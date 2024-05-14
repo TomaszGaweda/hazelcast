@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,10 @@ import static com.hazelcast.internal.metrics.ProbeUnit.MS;
 import static java.util.concurrent.atomic.AtomicLongFieldUpdater.newUpdater;
 
 public class LocalKafkaConnectStatsImpl implements LocalKafkaConnectStats {
-
-    private final AtomicLongFieldUpdater<LocalKafkaConnectStatsImpl> sourceRecordPollTotalUpdater =
+    @SuppressWarnings("ConstantName")
+    private static final AtomicLongFieldUpdater<LocalKafkaConnectStatsImpl> sourceRecordPollTotalUpdater =
             newUpdater(LocalKafkaConnectStatsImpl.class, "sourceRecordPollTotal");
+
     @Probe(name = KAFKA_CONNECT_CREATION_TIME, unit = MS)
     private final long creationTime;
 
@@ -72,4 +73,11 @@ public class LocalKafkaConnectStatsImpl implements LocalKafkaConnectStats {
         return sourceRecordPollTotal;
     }
 
+    @Override
+    public String toString() {
+        return "LocalKafkaConnectStatsImpl{" +
+                "sourceRecordPollTotal=" + sourceRecordPollTotal +
+                ", sourceRecordPollAvgTime=" + sourceRecordPollAvgTime +
+                '}';
+    }
 }

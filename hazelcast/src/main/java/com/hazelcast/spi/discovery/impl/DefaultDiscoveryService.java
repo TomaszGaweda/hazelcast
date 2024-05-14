@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,7 +192,7 @@ public class DefaultDiscoveryService implements DiscoveryService {
                 .iterator(DiscoveryStrategyFactory.class, SERVICE_LOADER_TAG, classloader);
 
         // Collect possible factories
-        List<DiscoveryStrategyFactory> factories = new ArrayList<DiscoveryStrategyFactory>();
+        List<DiscoveryStrategyFactory> factories = new ArrayList<>();
         while (iterator.hasNext()) {
             factories.add(iterator.next());
         }

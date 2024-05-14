@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import java.util.Set;
 
 public class ClusterPermissionCollection extends PermissionCollection {
 
-    final Set<Permission> perms = new HashSet<Permission>();
+    final Set<Permission> perms = new HashSet<>();
     final Class<? extends Permission> permClass;
 
     public ClusterPermissionCollection() {
@@ -54,8 +54,8 @@ public class ClusterPermissionCollection extends PermissionCollection {
         if (isReadOnly()) {
             throw new SecurityException("ClusterPermissionCollection is read-only!");
         }
-        if (permissions instanceof ClusterPermissionCollection) {
-            for (Permission p : ((ClusterPermissionCollection) permissions).perms) {
+        if (permissions instanceof ClusterPermissionCollection collection) {
+            for (Permission p : collection.perms) {
                 add(p);
             }
         }

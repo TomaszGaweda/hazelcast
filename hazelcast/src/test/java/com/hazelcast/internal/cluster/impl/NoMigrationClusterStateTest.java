@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,10 +99,8 @@ public class NoMigrationClusterStateTest extends HazelcastTestSupport {
         assertClusterSizeEventually(2, instances[2]);
         assertAllPartitionsAreAssigned(instances[2], 1);
 
-        assertTrueEventually(() -> {
-            assertEquals(getPartitionService(instances[1]).getPartitionStateStamp(),
-                    getPartitionService(instances[2]).getPartitionStateStamp());
-        });
+        assertTrueEventually(() -> assertEquals(getPartitionService(instances[1]).getPartitionStateStamp(),
+                getPartitionService(instances[2]).getPartitionStateStamp()));
     }
 
     @Test
@@ -257,7 +255,7 @@ public class NoMigrationClusterStateTest extends HazelcastTestSupport {
 
     private static class NoReplicationService implements MigrationAwareService {
 
-        private final AtomicReference<AssertionError> replicationRequested = new AtomicReference<AssertionError>();
+        private final AtomicReference<AssertionError> replicationRequested = new AtomicReference<>();
 
         @Override
         public Operation prepareReplicationOperation(PartitionReplicationEvent event) {

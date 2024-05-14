@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class GcpComputeApi {
                 .get()
                 .getBody();
 
-        List<GcpAddress> result = new ArrayList<GcpAddress>();
+        List<GcpAddress> result = new ArrayList<>();
         for (JsonValue item : toJsonArray(Json.parse(response).asObject().get("items"))) {
             if ("RUNNING".equals(item.asObject().get("status").asString())) {
                 String privateAddress = null;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,8 +105,7 @@ public abstract class BaseIndexStore implements IndexStore {
     }
 
     Comparable sanitizeValue(Object input) {
-        if (input instanceof CompositeValue) {
-            CompositeValue compositeValue = (CompositeValue) input;
+        if (input instanceof CompositeValue compositeValue) {
             Comparable[] components = compositeValue.getComponents();
             for (int i = 0; i < components.length; ++i) {
                 components[i] = sanitizeScalar(components[i]);

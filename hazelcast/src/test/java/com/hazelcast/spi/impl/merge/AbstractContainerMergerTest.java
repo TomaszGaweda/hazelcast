@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,12 +113,7 @@ public class AbstractContainerMergerTest extends HazelcastTestSupport {
         TestMergeOperation operation = new TestMergeOperation(BLOCKS);
         final TestContainerMerger merger = new TestContainerMerger(collector, nodeEngine, operation);
 
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                merger.run();
-            }
-        };
+        Thread thread = new Thread(() -> merger.run());
         thread.start();
         thread.interrupt();
         assertJoinable(thread);

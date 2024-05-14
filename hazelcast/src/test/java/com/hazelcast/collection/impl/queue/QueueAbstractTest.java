@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.hazelcast.collection.impl.queue.model.VersionedObjectComparator;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.QueueConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.cp.IAtomicLong;
 import com.hazelcast.test.HazelcastTestSupport;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +53,6 @@ public abstract class QueueAbstractTest extends HazelcastTestSupport {
     public String comparatorClassName;
 
     protected HazelcastInstance[] instances;
-    protected IAtomicLong atomicLong;
     private IQueue<VersionedObject<String>> queue;
     private QueueConfig queueConfig;
 
@@ -426,9 +424,7 @@ public abstract class QueueAbstractTest extends HazelcastTestSupport {
     @Test
     public void testAddAll_whenExceedingConstraint() {
         final List<VersionedObject<String>> list = Collections.nCopies(101, new VersionedObject<>("Hello"));
-        assertThrows(IllegalStateException.class, () -> {
-                queue.addAll(list);
-        });
+        assertThrows(IllegalStateException.class, () -> queue.addAll(list));
         List<VersionedObject<String>> drainTo = new ArrayList<>();
         queue.drainTo(drainTo);
         assertEquals(0, drainTo.size());

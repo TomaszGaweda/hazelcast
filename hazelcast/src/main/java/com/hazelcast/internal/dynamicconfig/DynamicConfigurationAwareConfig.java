@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,11 +57,15 @@ import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.SetConfig;
 import com.hazelcast.config.SplitBrainProtectionConfig;
 import com.hazelcast.config.SqlConfig;
+import com.hazelcast.config.TieredStoreConfig;
 import com.hazelcast.config.TopicConfig;
 import com.hazelcast.config.UserCodeDeploymentConfig;
+import com.hazelcast.config.UserCodeNamespacesConfig;
 import com.hazelcast.config.WanReplicationConfig;
-import com.hazelcast.config.tpc.TpcConfig;
 import com.hazelcast.config.cp.CPSubsystemConfig;
+import com.hazelcast.config.rest.RestConfig;
+import com.hazelcast.config.tpc.TpcConfig;
+import com.hazelcast.config.vector.VectorCollectionConfig;
 import com.hazelcast.core.ManagedContext;
 import com.hazelcast.internal.config.CacheSimpleConfigReadOnly;
 import com.hazelcast.internal.config.DataConnectionConfigReadOnly;
@@ -98,6 +102,7 @@ import static com.hazelcast.internal.config.PersistenceAndHotRestartPersistenceM
 import static com.hazelcast.internal.dynamicconfig.AggregatingMap.aggregate;
 import static com.hazelcast.internal.dynamicconfig.search.ConfigSearch.supplierFor;
 import static com.hazelcast.spi.properties.ClusterProperty.SEARCH_DYNAMIC_CONFIG_FIRST;
+import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings({"unchecked",
         "checkstyle:methodcount",
@@ -105,7 +110,7 @@ import static com.hazelcast.spi.properties.ClusterProperty.SEARCH_DYNAMIC_CONFIG
         "checkstyle:classdataabstractioncoupling"})
 public class DynamicConfigurationAwareConfig extends Config {
 
-    private final ConfigSupplier<MapConfig> mapConfigOrNullConfigSupplier = new ConfigSupplier<MapConfig>() {
+    private final ConfigSupplier<MapConfig> mapConfigOrNullConfigSupplier = new ConfigSupplier<>() {
         @Override
         public MapConfig getDynamicConfig(@Nonnull ConfigurationService configurationService, @Nonnull String name) {
             return configurationService.findMapConfig(name);
@@ -141,6 +146,8 @@ public class DynamicConfigurationAwareConfig extends Config {
         this.dynamicSecurityConfig = new DynamicSecurityConfig(staticConfig.getSecurityConfig(), null);
         this.dynamicCPSubsystemConfig = new DynamicCPSubsystemConfig(staticConfig.getCPSubsystemConfig());
         this.configSearcher = initConfigSearcher();
+        this.userCodeNamespacesConfig = new DynamicUserCodeNamespacesConfig(() ->
+                configurationService, staticConfig.getNamespacesConfig());
     }
 
     @Override
@@ -267,9 +274,69 @@ public class DynamicConfigurationAwareConfig extends Config {
         boolean staticConfigDoesNotExist = checkStaticConfigDoesNotExist(staticConfig.getMapConfigs(),
                 mapConfig.getName(), mapConfig);
         if (staticConfigDoesNotExist) {
+            TieredStoreConfig tsConfig = mapConfig.getTieredStoreConfig();
+            if (tsConfig.isEnabled()) {
+                if (staticConfig.getDeviceConfigs().isEmpty()) {
+                    // if the instance started with no device configs, tiered store service didn't initialize
+                    // we have to fail the config addition attempt
+                    throw new InvalidConfigurationException("Tiered store enabled map config"
+                            + " cannot be added dynamically [" + mapConfig + "] if there are no device configs in the"
+                            + " static configuration");
+                }
+
+                if (!staticConfig.getNativeMemoryConfig().isEnabled()) {
+                    // if the instance started with native memory disabled, tiered store service didn't initialize
+                    // we have to fail the config addition attempt
+                    throw new InvalidConfigurationException("Tiered store enabled map config"
+                            + " cannot be added dynamically [" + mapConfig + "] if native memory is disabled");
+                }
+
+                String deviceName = tsConfig.getDiskTierConfig().getDeviceName();
+                if (!getDeviceConfigs().containsKey(deviceName)) {
+                    throw new InvalidConfigurationException("Tiered store enabled map config"
+                            + " cannot be added dynamically [" + mapConfig + "] due to missing device config ["
+                            + deviceName + "]");
+                }
+            }
             configurationService.broadcastConfig(mapConfig);
         }
         return this;
+    }
+
+    @Override
+    public VectorCollectionConfig getVectorCollectionConfigOrNull(String collectionName) {
+        return (VectorCollectionConfig) configSearcher.getConfig(
+                collectionName,
+                collectionName,
+                requireNonNull(supplierFor(VectorCollectionConfig.class)
+                )
+        );
+    }
+
+    @Override
+    public Map<String, VectorCollectionConfig> getVectorCollectionConfigs() {
+        Map<String, VectorCollectionConfig> staticVectorConfig = staticConfig.getVectorCollectionConfigs();
+        Map<String, VectorCollectionConfig> dynamicVectorConfig = configurationService.getVectorCollectionConfigs();
+        return aggregate(staticVectorConfig, dynamicVectorConfig);
+    }
+
+    @Override
+    @Nonnull
+    public Config addVectorCollectionConfig(@Nonnull VectorCollectionConfig vectorCollectionConfig) {
+        boolean staticConfigDoesNotExist = checkStaticConfigDoesNotExist(
+                staticConfig.getVectorCollectionConfigs(),
+                vectorCollectionConfig.getName(),
+                vectorCollectionConfig
+        );
+        if (staticConfigDoesNotExist) {
+            configurationService.broadcastConfig(vectorCollectionConfig);
+        }
+        return this;
+    }
+
+    @Override
+    public Config setVectorCollectionConfigs(Map<String, VectorCollectionConfig> vectorConfigs) {
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public static <T> boolean checkStaticConfigDoesNotExist(
@@ -1255,6 +1322,22 @@ public class DynamicConfigurationAwareConfig extends Config {
         return getDataConnectionConfigInternal(name, name);
     }
 
+    // S1185:S1612 A test (testDecorateAllPublicMethodsFromTest) forces this class to implement all of the parent methods, but
+    // as we are overriding "namespaceConfig" with our own version, the parent implementation is sufficient
+    @SuppressWarnings("squid:S1185")
+    @Override
+    public UserCodeNamespacesConfig getNamespacesConfig() {
+        return super.getNamespacesConfig();
+    }
+
+    // S1185:S1612 A test (testDecorateAllPublicMethodsFromTest) forces this class to implement all of the parent methods, but
+    // as we are overriding "namespaceConfig" with our own version, the parent implementation is sufficient
+    @SuppressWarnings("squid:S1185")
+    @Override
+    public Config setNamespacesConfig(UserCodeNamespacesConfig userCodeNamespacesConfig) {
+        throw new UnsupportedOperationException("Unsupported operation");
+    }
+
     private DataConnectionConfig getDataConnectionConfigInternal(String name, String fallbackName) {
         return (DataConnectionConfig) configSearcher.getConfig(name, fallbackName, supplierFor(DataConnectionConfig.class));
     }
@@ -1274,5 +1357,16 @@ public class DynamicConfigurationAwareConfig extends Config {
     @Override
     public Config setTpcConfig(@Nonnull TpcConfig tpcConfig) {
         throw new UnsupportedOperationException("Unsupported operation");
+    }
+
+    @Override
+    public RestConfig getRestConfig() {
+        return staticConfig.getRestConfig();
+    }
+
+    @Nonnull
+    @Override
+    public Config setRestConfig(@Nonnull RestConfig restConfig) {
+        return staticConfig.setRestConfig(restConfig);
     }
 }

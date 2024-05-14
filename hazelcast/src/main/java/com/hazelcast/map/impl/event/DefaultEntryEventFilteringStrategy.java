@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,11 +71,11 @@ public class DefaultEntryEventFilteringStrategy extends AbstractFilteringStrateg
 
         // the order of the following ifs is important!
         // QueryEventFilter is instance of EntryEventFilter
-        if (filter instanceof EventListenerFilter) {
+        if (filter instanceof EventListenerFilter listenerFilter) {
             if (!filter.eval(eventType.getType())) {
                 return FILTER_DOES_NOT_MATCH;
             } else {
-                filter = ((EventListenerFilter) filter).getEventFilter();
+                filter = listenerFilter.getEventFilter();
             }
         }
         if (filter instanceof TrueEventFilter) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,10 @@ import com.hazelcast.map.impl.recordstore.StaticParams;
 import com.hazelcast.query.impl.InternalIndex;
 import com.hazelcast.spi.merge.SplitBrainMergePolicy;
 import com.hazelcast.spi.merge.SplitBrainMergeTypes;
+import com.hazelcast.wan.impl.CallerProvenance;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Queue;
 
@@ -81,9 +83,10 @@ public enum MergeOpSteps implements IMapOpStep {
                 }
 
                 outcomes.add(key);
-                outcomes.add(oldValue);
-                outcomes.add(newValue);
+                outcomes.add(recordStore.copyToHeapWhenNeeded(oldValue));
+                outcomes.add(recordStore.copyToHeapWhenNeeded(newValue));
                 outcomes.add(mergingEntry);
+                outcomes.add(existingEntry);
             }
 
             state.setResult(outcomes);
@@ -118,8 +121,8 @@ public enum MergeOpSteps implements IMapOpStep {
                 assert key instanceof Data
                         : "Expect key instanceOf Data but found " + key;
 
-                Object oldValue = outcomes.get(i + 1);
-                Object newValue = outcomes.get(i + 2);
+                Object oldValue = outcomes.get(i + OLD_VALUE_OFFSET);
+                Object newValue = outcomes.get(i + NEW_VALUE_OFFSET);
 
                 perKeyState.setKey((Data) key)
                         .setOldValue(oldValue)
@@ -130,7 +133,7 @@ public enum MergeOpSteps implements IMapOpStep {
                     // put or update
                     PutOpSteps.STORE.runStep(perKeyState);
                     //set new value returned from map-store
-                    outcomes.set(i + 2, perKeyState.getNewValue());
+                    outcomes.set(i + NEW_VALUE_OFFSET, perKeyState.getNewValue());
                 } else if (oldValue != null && newValue == null) {
                     // remove
                     DeleteOpSteps.DELETE.runStep(perKeyState);
@@ -148,6 +151,7 @@ public enum MergeOpSteps implements IMapOpStep {
 
     PROCESS() {
         @Override
+        @SuppressWarnings({"checkstyle:NestedIfDepth", "checkstyle:CyclomaticComplexity"})
         public void runStep(State state) {
             DefaultRecordStore recordStore = (DefaultRecordStore) state.getRecordStore();
             MapContainer mapContainer = recordStore.getMapContainer();
@@ -164,8 +168,8 @@ public enum MergeOpSteps implements IMapOpStep {
                 assert key instanceof Data
                         : "Expect key instanceOf Data but found " + key;
 
-                Object oldValue = outcomes.get(i + 1);
-                Object newValue = outcomes.get(i + 2);
+                Object oldValue = outcomes.get(i + OLD_VALUE_OFFSET);
+                Object newValue = outcomes.get(i + NEW_VALUE_OFFSET);
 
                 perKeyState.setKey((Data) key)
                         .setOldValue(oldValue)
@@ -176,12 +180,26 @@ public enum MergeOpSteps implements IMapOpStep {
                         || oldValue != null && newValue != null) {
 
                     SplitBrainMergeTypes.MapMergeTypes mergingEntry
-                            = (SplitBrainMergeTypes.MapMergeTypes) outcomes.get(i + 3);
+                            = (SplitBrainMergeTypes.MapMergeTypes) outcomes.get(i + MERGING_ENTRY_OFFSET);
                     // if same values, merge expiry and continue with next entry
                     if (recordStore.getValueComparator().isEqual(newValue, oldValue, serializationService)) {
-                        Record record = recordStore.getRecord((Data) key);
-                        if (record != null) {
-                            recordStore.mergeRecordExpiration((Data) key, record, mergingEntry, state.getNow());
+                        SplitBrainMergeTypes.MapMergeTypes existingEntry =
+                                (SplitBrainMergeTypes.MapMergeTypes) outcomes.get(i + EXISTING_ENTRY_OFFSET);
+                        // see: DefaultRecordStore#merge comments for more details on reasoning
+                        boolean shouldMergeExpiration = state.getCallerProvenance() != CallerProvenance.WAN
+                                || recordStore.getValueComparator().isEqual(existingEntry.getRawValue(),
+                                mergingEntry.getRawValue(), serializationService);
+                        if (shouldMergeExpiration) {
+                            Record record = recordStore.getRecord((Data) key);
+                            if (record != null) {
+                                if (!recordStore.mergeRecordExpiration((Data) key, record, mergingEntry, state.getNow())) {
+                                    // If we did not merge values, and did not merge expiration metadata, do not WAN replicate
+                                    if (state.getNonWanReplicatedIndexes() == null) {
+                                        state.setNonWanReplicatedIndexes(new BitSet());
+                                    }
+                                    state.getNonWanReplicatedIndexes().set(i / NUMBER_OF_ITEMS);
+                                }
+                            }
                         }
                         continue;
                     }
@@ -239,9 +257,9 @@ public enum MergeOpSteps implements IMapOpStep {
 
                 Data dataKey = ((Data) outcomes.get(i));
 
-                Object oldValue = outcomes.get(i + 1);
+                Object oldValue = outcomes.get(i + OLD_VALUE_OFFSET);
                 // TODO can't we use this newValue directly.
-                Object newValue = outcomes.get(i + 2);
+                Object newValue = outcomes.get(i + NEW_VALUE_OFFSET);
 
                 Data dataValue = operation.getValueOrPostProcessedValue(dataKey, operation.getValue(dataKey));
                 mapServiceContext.interceptAfterPut(mapContainer.getInterceptorRegistry(), dataValue);
@@ -252,7 +270,12 @@ public enum MergeOpSteps implements IMapOpStep {
                 }
 
                 if (hasWanReplication) {
-                    operation.publishWanUpdate(dataKey, dataValue);
+                    // Don't WAN replicate keys that did not change during the merge; see MergeOperation and CacheMergeOperation
+                    boolean nonReplicatedKey = state.getNonWanReplicatedIndexes() != null
+                            && state.getNonWanReplicatedIndexes().get(i / NUMBER_OF_ITEMS);
+                    if (!nonReplicatedKey) {
+                        operation.publishWanUpdate(dataKey, dataValue);
+                    }
                 }
 
                 if (hasInvalidation) {
@@ -268,12 +291,12 @@ public enum MergeOpSteps implements IMapOpStep {
             }
 
             state.setBackupPairs(backupPairs);
-
             state.setResult(hasMergedValues);
 
             operation.invalidateNearCache(invalidationKeys);
-
             operation.finishIndexMarking(state.getNotMarkedIndexes());
+            operation.setNonWanReplicatedKeys(state.getNonWanReplicatedIndexes());
+
         }
 
         @Override
@@ -282,7 +305,11 @@ public enum MergeOpSteps implements IMapOpStep {
         }
     };
 
-    private static final int NUMBER_OF_ITEMS = 4;
+    private static final int NUMBER_OF_ITEMS = 5;
+    private static final int OLD_VALUE_OFFSET = 1;
+    private static final int NEW_VALUE_OFFSET = 2;
+    private static final int MERGING_ENTRY_OFFSET = 3;
+    private static final int EXISTING_ENTRY_OFFSET = 4;
 
     MergeOpSteps() {
     }

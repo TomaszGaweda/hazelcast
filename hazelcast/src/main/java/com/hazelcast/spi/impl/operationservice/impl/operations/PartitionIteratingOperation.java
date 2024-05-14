@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -211,8 +211,8 @@ public final class PartitionIteratingOperation extends Operation implements Iden
 
         private UUID extractCallerUuid() {
             // Clients callerUUID can be set already. See OperationFactoryWrapper usage.
-            if (operationFactory instanceof OperationFactoryWrapper) {
-                return ((OperationFactoryWrapper) operationFactory).getUuid();
+            if (operationFactory instanceof OperationFactoryWrapper wrapper) {
+                return wrapper.getUuid();
             }
 
             // Members UUID
@@ -224,7 +224,7 @@ public final class PartitionIteratingOperation extends Operation implements Iden
 
         // an array with the partitionCount as length, so we can quickly do a lookup for a given partitionId.
         // it will store all the 'sub' responses.
-        private final AtomicReferenceArray<Object> responseArray = new AtomicReferenceArray<Object>(
+        private final AtomicReferenceArray<Object> responseArray = new AtomicReferenceArray<>(
                 getNodeEngine().getPartitionService().getPartitionCount());
 
         // contains the number of pending operations. If it hits zero, all responses have been received.
@@ -238,8 +238,8 @@ public final class PartitionIteratingOperation extends Operation implements Iden
 
         @Override
         public void sendResponse(Operation op, Object response) {
-            if (response instanceof NormalResponse) {
-                response = ((NormalResponse) response).getValue();
+            if (response instanceof NormalResponse normalResponse) {
+                response = normalResponse.getValue();
             } else if (response == null) {
                 response = NULL;
             }

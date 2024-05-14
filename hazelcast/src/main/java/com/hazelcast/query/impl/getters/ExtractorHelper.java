@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.hazelcast.query.impl.getters;
 
 import com.hazelcast.config.AttributeConfig;
+import com.hazelcast.internal.namespace.NamespaceUtil;
 import com.hazelcast.internal.util.StringUtil;
 import com.hazelcast.logging.Logger;
 import com.hazelcast.query.extractor.ValueExtractor;
@@ -58,37 +59,42 @@ public final class ExtractorHelper {
         }
 
         if (extractor == null) {
-            extractor = instantiateExtractorWithClassForName(config);
+            extractor = instantiateExtractorWithClassForName(config, classLoader);
         }
         return extractor;
     }
 
-    private static ValueExtractor instantiateExtractorWithConfigClassLoader(AttributeConfig config, ClassLoader classLoader) {
-        try {
-            Class<?> clazz = classLoader.loadClass(config.getExtractorClassName());
-            Object extractor = clazz.getDeclaredConstructor().newInstance();
-            if (extractor instanceof ValueExtractor) {
-                return (ValueExtractor) extractor;
-            } else {
-                throw new IllegalArgumentException("Extractor does not extend ValueExtractor class " + config);
+    private static ValueExtractor instantiateExtractorWithConfigClassLoader(AttributeConfig config,
+                                                                            ClassLoader classLoader) {
+        return NamespaceUtil.callWithClassLoader(classLoader, () -> {
+            try {
+                Class<?> clazz = classLoader.loadClass(config.getExtractorClassName());
+                Object extractor = clazz.getDeclaredConstructor().newInstance();
+                if (extractor instanceof ValueExtractor valueExtractor) {
+                    return valueExtractor;
+                } else {
+                    throw new IllegalArgumentException("Extractor does not extend ValueExtractor class " + config);
+                }
+            } catch (ReflectiveOperationException ex) {
+                throw new IllegalArgumentException("Could not initialize extractor " + config, ex);
             }
-        } catch (ReflectiveOperationException ex) {
-            throw new IllegalArgumentException("Could not initialize extractor " + config, ex);
-        }
+        });
     }
 
-    private static ValueExtractor instantiateExtractorWithClassForName(AttributeConfig config) {
-        try {
-            Class<?> clazz = Class.forName(config.getExtractorClassName());
-            Object extractor = clazz.getDeclaredConstructor().newInstance();
-            if (extractor instanceof ValueExtractor) {
-                return (ValueExtractor) extractor;
-            } else {
-                throw new IllegalArgumentException("Extractor does not extend ValueExtractor class " + config);
+    private static ValueExtractor instantiateExtractorWithClassForName(AttributeConfig config, ClassLoader classLoader) {
+        return NamespaceUtil.callWithClassLoader(classLoader, () -> {
+            try {
+                Class<?> clazz = Class.forName(config.getExtractorClassName());
+                Object extractor = clazz.getDeclaredConstructor().newInstance();
+                if (extractor instanceof ValueExtractor valueExtractor) {
+                    return valueExtractor;
+                } else {
+                    throw new IllegalArgumentException("Extractor does not extend ValueExtractor class " + config);
+                }
+            } catch (ReflectiveOperationException ex) {
+                throw new IllegalArgumentException("Could not initialize extractor " + config, ex);
             }
-        } catch (ReflectiveOperationException ex) {
-            throw new IllegalArgumentException("Could not initialize extractor " + config, ex);
-        }
+        });
     }
 
     public static String extractAttributeNameNameWithoutArguments(String attributeNameWithArguments) {
@@ -127,8 +133,7 @@ public final class ExtractorHelper {
         // it may consume significant amount of time, so we are doing the
         // reduction manually for each primitive type.
 
-        if (primitiveArray instanceof long[]) {
-            long[] array = (long[]) primitiveArray;
+        if (primitiveArray instanceof long[] array) {
             if (array.length == 0) {
                 return false;
             } else {
@@ -136,8 +141,7 @@ public final class ExtractorHelper {
                     add.accept(value);
                 }
             }
-        } else if (primitiveArray instanceof int[]) {
-            int[] array = (int[]) primitiveArray;
+        } else if (primitiveArray instanceof int[] array) {
             if (array.length == 0) {
                 return false;
             } else {
@@ -145,8 +149,7 @@ public final class ExtractorHelper {
                     add.accept(value);
                 }
             }
-        } else if (primitiveArray instanceof short[]) {
-            short[] array = (short[]) primitiveArray;
+        } else if (primitiveArray instanceof short[] array) {
             if (array.length == 0) {
                 return false;
             } else {
@@ -154,8 +157,7 @@ public final class ExtractorHelper {
                     add.accept(value);
                 }
             }
-        } else if (primitiveArray instanceof byte[]) {
-            byte[] array = (byte[]) primitiveArray;
+        } else if (primitiveArray instanceof byte[] array) {
             if (array.length == 0) {
                 return false;
             } else {
@@ -163,8 +165,7 @@ public final class ExtractorHelper {
                     add.accept(value);
                 }
             }
-        } else if (primitiveArray instanceof char[]) {
-            char[] array = (char[]) primitiveArray;
+        } else if (primitiveArray instanceof char[] array) {
             if (array.length == 0) {
                 return false;
             } else {
@@ -172,8 +173,7 @@ public final class ExtractorHelper {
                     add.accept(value);
                 }
             }
-        } else if (primitiveArray instanceof boolean[]) {
-            boolean[] array = (boolean[]) primitiveArray;
+        } else if (primitiveArray instanceof boolean[] array) {
             if (array.length == 0) {
                 return false;
             } else {
@@ -181,8 +181,7 @@ public final class ExtractorHelper {
                     add.accept(value);
                 }
             }
-        } else if (primitiveArray instanceof double[]) {
-            double[] array = (double[]) primitiveArray;
+        } else if (primitiveArray instanceof double[] array) {
             if (array.length == 0) {
                 return false;
             } else {
@@ -191,8 +190,7 @@ public final class ExtractorHelper {
                 }
             }
 
-        } else if (primitiveArray instanceof float[]) {
-            float[] array = (float[]) primitiveArray;
+        } else if (primitiveArray instanceof float[] array) {
             if (array.length == 0) {
                 return false;
             } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,8 +92,8 @@ public final class OutboundResponseHandler implements OperationResponseHandler {
                     response.getBackupAcks(), response.isUrgent(), response.getValue());
         } else if (obj.getClass() == ErrorResponse.class || obj.getClass() == CallTimeoutResponse.class) {
             send = send(connectionManager, target, (Response) obj);
-        } else if (obj instanceof Throwable) {
-            send = send(connectionManager, target, new ErrorResponse((Throwable) obj,
+        } else if (obj instanceof Throwable throwable) {
+            send = send(connectionManager, target, new ErrorResponse(throwable,
                     operation.getCallId(), operation.isUrgent()));
         } else {
             // most regular responses not wrapped in a NormalResponse. So we are now completely skipping the

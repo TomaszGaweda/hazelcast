@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,8 +162,7 @@ public final class JmsSinkBuilder<T> {
         checkNotNull(destinationName);
         if (connectionFn == null) {
             connectionFn = factory -> {
-                if (factory instanceof XAConnectionFactory) {
-                    XAConnectionFactory xaFactory = (XAConnectionFactory) factory;
+                if (factory instanceof XAConnectionFactory xaFactory) {
                     return usernameLocal != null || passwordLocal != null
                             ? xaFactory.createXAConnection(usernameLocal, passwordLocal)
                             : xaFactory.createXAConnection();
@@ -176,7 +175,7 @@ public final class JmsSinkBuilder<T> {
         }
         if (messageFn == null) {
             messageFn = (session, item) ->
-                    item instanceof Message ? (Message) item : session.createTextMessage(item.toString());
+                    item instanceof Message m ? m : session.createTextMessage(item.toString());
         }
 
         FunctionEx<ConnectionFactory, Connection> connectionFnLocal = connectionFn;

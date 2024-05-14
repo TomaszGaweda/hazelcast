@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import com.hazelcast.map.impl.querycache.accumulator.Accumulator;
 import com.hazelcast.map.listener.EventLostListener;
 import com.hazelcast.query.Predicates;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -98,25 +97,17 @@ public class QueryCacheRecoveryUponEventLossTest extends HazelcastTestSupport {
 
         assertOpenEventually(waitEventLossNotification);
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertEquals(9, queryCache.size());
-            }
-        });
+        assertTrueEventually(() -> assertEquals(9, queryCache.size()));
 
         // re-put entries and check if broken-sequences holder map will be empty
         for (int i = 0; i < count; i++) {
             map.put(i, i);
         }
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                Map brokenSequences = getBrokenSequences(node, mapName, queryCache);
-                assertTrue("After recovery, there should be no broken sequences left",
-                        brokenSequences.isEmpty());
-            }
+        assertTrueEventually(() -> {
+            Map brokenSequences = getBrokenSequences(node, mapName, queryCache);
+            assertTrue("After recovery, there should be no broken sequences left",
+                    brokenSequences.isEmpty());
         });
     }
 

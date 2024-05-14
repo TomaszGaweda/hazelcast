@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -200,7 +200,7 @@ public class PartitionIndexingTest extends HazelcastTestSupport {
     }
 
     private static void assertPartitionsIndexedCorrectly(int expectedPartitions, IMap... maps) {
-        Map<String, BitSet> indexToPartitions = new HashMap<String, BitSet>();
+        Map<String, BitSet> indexToPartitions = new HashMap<>();
 
         for (IMap map : maps) {
             for (IndexRegistry indexes : getAllIndexes(map)) {

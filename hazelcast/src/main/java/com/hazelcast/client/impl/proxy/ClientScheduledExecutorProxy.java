@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -372,8 +372,8 @@ public class ClientScheduledExecutorProxy
     }
 
     private int getTaskOrKeyPartitionId(Callable task, Object key) {
-        if (task instanceof PartitionAware) {
-            Object newKey = ((PartitionAware) task).getPartitionKey();
+        if (task instanceof PartitionAware aware) {
+            Object newKey = aware.getPartitionKey();
             if (newKey != null) {
                 key = newKey;
             }
@@ -383,8 +383,8 @@ public class ClientScheduledExecutorProxy
     }
 
     private int getTaskOrKeyPartitionId(Runnable task, Object key) {
-        if (task instanceof PartitionAware) {
-            Object newKey = ((PartitionAware) task).getPartitionKey();
+        if (task instanceof PartitionAware aware) {
+            Object newKey = aware.getPartitionKey();
             if (newKey != null) {
                 key = newKey;
             }
@@ -405,8 +405,8 @@ public class ClientScheduledExecutorProxy
                 return namedTask.getName();
             }
         }
-        if (command instanceof NamedTask) {
-            return ((NamedTask) command).getName();
+        if (command instanceof NamedTask task) {
+            return task.getName();
         }
         return null;
     }
@@ -449,15 +449,15 @@ public class ClientScheduledExecutorProxy
                                                            UUID uuid) {
         try {
             ClientInvocationFuture future = new ClientInvocation(getClient(), clientMessage, getName(), uuid).invoke();
-            return new ClientDelegatingFuture<T>(future, getSerializationService(), clientMessageDecoder);
+            return new ClientDelegatingFuture<>(future, getSerializationService(), clientMessageDecoder);
         } catch (Exception e) {
             throw rethrow(e);
         }
     }
 
     private boolean isAutoDisposable(Object command) {
-        if (command instanceof AbstractTaskDecorator) {
-            return ((AbstractTaskDecorator) command).isDecoratedWith(AutoDisposableTask.class);
+        if (command instanceof AbstractTaskDecorator decorator) {
+            return decorator.isDecoratedWith(AutoDisposableTask.class);
         }
         return command instanceof AutoDisposableTask;
     }

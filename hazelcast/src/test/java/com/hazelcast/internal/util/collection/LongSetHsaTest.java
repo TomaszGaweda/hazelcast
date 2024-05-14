@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class LongSetHsaTest {
     public void testCursor() {
         assertFalse(set.cursor().advance());
 
-        Set<Long> expected = new HashSet<Long>();
+        Set<Long> expected = new HashSet<>();
         for (int i = 1; i <= 1000; i++) {
             set.add(i);
             expected.add((long) i);

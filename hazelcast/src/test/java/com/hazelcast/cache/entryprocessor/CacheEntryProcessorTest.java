@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.partition.Partition;
 import com.hazelcast.partition.PartitionService;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastSerialClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -86,25 +85,25 @@ public class CacheEntryProcessorTest extends HazelcastTestSupport {
      * we are only sending the result of execution to the backup node.
      */
     @Test
-    public void whenBackupEntryProcessor_isNotImplemented() throws Exception {
+    public void whenBackupEntryProcessor_isNotImplemented() {
         EntryProcessor<Integer, String, Void> entryProcessor = new SimpleEntryProcessor();
         executeTestInternal(entryProcessor);
     }
 
     @Test
-    public void whenBackupEntryProcessor_isImplemented() throws Exception {
+    public void whenBackupEntryProcessor_isImplemented() {
         EntryProcessor<Integer, String, Void> entryProcessor = new CustomBackupAwareEntryProcessor();
         executeTestInternal(entryProcessor);
     }
 
     @Test
-    public void whenBackupEntryProcessor_isSame_withPrimaryEntryProcessor() throws Exception {
+    public void whenBackupEntryProcessor_isSame_withPrimaryEntryProcessor() {
         EntryProcessor<Integer, String, Void> entryProcessor = new SimpleBackupAwareEntryProcessor();
         executeTestInternal(entryProcessor);
     }
 
     @Test
-    public void whenBackupEntryProcessor_isNull() throws Exception {
+    public void whenBackupEntryProcessor_isNull() {
         EntryProcessor<Integer, String, Void> entryProcessor = new NullBackupAwareEntryProcessor();
         executeTestInternal(entryProcessor);
     }
@@ -165,23 +164,19 @@ public class CacheEntryProcessorTest extends HazelcastTestSupport {
 
     private void assertKeyExistsInCache(final String expectedValue, final Integer key,
                                         final String cacheName, final CacheService cacheService) {
-        assertTrueEventually(new AssertTask() {
+        assertTrueEventually(() -> {
 
-            @Override
-            public void run() throws Exception {
+            final Data dataKey = serializationService.toData(key);
+            final PartitionService partitionService = node1.getPartitionService();
+            final Partition partition = partitionService.getPartition(key);
+            final int partitionId = partition.getPartitionId();
+            final ICacheRecordStore recordStore = getRecordStore(cacheService, cacheName, partitionId);
+            final CacheRecord record = recordStore.getRecord(dataKey);
 
-                final Data dataKey = serializationService.toData(key);
-                final PartitionService partitionService = node1.getPartitionService();
-                final Partition partition = partitionService.getPartition(key);
-                final int partitionId = partition.getPartitionId();
-                final ICacheRecordStore recordStore = getRecordStore(cacheService, cacheName, partitionId);
-                final CacheRecord record = recordStore.getRecord(dataKey);
+            assertNotNull("Backups are not done yet!!!", record);
 
-                assertNotNull("Backups are not done yet!!!", record);
-
-                final Object value = serializationService.toObject(record.getValue());
-                assertEquals(expectedValue, value);
-            }
+            final Object value = serializationService.toObject(record.getValue());
+            assertEquals(expectedValue, value);
         }, ASSERTION_TIMEOUT_SECONDS);
 
     }

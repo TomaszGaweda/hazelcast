@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,9 @@ public class DynamicMapConfigTest extends HazelcastTestSupport {
                 mapConfig.getEvictionConfig().getSize(),
                 mapConfig.getEvictionConfig().getMaxSizePolicy().getId(),
                 mapConfig.isReadBackupData(),
-                mapConfig.getEvictionConfig().getEvictionPolicy().getId());
+                mapConfig.getEvictionConfig().getEvictionPolicy().getId(),
+                true,
+                null);
         executeOperation(node, updateMapConfigOperation);
     }
 

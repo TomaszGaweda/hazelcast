@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class ComplexTestDataStructure {
 
     public static class Person implements Serializable, PortableAware {
         String name;
-        List<Limb> limbs_list = new ArrayList<Limb>();
+        List<Limb> limbs_list = new ArrayList<>();
         Limb[] limbs_array;
         Limb firstLimb;
         Limb secondLimb;
@@ -129,9 +129,9 @@ public class ComplexTestDataStructure {
 
     public static class Limb implements Serializable, PortableAware, Comparable<Limb> {
         String name;
-        List<Finger> fingers_list = new ArrayList<Finger>();
+        List<Finger> fingers_list = new ArrayList<>();
         Finger[] fingers_array;
-        List<String> tattoos_list = new ArrayList<String>();
+        List<String> tattoos_list = new ArrayList<>();
         String[] tattoos_array;
 
         public String getName() {

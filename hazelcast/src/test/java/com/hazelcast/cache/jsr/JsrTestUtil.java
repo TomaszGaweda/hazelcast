@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public final class JsrTestUtil {
      * which are invoked before our Hazelcast {@link org.junit.runner.Runner} classes are copying the System properties
      * to restore them for us.
      */
-    private static final List<String> SYSTEM_PROPERTY_REGISTRY = new LinkedList<String>();
+    private static final List<String> SYSTEM_PROPERTY_REGISTRY = new LinkedList<>();
 
     private JsrTestUtil() {
     }

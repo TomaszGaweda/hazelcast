@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,9 +134,7 @@ public class DelegatingCompletableFutureTest {
         //       f2 (DelegatingCompletableFuture wrapping f1) returned from thenCompose
         // then  f2 is completed eventually
         CompletableFuture f1 = CompletableFuture.runAsync(() -> sleepSeconds(2));
-        CompletableFuture f2 = CompletableFuture.completedFuture(null).thenCompose(v -> {
-            return new DelegatingCompletableFuture<>(serializationService, f1);
-        });
+        CompletableFuture f2 = CompletableFuture.completedFuture(null).thenCompose(v -> new DelegatingCompletableFuture<>(serializationService, f1));
 
         assertTrueEventually(() -> assertTrue(f2.isDone() && !f2.isCompletedExceptionally()));
     }

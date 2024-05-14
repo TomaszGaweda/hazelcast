@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,7 +142,7 @@ public class MigrationInterceptorTest extends HazelcastTestSupport {
 
     static class MigrationInterceptorImpl implements MigrationInterceptor {
 
-        private final List<MigrationProgressNotification> notifications = new ArrayList<MigrationProgressNotification>();
+        private final List<MigrationProgressNotification> notifications = new ArrayList<>();
 
         @Override
         public synchronized void onMigrationStart(MigrationParticipant participant, MigrationInfo migrationInfo) {
@@ -167,7 +167,7 @@ public class MigrationInterceptorTest extends HazelcastTestSupport {
         }
 
         public synchronized List<MigrationProgressNotification> getNotifications() {
-            return new ArrayList<MigrationProgressNotification>(notifications);
+            return new ArrayList<>(notifications);
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public final class ClientAliasedDiscoveryConfigUtils {
      * Gets a list of all aliased discovery configs from {@code config}.
      */
     public static List<AliasedDiscoveryConfig<?>> aliasedDiscoveryConfigsFrom(ClientNetworkConfig networkConfig) {
-        return Arrays.<AliasedDiscoveryConfig<?>>asList(networkConfig.getAwsConfig(), networkConfig.getGcpConfig(),
+        return Arrays.asList(networkConfig.getAwsConfig(), networkConfig.getGcpConfig(),
                 networkConfig.getAzureConfig(), networkConfig.getKubernetesConfig(), networkConfig.getEurekaConfig());
     }
 

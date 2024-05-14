@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@
 
 package com.hazelcast.internal.cluster.impl.operations;
 
-import com.hazelcast.internal.util.UUIDSerializationUtil;
+import com.hazelcast.cluster.Address;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.cluster.MemberInfo;
 import com.hazelcast.internal.cluster.impl.ClusterDataSerializerHook;
 import com.hazelcast.internal.cluster.impl.ClusterServiceImpl;
 import com.hazelcast.internal.cluster.impl.MembersView;
-import com.hazelcast.internal.partition.PartitionRuntimeState;
-import com.hazelcast.cluster.Address;
 import com.hazelcast.internal.nio.Connection;
+import com.hazelcast.internal.partition.PartitionRuntimeState;
+import com.hazelcast.internal.util.Clock;
+import com.hazelcast.internal.util.UUIDSerializationUtil;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.spi.impl.NodeEngineImpl;
-import com.hazelcast.internal.util.Clock;
+import com.hazelcast.spi.impl.NodeEngine;
 
 import java.io.IOException;
 import java.util.List;
@@ -88,7 +88,7 @@ public class MembersUpdateOp extends AbstractClusterOperation {
 
     final Address getConnectionEndpointOrThisAddress() {
         ClusterServiceImpl clusterService = getService();
-        NodeEngineImpl nodeEngine = clusterService.getNodeEngine();
+        NodeEngine nodeEngine = clusterService.getNodeEngine();
         Node node = nodeEngine.getNode();
         Connection conn = getConnection();
         return conn != null ? conn.getRemoteAddress() : node.getThisAddress();

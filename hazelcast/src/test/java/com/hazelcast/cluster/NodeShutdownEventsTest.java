@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,14 +56,11 @@ public class NodeShutdownEventsTest extends HazelcastTestSupport {
                 .setProperty(ClusterProperty.PARTITION_COUNT.getName(), "222");
 
         final ListenerConfig listenerConfig = new ListenerConfig();
-        listenerConfig.setImplementation(new LifecycleListener() {
-            @Override
-            public void stateChanged(LifecycleEvent event) {
-                // Only expecting SHUTTING_DOWN & SHUTDOWN.
-                if (LifecycleEvent.LifecycleState.SHUTTING_DOWN.equals(event.getState())
-                        || LifecycleEvent.LifecycleState.SHUTDOWN.equals(event.getState())) {
-                    shutdownEventCount.countDown();
-                }
+        listenerConfig.setImplementation((LifecycleListener) event -> {
+            // Only expecting SHUTTING_DOWN & SHUTDOWN.
+            if (LifecycleEvent.LifecycleState.SHUTTING_DOWN.equals(event.getState())
+                    || LifecycleEvent.LifecycleState.SHUTDOWN.equals(event.getState())) {
+                shutdownEventCount.countDown();
             }
         });
         config2.addListenerConfig(listenerConfig);

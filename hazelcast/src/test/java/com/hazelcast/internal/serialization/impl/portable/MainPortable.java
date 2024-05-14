@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ public class MainPortable implements Portable {
     MainPortable() {
     }
 
+    @SuppressWarnings("ParameterNumber")
     public MainPortable(byte b, boolean bool, char c, short s, int i, long l, float f, double d, String str, InnerPortable p,
                         BigDecimal bigDecimal, LocalTime localTime, LocalDate localDate,
                         LocalDateTime localDateTime, OffsetDateTime offsetDateTime) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import static com.hazelcast.jet.impl.JobRepository.INTERNAL_JET_OBJECTS_PREFIX;
-import static com.hazelcast.jet.impl.util.LoggingUtil.logFine;
 
 public class ObservableImpl<T> implements Observable<T> {
 
@@ -190,11 +189,11 @@ public class ObservableImpl<T> implements Observable<T> {
         }
 
         private static Executor getExecutor(HazelcastInstance hzInstance) {
-            if (hzInstance instanceof HazelcastInstanceImpl) {
-                return ((HazelcastInstanceImpl) hzInstance).node.getNodeEngine().getExecutionService()
+            if (hzInstance instanceof HazelcastInstanceImpl impl) {
+                return impl.node.getNodeEngine().getExecutionService()
                         .getExecutor(ExecutionService.ASYNC_EXECUTOR);
-            } else if (hzInstance instanceof HazelcastClientInstanceImpl) {
-                return ((HazelcastClientInstanceImpl) hzInstance).getTaskScheduler();
+            } else if (hzInstance instanceof HazelcastClientInstanceImpl impl) {
+                return impl.getTaskScheduler();
             } else {
                 throw new RuntimeException(String.format("Unhandled %s type: %s", HazelcastInstance.class.getSimpleName(),
                         hzInstance.getClass().getName()));
@@ -254,8 +253,8 @@ public class ObservableImpl<T> implements Observable<T> {
 
         private void onNewMessage(Object message) {
             try {
-                if (message instanceof WrappedThrowable) {
-                    observer.onError(((WrappedThrowable) message).get());
+                if (message instanceof WrappedThrowable throwable) {
+                    observer.onError(throwable.get());
                 } else if (message instanceof DoneItem) {
                     observer.onComplete();
                 } else {
@@ -275,16 +274,16 @@ public class ObservableImpl<T> implements Observable<T> {
         protected boolean handleInternalException(Throwable t) {
             if (t instanceof OperationTimeoutException) {
                 return handleOperationTimeoutException();
-            } else if (t instanceof IllegalArgumentException) {
-                return handleIllegalArgumentException((IllegalArgumentException) t);
-            } else if (t instanceof StaleSequenceException) {
-                return handleStaleSequenceException((StaleSequenceException) t);
+            } else if (t instanceof IllegalArgumentException exception) {
+                return handleIllegalArgumentException(exception);
+            } else if (t instanceof StaleSequenceException exception) {
+                return handleStaleSequenceException(exception);
             } else if (t instanceof HazelcastInstanceNotActiveException) {
-                logFine(logger, "Terminating message listener '%s'. Reason: HazelcastInstance is shutting down", id);
+                logger.fine("Terminating message listener '%s'. Reason: HazelcastInstance is shutting down", id);
             } else if (t instanceof HazelcastClientNotActiveException) {
-                logFine(logger, "Terminating message listener '%s'. Reason: HazelcastClient is shutting down", id);
+                logger.fine("Terminating message listener '%s'. Reason: HazelcastClient is shutting down", id);
             } else if (t instanceof DistributedObjectDestroyedException) {
-                logFine(logger, "Terminating message listener '%s'. Reason: Topic is destroyed", id);
+                logger.fine("Terminating message listener '%s'. Reason: Topic is destroyed", id);
             } else {
                 logger.warning("Terminating message listener '" + id + "'. " +
                         "Reason: Unhandled exception, message: " + t.getMessage(), t);
@@ -293,7 +292,7 @@ public class ObservableImpl<T> implements Observable<T> {
         }
 
         private boolean handleOperationTimeoutException() {
-            logFine(logger, "Message listener '%s' timed out. Continuing from last known sequence: %d", id, sequence);
+            logger.fine("Message listener '%s' timed out. Continuing from last known sequence: %d", id, sequence);
             return true;
         }
 
@@ -308,7 +307,7 @@ public class ObservableImpl<T> implements Observable<T> {
          */
         private boolean handleIllegalArgumentException(IllegalArgumentException t) {
             final long currentHeadSequence = ringbuffer.headSequence();
-            logFine(logger, "Message listener '%s' requested a too large sequence: %s. Jumping from old " +
+            logger.fine("Message listener '%s' requested a too large sequence: %s. Jumping from old " +
                     "sequence %d to sequence %d.", id, t.getMessage(), sequence, currentHeadSequence);
             adjustSequence(currentHeadSequence);
             return true;
@@ -325,7 +324,7 @@ public class ObservableImpl<T> implements Observable<T> {
          */
         private boolean handleStaleSequenceException(StaleSequenceException staleSequenceException) {
             long headSeq = ringbuffer.headSequence();
-            logFine(logger, "Message listener '%s' ran into a stale sequence. Jumping from oldSequence %d to " +
+            logger.fine("Message listener '%s' ran into a stale sequence. Jumping from oldSequence %d to " +
                     "sequence %d.", id, sequence, headSeq);
             adjustSequence(headSeq);
             return true;

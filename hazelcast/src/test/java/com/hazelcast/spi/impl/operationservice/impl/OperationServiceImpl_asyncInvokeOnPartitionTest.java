@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class OperationServiceImpl_asyncInvokeOnPartitionTest extends HazelcastTe
         public Object process(Map.Entry entry) {
             Node node = getNode(instance);
             NodeEngineImpl nodeEngine = node.nodeEngine;
-            OperationServiceImpl operationService = (OperationServiceImpl) nodeEngine.getOperationService();
+            OperationServiceImpl operationService = nodeEngine.getOperationService();
             Data sourceKey = nodeEngine.toData(entry.getKey());
             Data key = generateKey_FallsToSamePartitionThread_ButDifferentPartition(nodeEngine, sourceKey);
             Data val = nodeEngine.toData(randomString());
@@ -78,7 +78,7 @@ public class OperationServiceImpl_asyncInvokeOnPartitionTest extends HazelcastTe
         private Data generateKey_FallsToSamePartitionThread_ButDifferentPartition(NodeEngineImpl nodeEngine, Data sourceKey) {
             InternalPartitionService partitionService = nodeEngine.getPartitionService();
             int sourcePartitionId = partitionService.getPartitionId(sourceKey);
-            OperationServiceImpl operationService = (OperationServiceImpl) nodeEngine.getOperationService();
+            OperationServiceImpl operationService = nodeEngine.getOperationService();
             int threadCount = operationService.operationExecutor.getPartitionThreadCount();
             int sourceThreadId = sourcePartitionId % threadCount;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import static com.hazelcast.internal.util.Preconditions.isNotNull;
 /**
  * Contains the serialization configuration of {@link com.hazelcast.core.HazelcastInstance}.
  */
+@SuppressWarnings("MethodCount")
 public class SerializationConfig {
 
     private int portableVersion;
@@ -140,7 +141,11 @@ public class SerializationConfig {
      * like adding/removing a field or changing a type of a field.
      *
      * @return version of portable classes
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public int getPortableVersion() {
         return portableVersion;
     }
@@ -148,7 +153,11 @@ public class SerializationConfig {
     /**
      * @param portableVersion int value for the version of portable classes
      * @return configured {@link com.hazelcast.config.SerializerConfig} for chaining
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public SerializationConfig setPortableVersion(int portableVersion) {
         if (portableVersion < 0) {
             throw new IllegalArgumentException("Portable version cannot be negative!");
@@ -234,7 +243,11 @@ public class SerializationConfig {
     /**
      * @return map of factory ID and corresponding portable factory names
      * @see com.hazelcast.nio.serialization.PortableFactory
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public Map<Integer, String> getPortableFactoryClasses() {
         return portableFactoryClasses;
     }
@@ -243,7 +256,11 @@ public class SerializationConfig {
      * @param portableFactoryClasses map of factory ID and corresponding factory class names
      * @return configured {@link com.hazelcast.config.SerializerConfig} for chaining
      * @see com.hazelcast.nio.serialization.PortableFactory
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public SerializationConfig setPortableFactoryClasses(Map<Integer, String> portableFactoryClasses) {
         isNotNull(portableFactoryClasses, "portableFactoryClasses");
         this.portableFactoryClasses.clear();
@@ -256,7 +273,11 @@ public class SerializationConfig {
      * @param portableFactoryClass portableFactory class to be registered
      * @return configured {@link com.hazelcast.config.SerializerConfig} for chaining
      * @see com.hazelcast.nio.serialization.PortableFactory
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public SerializationConfig addPortableFactoryClass(int factoryId, Class<? extends PortableFactory> portableFactoryClass) {
         String portableFactoryClassName = isNotNull(portableFactoryClass, "portableFactoryClass").getName();
         return addPortableFactoryClass(factoryId, portableFactoryClassName);
@@ -267,7 +288,11 @@ public class SerializationConfig {
      * @param portableFactoryClass name of the portableFactory class to be registered
      * @return configured {@link com.hazelcast.config.SerializerConfig} for chaining
      * @see com.hazelcast.nio.serialization.PortableFactory
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public SerializationConfig addPortableFactoryClass(int factoryId, String portableFactoryClass) {
         getPortableFactoryClasses().put(factoryId, portableFactoryClass);
         return this;
@@ -276,7 +301,11 @@ public class SerializationConfig {
     /**
      * @return map of factory ID and corresponding portable factories
      * @see com.hazelcast.nio.serialization.PortableFactory
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public Map<Integer, PortableFactory> getPortableFactories() {
         return portableFactories;
     }
@@ -285,7 +314,11 @@ public class SerializationConfig {
      * @param portableFactories map of factory ID and corresponding factory objects
      * @return configured {@link com.hazelcast.config.SerializerConfig} for chaining
      * @see com.hazelcast.nio.serialization.PortableFactory
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public SerializationConfig setPortableFactories(Map<Integer, PortableFactory> portableFactories) {
         isNotNull(portableFactories, "portableFactories");
         this.portableFactories.clear();
@@ -298,7 +331,11 @@ public class SerializationConfig {
      * @param portableFactory portableFactory object to be registered
      * @return configured {@link com.hazelcast.config.SerializerConfig} for chaining
      * @see com.hazelcast.nio.serialization.PortableFactory
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public SerializationConfig addPortableFactory(int factoryId, PortableFactory portableFactory) {
         getPortableFactories().put(factoryId, portableFactory);
         return this;
@@ -307,7 +344,11 @@ public class SerializationConfig {
     /**
      * @return registered class definitions of portable classes
      * @see ClassDefinition
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public Set<ClassDefinition> getClassDefinitions() {
         return classDefinitions;
     }
@@ -316,7 +357,11 @@ public class SerializationConfig {
      * @param classDefinition the class definition to be registered
      * @return configured {@link com.hazelcast.config.SerializerConfig} for chaining
      * @see ClassDefinition
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public SerializationConfig addClassDefinition(ClassDefinition classDefinition) {
         if (!getClassDefinitions().add(classDefinition)) {
             throw new IllegalArgumentException("ClassDefinition for class-id[" + classDefinition.getClassId()
@@ -329,7 +374,11 @@ public class SerializationConfig {
      * @param classDefinitions set of class definitions to be registered
      * @return configured {@link com.hazelcast.config.SerializerConfig} for chaining
      * @see ClassDefinition
+     *
+     * @deprecated Portable Serialization has been deprecated. We recommend you use Compact Serialization as Portable
+     * Serialization will be removed as of version 7.0.
      */
+    @Deprecated(since = "5.4", forRemoval = true)
     public SerializationConfig setClassDefinitions(Set<ClassDefinition> classDefinitions) {
         isNotNull(classDefinitions, "classDefinitions");
         this.classDefinitions.clear();
@@ -508,7 +557,7 @@ public class SerializationConfig {
     /**
      * Allows to configure deserialization protection filter.
      *
-     * @param javaSerializationFilterConfig the javaSerializationFilterConfig to set (may be {@code null})
+     * @param javaSerializationFilterConfig the javaFilterConfig to set (may be {@code null})
      */
     public SerializationConfig setJavaSerializationFilterConfig(JavaSerializationFilterConfig javaSerializationFilterConfig) {
         this.javaSerializationFilterConfig = javaSerializationFilterConfig;

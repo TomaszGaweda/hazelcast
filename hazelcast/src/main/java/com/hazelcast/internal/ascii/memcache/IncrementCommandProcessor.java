@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,16 @@
 
 package com.hazelcast.internal.ascii.memcache;
 
-import com.hazelcast.core.HazelcastException;
 import com.hazelcast.internal.ascii.TextCommandServiceImpl;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import static com.hazelcast.internal.ascii.TextCommandConstants.CLIENT_ERROR;
 import static com.hazelcast.internal.ascii.TextCommandConstants.NOT_FOUND;
 import static com.hazelcast.internal.ascii.TextCommandConstants.RETURN;
 import static com.hazelcast.internal.ascii.TextCommandConstants.TextCommandType.DECREMENT;
 import static com.hazelcast.internal.ascii.TextCommandConstants.TextCommandType.INCREMENT;
-import static com.hazelcast.internal.util.StringUtil.bytesToString;
 import static com.hazelcast.internal.util.StringUtil.stringToBytes;
 
 public class IncrementCommandProcessor extends MemcacheCommandProcessor<IncrementCommand> {
@@ -40,12 +38,7 @@ public class IncrementCommandProcessor extends MemcacheCommandProcessor<Incremen
 
     @Override
     public void handle(IncrementCommand incrementCommand) {
-        String key;
-        try {
-            key = URLDecoder.decode(incrementCommand.getKey(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new HazelcastException(e);
-        }
+        String key = URLDecoder.decode(incrementCommand.getKey(), StandardCharsets.UTF_8);
         String mapName = DEFAULT_MAP_NAME;
         int index = key.indexOf(':');
         if (index != -1) {
@@ -75,7 +68,7 @@ public class IncrementCommandProcessor extends MemcacheCommandProcessor<Incremen
         if (value != null) {
             MemcacheEntry entry = entryConverter.toEntry(incrementCommand.getKey(), value);
 
-            String currentCachedValue = bytesToString(entry.getValue());
+            String currentCachedValue = new String(entry.getValue(), StandardCharsets.UTF_8);
 
             try {
                 String newCachedValue = doIncrement(incrementCommand, currentCachedValue);

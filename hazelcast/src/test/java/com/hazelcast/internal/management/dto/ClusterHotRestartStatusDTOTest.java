@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class ClusterHotRestartStatusDTOTest {
 
     @Test
     public void testSerialization() {
-        Map<String, MemberHotRestartStatus> memberHotRestartStatusMap = new HashMap<String, MemberHotRestartStatus>();
+        Map<String, MemberHotRestartStatus> memberHotRestartStatusMap = new HashMap<>();
         memberHotRestartStatusMap.put("127.0.0.1:5701", MemberHotRestartStatus.PENDING);
         memberHotRestartStatusMap.put("127.0.0.1:5702", MemberHotRestartStatus.SUCCESSFUL);
 

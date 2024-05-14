@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class LocalMapStatsImplTest {
 
         localMapStats.setQueryCount(10);
         localMapStats.setIndexedQueryCount(5);
-        Map<String, PartitionedIndexStatsImpl> indexStats = new HashMap<String, PartitionedIndexStatsImpl>();
+        Map<String, PartitionedIndexStatsImpl> indexStats = new HashMap<>();
         PartitionedIndexStatsImpl index = new PartitionedIndexStatsImpl();
         indexStats.put("index", index);
         localMapStats.setIndexStats(indexStats);

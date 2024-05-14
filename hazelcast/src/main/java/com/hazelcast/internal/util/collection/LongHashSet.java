@@ -1,6 +1,6 @@
 /*
  * Original work Copyright 2015 Real Logic Ltd.
- * Modified work Copyright (c) 2015-2023, Hazelcast, Inc. All Rights Reserved.
+ * Modified work Copyright (c) 2015-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public final class LongHashSet implements Set<Long> {
      * {@inheritDoc}
      */
     public boolean remove(final Object value) {
-        return value instanceof Long && remove(((Long) value).longValue());
+        return value instanceof Long l && remove(l.longValue());
     }
 
     /**
@@ -155,7 +155,7 @@ public final class LongHashSet implements Set<Long> {
      * {@inheritDoc}
      */
     public boolean contains(final Object value) {
-        return value instanceof Long && contains(((Long) value).longValue());
+        return value instanceof Long l && contains(l.longValue());
     }
 
     /**
@@ -209,7 +209,7 @@ public final class LongHashSet implements Set<Long> {
     }
 
     private <E extends Long> boolean addAllCapture(final Collection<E> coll) {
-        final Predicate<E> p = new Predicate<E>() {
+        final Predicate<E> p = new Predicate<>() {
             @Override
             public boolean test(E x) {
                 return add(x);
@@ -396,8 +396,7 @@ public final class LongHashSet implements Set<Long> {
             return true;
         }
 
-        if (other instanceof LongHashSet) {
-            final LongHashSet otherSet = (LongHashSet) other;
+        if (other instanceof LongHashSet otherSet) {
             return otherSet.missingValue == missingValue && otherSet.size() == size() && containsAll(otherSet);
         }
 

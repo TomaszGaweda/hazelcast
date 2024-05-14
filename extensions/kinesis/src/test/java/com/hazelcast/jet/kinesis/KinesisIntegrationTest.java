@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.testcontainers.utility.DockerImageName.parse;
 
+@SuppressWarnings("StaticVariableName")
 public class KinesisIntegrationTest extends AbstractKinesisTest {
 
     public static LocalStackContainer localStack;
@@ -184,7 +185,7 @@ public class KinesisIntegrationTest extends AbstractKinesisTest {
     }
 
     @Test
-    public void testCustomSinkExecutorService() throws Exception {
+    public void testCustomSinkExecutorService() {
         HELPER.createStream(1);
 
         threadCounter.set(0);
@@ -196,7 +197,7 @@ public class KinesisIntegrationTest extends AbstractKinesisTest {
                 .withExecutorServiceSupplier(sinkExecutorSupplier)
                 .build();
 
-        sendMessages(MESSAGES, sink);
+        sendMessages(messages(0, MESSAGES), sink);
         assertTrueEventually(() -> assertEquals(MEMBER_COUNT, threadCounter.get()));
 
         try {

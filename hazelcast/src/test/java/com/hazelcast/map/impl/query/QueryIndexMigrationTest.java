@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.hazelcast.query.SampleTestObjects.Employee;
 import com.hazelcast.query.SampleTestObjects.Value;
 import com.hazelcast.query.impl.IndexCopyBehavior;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelParametersRunnerFactory;
 import com.hazelcast.test.HazelcastParametrizedRunner;
 import com.hazelcast.test.HazelcastTestSupport;
@@ -119,15 +118,12 @@ public class QueryIndexMigrationTest extends HazelcastTestSupport {
         nodeFactory.newInstances(getTestConfig(), 3);
 
         final IMap<String, Employee> employees = instance.getMap("employees");
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                Collection<Employee> values = employees.values(Predicates.sql("active and name LIKE 'joe15%'"));
-                for (Employee employee : values) {
-                    assertTrue(employee.isActive());
-                }
-                assertEquals(6, values.size());
+        assertTrueAllTheTime(() -> {
+            Collection<Employee> values = employees.values(Predicates.sql("active and name LIKE 'joe15%'"));
+            for (Employee employee : values) {
+                assertTrue(employee.isActive());
             }
+            assertEquals(6, values.size());
         }, 3);
     }
 
@@ -148,15 +144,12 @@ public class QueryIndexMigrationTest extends HazelcastTestSupport {
         nodeFactory.newInstances(config, 3);
 
         final IMap<String, Employee> employees = instance.getMap("employees");
-        assertTrueAllTheTime(new AssertTask() {
-            @Override
-            public void run() throws Exception {
-                Collection<Employee> values = employees.values(Predicates.sql("active and name LIKE 'joe15%'"));
-                for (Employee employee : values) {
-                    assertTrue(employee.isActive() && employee.getName().startsWith("joe15"));
-                }
-                assertEquals(6, values.size());
+        assertTrueAllTheTime(() -> {
+            Collection<Employee> values = employees.values(Predicates.sql("active and name LIKE 'joe15%'"));
+            for (Employee employee : values) {
+                assertTrue(employee.isActive() && employee.getName().startsWith("joe15"));
             }
+            assertEquals(6, values.size());
         }, 3);
     }
 
@@ -192,16 +185,14 @@ public class QueryIndexMigrationTest extends HazelcastTestSupport {
         final int runCount = 500;
         final Config config = newConfigWithIndex("testMap", "name");
         executor = Executors.newFixedThreadPool(nodeCount);
-        List<Future<?>> futures = new ArrayList<Future<?>>();
+        List<Future<?>> futures = new ArrayList<>();
 
         for (int i = 0; i < nodeCount; i++) {
             sleepMillis(random.nextInt((i + 1) * 100) + 10);
-            futures.add(executor.submit(new Runnable() {
-                public void run() {
-                    HazelcastInstance hz = nodeFactory.newHazelcastInstance(config);
-                    IMap<Object, Value> map = hz.getMap("testMap");
-                    updateMapAndRunQuery(map, runCount);
-                }
+            futures.add(executor.submit(() -> {
+                HazelcastInstance hz = nodeFactory.newHazelcastInstance(config);
+                IMap<Object, Value> map = hz.getMap("testMap");
+                updateMapAndRunQuery(map, runCount);
             }));
         }
 
@@ -232,14 +223,11 @@ public class QueryIndexMigrationTest extends HazelcastTestSupport {
         final Config config = newConfigWithIndex(name, "name");
 
         for (int i = 0; i < nodeCount; i++) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    HazelcastInstance hz = nodeFactory.newHazelcastInstance(config);
-                    IMap<Object, Object> map = hz.getMap(name);
-                    fillMap(map, findMe, entryPerNode, modulo);
-                    latch.countDown();
-                }
+            new Thread(() -> {
+                HazelcastInstance hz = nodeFactory.newHazelcastInstance(config);
+                IMap<Object, Object> map = hz.getMap(name);
+                fillMap(map, findMe, entryPerNode, modulo);
+                latch.countDown();
             }).start();
         }
 

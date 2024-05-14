@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public final class ConcurrentConveyorSingleQueue<E> extends ConcurrentConveyor<E
     public static <E1> ConcurrentConveyorSingleQueue<E1> concurrentConveyorSingleQueue(
             E1 submitterGoneItem, QueuedPipe<E1> queue
     ) {
-        return new ConcurrentConveyorSingleQueue<E1>(submitterGoneItem, queue);
+        return new ConcurrentConveyorSingleQueue<>(submitterGoneItem, queue);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class TransactionalMultiMapRemoveMessageTask
         final TransactionContext context = endpoint.getTransactionContext(parameters.txnId);
         TransactionalMultiMap<Object, Object> multiMap = context.getMultiMap(parameters.name);
         Collection<Object> collection = multiMap.remove(parameters.key);
-        List<Data> list = new ArrayList<Data>(collection.size());
+        List<Data> list = new ArrayList<>(collection.size());
         for (Object o : collection) {
             list.add(serializationService.toData(o));
         }

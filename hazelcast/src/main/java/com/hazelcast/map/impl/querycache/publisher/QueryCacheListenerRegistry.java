@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import java.util.function.Function;
 public class QueryCacheListenerRegistry implements Registry<String, UUID> {
 
     private final ConstructorFunction<String, UUID> registryConstructorFunction =
-            new ConstructorFunction<String, UUID>() {
+            new ConstructorFunction<>() {
                 @Override
                 public UUID createNew(String ignored) {
                     Function<String, UUID> registration = context.getPublisherContext().getListenerRegistrator();

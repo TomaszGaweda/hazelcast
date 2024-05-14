@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package com.hazelcast.jet;
 
+import java.io.Serial;
+
 /**
  * Thrown when a named job is submitted while there is an <em>active job</em>
  * with the same name. Job is <em>active</em> if it is running, suspended or
@@ -25,6 +27,7 @@ package com.hazelcast.jet;
  */
 public class JobAlreadyExistsException extends JetException {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**

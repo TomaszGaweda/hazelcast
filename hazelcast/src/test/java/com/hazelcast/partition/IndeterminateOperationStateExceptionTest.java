@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import com.hazelcast.spi.impl.operationservice.BackupAwareOperation;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.impl.operationservice.ReadonlyOperation;
 import com.hazelcast.spi.impl.operationservice.impl.OperationServiceImpl;
-import com.hazelcast.test.AssertTask;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.TestHazelcastInstanceFactory;
@@ -126,19 +125,9 @@ public class IndeterminateOperationStateExceptionTest extends HazelcastTestSuppo
         InternalCompletableFuture<Object> future = operationService
                 .createInvocationBuilder(InternalPartitionService.SERVICE_NAME, new SilentOperation(), partitionId).invoke();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertTrue(instance2.getUserContext().containsKey(SilentOperation.EXECUTION_STARTED));
-            }
-        });
+        assertTrueEventually(() -> assertTrue(instance2.getUserContext().containsKey(SilentOperation.EXECUTION_STARTED)));
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                instance2.getLifecycleService().terminate();
-            }
-        });
+        spawn((Runnable) () -> instance2.getLifecycleService().terminate());
         try {
             future.get(2, TimeUnit.MINUTES);
             fail();
@@ -158,12 +147,7 @@ public class IndeterminateOperationStateExceptionTest extends HazelcastTestSuppo
         OperationServiceImpl operationService = getNodeEngineImpl(instance1).getOperationService();
         InternalCompletableFuture<Boolean> future = operationService
                 .createInvocationBuilder(InternalPartitionService.SERVICE_NAME, new DummyReadOperation(), partitionId).invoke();
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                instance2.getLifecycleService().terminate();
-            }
-        });
+        spawn((Runnable) () -> instance2.getLifecycleService().terminate());
         boolean response = future.get(2, TimeUnit.MINUTES);
         assertTrue(response);
         assertEquals(getAddress(instance1), instance1.getUserContext().get(DummyReadOperation.LAST_INVOCATION_ADDRESS));
@@ -208,19 +192,9 @@ public class IndeterminateOperationStateExceptionTest extends HazelcastTestSuppo
         InternalCompletableFuture<Object> future = operationService
                 .createInvocationBuilder(InternalPartitionService.SERVICE_NAME, new SilentOperation(), target).invoke();
 
-        assertTrueEventually(new AssertTask() {
-            @Override
-            public void run() {
-                assertTrue(instance2.getUserContext().containsKey(SilentOperation.EXECUTION_STARTED));
-            }
-        });
+        assertTrueEventually(() -> assertTrue(instance2.getUserContext().containsKey(SilentOperation.EXECUTION_STARTED)));
 
-        spawn(new Runnable() {
-            @Override
-            public void run() {
-                instance2.getLifecycleService().terminate();
-            }
-        });
+        spawn((Runnable) () -> instance2.getLifecycleService().terminate());
 
         future.get(2, TimeUnit.MINUTES);
     }

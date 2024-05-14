@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class ReplicatedMapTtlTest extends ReplicatedMapAbstractTest {
             ReplicatedMap<String, Object> map = instance.getReplicatedMap(mapName);
             maps.add(map);
         }
-        for (ReplicatedMap map : maps) {
+        for (ReplicatedMap<String, Object> map : maps) {
             assertSizeEventually(0, map, 60);
         }
     }
@@ -100,16 +100,13 @@ public class ReplicatedMapTtlTest extends ReplicatedMapAbstractTest {
 
     private Thread createPutOperationThread(final ReplicatedMap<String, Object> map, final ArrayList<Integer> keys,
                                             final long ttl, final TimeUnit timeunit, final int operations) {
-        return new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Random random = new Random();
-                int size = keys.size();
-                for (int i = 0; i < operations; i++) {
-                    int index = i % size;
-                    String key = "foo-" + keys.get(index);
-                    map.put(key, random.nextLong(), 1 + random.nextInt((int) ttl), timeunit);
-                }
+        return new Thread(() -> {
+            Random random = new Random();
+            int size = keys.size();
+            for (int i = 0; i < operations; i++) {
+                int index = i % size;
+                String key = "foo-" + keys.get(index);
+                map.put(key, random.nextLong(), 1 + random.nextInt((int) ttl), timeunit);
             }
         });
     }
@@ -118,7 +115,7 @@ public class ReplicatedMapTtlTest extends ReplicatedMapAbstractTest {
     public void clear_empties_internal_ttl_schedulers() {
         HazelcastInstance node = createHazelcastInstance();
         String mapName = "test";
-        ReplicatedMap map = node.getReplicatedMap(mapName);
+        ReplicatedMap<Integer, Integer> map = node.getReplicatedMap(mapName);
 
         for (int i = 0; i < 1000; i++) {
             map.put(i, i, 100, TimeUnit.DAYS);
@@ -133,7 +130,7 @@ public class ReplicatedMapTtlTest extends ReplicatedMapAbstractTest {
     public void remove_empties_internal_ttl_schedulers() {
         HazelcastInstance node = createHazelcastInstance();
         String mapName = "test";
-        ReplicatedMap map = node.getReplicatedMap(mapName);
+        ReplicatedMap<Integer, Integer> map = node.getReplicatedMap(mapName);
 
         for (int i = 0; i < 1000; i++) {
             map.put(i, i, 100, TimeUnit.DAYS);
@@ -150,7 +147,7 @@ public class ReplicatedMapTtlTest extends ReplicatedMapAbstractTest {
     public void service_reset_empties_internal_ttl_schedulers() {
         HazelcastInstance node = createHazelcastInstance();
         String mapName = "test";
-        ReplicatedMap map = node.getReplicatedMap(mapName);
+        ReplicatedMap<Integer, Integer> map = node.getReplicatedMap(mapName);
 
         for (int i = 0; i < 1000; i++) {
             map.put(i, i, 100, TimeUnit.DAYS);
@@ -162,7 +159,7 @@ public class ReplicatedMapTtlTest extends ReplicatedMapAbstractTest {
         assertAllTtlSchedulersEmpty(map);
     }
 
-    private static void assertAllTtlSchedulersEmpty(ReplicatedMap map) {
+    private static void assertAllTtlSchedulersEmpty(ReplicatedMap<Integer, Integer> map) {
         String mapName = map.getName();
         ReplicatedMapProxy replicatedMapProxy = (ReplicatedMapProxy) map;
         ReplicatedMapService service = (ReplicatedMapService) replicatedMapProxy.getService();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ import static com.hazelcast.client.impl.protocol.codec.builtin.FixedSizeTypesCod
 /**
  * Adds a cluster view listener to a connection.
  */
-@Generated("1cd775b33c778bc96ee05b73edf7277b")
+@SuppressWarnings("unused")
+@Generated("273c5289e21af0c02668ab6ab4c3acb8")
 public final class ClientAddClusterViewListenerCodec {
     //hex: 0x000300
     public static final int REQUEST_MESSAGE_TYPE = 768;
@@ -53,6 +54,10 @@ public final class ClientAddClusterViewListenerCodec {
     private static final int EVENT_PARTITIONS_VIEW_INITIAL_FRAME_SIZE = EVENT_PARTITIONS_VIEW_VERSION_FIELD_OFFSET + INT_SIZE_IN_BYTES;
     //hex: 0x000303
     private static final int EVENT_PARTITIONS_VIEW_MESSAGE_TYPE = 771;
+    private static final int EVENT_MEMBER_GROUPS_VIEW_VERSION_FIELD_OFFSET = PARTITION_ID_FIELD_OFFSET + INT_SIZE_IN_BYTES;
+    private static final int EVENT_MEMBER_GROUPS_VIEW_INITIAL_FRAME_SIZE = EVENT_MEMBER_GROUPS_VIEW_VERSION_FIELD_OFFSET + INT_SIZE_IN_BYTES;
+    //hex: 0x000304
+    private static final int EVENT_MEMBER_GROUPS_VIEW_MESSAGE_TYPE = 772;
 
     private ClientAddClusterViewListenerCodec() {
     }
@@ -103,6 +108,19 @@ public final class ClientAddClusterViewListenerCodec {
         return clientMessage;
     }
 
+    public static ClientMessage encodeMemberGroupsViewEvent(int version, java.util.Collection<java.util.Collection<java.util.UUID>> memberGroups) {
+        ClientMessage clientMessage = ClientMessage.createForEncode();
+        ClientMessage.Frame initialFrame = new ClientMessage.Frame(new byte[EVENT_MEMBER_GROUPS_VIEW_INITIAL_FRAME_SIZE], UNFRAGMENTED_MESSAGE);
+        initialFrame.flags |= ClientMessage.IS_EVENT_FLAG;
+        encodeInt(initialFrame.content, TYPE_FIELD_OFFSET, EVENT_MEMBER_GROUPS_VIEW_MESSAGE_TYPE);
+        encodeInt(initialFrame.content, PARTITION_ID_FIELD_OFFSET, -1);
+        encodeInt(initialFrame.content, EVENT_MEMBER_GROUPS_VIEW_VERSION_FIELD_OFFSET, version);
+        clientMessage.add(initialFrame);
+
+        ListMultiFrameCodec.encode(clientMessage, memberGroups, ListUUIDCodec::encode);
+        return clientMessage;
+    }
+
     public abstract static class AbstractEventHandler {
 
         public void handle(ClientMessage clientMessage) {
@@ -122,6 +140,13 @@ public final class ClientAddClusterViewListenerCodec {
                 handlePartitionsViewEvent(version, partitions);
                 return;
             }
+            if (messageType == EVENT_MEMBER_GROUPS_VIEW_MESSAGE_TYPE) {
+                ClientMessage.Frame initialFrame = iterator.next();
+                int version = decodeInt(initialFrame.content, EVENT_MEMBER_GROUPS_VIEW_VERSION_FIELD_OFFSET);
+                java.util.Collection<java.util.Collection<java.util.UUID>> memberGroups = ListMultiFrameCodec.decode(iterator, ListUUIDCodec::decode);
+                handleMemberGroupsViewEvent(version, memberGroups);
+                return;
+            }
             Logger.getLogger(super.getClass()).finest("Unknown message type received on event handler :" + messageType);
         }
 
@@ -137,5 +162,11 @@ public final class ClientAddClusterViewListenerCodec {
          * @param partitions The partition table. In each entry, it has uuid of the member and list of partitions belonging to that member
          */
         public abstract void handlePartitionsViewEvent(int version, java.util.Collection<java.util.Map.Entry<java.util.UUID, java.util.List<java.lang.Integer>>> partitions);
+
+        /**
+         * @param version Holds the state of member-groups and member-list-version
+         * @param memberGroups Grouped members by their UUID. Grouping is done based on RoutingStrategy.
+         */
+        public abstract void handleMemberGroupsViewEvent(int version, java.util.Collection<java.util.Collection<java.util.UUID>> memberGroups);
     }
 }

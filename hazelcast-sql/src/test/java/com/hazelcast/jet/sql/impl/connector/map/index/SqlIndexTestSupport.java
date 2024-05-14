@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Hazelcast Inc.
+ * Copyright 2024 Hazelcast Inc.
  *
  * Licensed under the Hazelcast Community License (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,16 +72,13 @@ abstract class SqlIndexTestSupport extends OptimizerTestSupport {
         throw new UnsupportedOperationException("Unsupported type: " + type);
     }
 
-    protected static List<ExpressionType<?>> baseTypes() {
-        return Arrays.asList(
-                BOOLEAN,
-                INTEGER,
-                STRING
-        );
+    protected static List<ExpressionType<?>> quickTestTypes() {
+        return Arrays.asList(INTEGER, STRING);
     }
 
-    protected static List<ExpressionType<?>> nonBaseTypes() {
+    protected static List<ExpressionType<?>> slowTestTypes() {
         return Arrays.asList(
+                BOOLEAN,
                 BYTE,
                 SHORT,
                 LONG,

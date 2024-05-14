@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class ClientSetTest extends HazelcastTestSupport {
 
     @Test
     public void testAddAll() {
-        List<String> l = new ArrayList<String>();
+        List<String> l = new ArrayList<>();
         l.add("item1");
         l.add("item2");
 
@@ -144,7 +144,7 @@ public class ClientSetTest extends HazelcastTestSupport {
         assertNotContains(set, "item5");
         assertContains(set, "item2");
 
-        List<String> l = new ArrayList<String>();
+        List<String> l = new ArrayList<>();
         l.add("item6");
         l.add("item3");
 
@@ -160,7 +160,7 @@ public class ClientSetTest extends HazelcastTestSupport {
         assertTrue(set.add("item3"));
         assertTrue(set.add("item4"));
 
-        List<String> l = new ArrayList<String>();
+        List<String> l = new ArrayList<>();
         l.add("item4");
         l.add("item3");
 
@@ -185,7 +185,7 @@ public class ClientSetTest extends HazelcastTestSupport {
 
         final CountDownLatch latch = new CountDownLatch(6);
 
-        ItemListener<String> listener = new ItemListener<String>() {
+        ItemListener<String> listener = new ItemListener<>() {
 
             public void itemAdded(ItemEvent<String> itemEvent) {
                 latch.countDown();
@@ -196,14 +196,12 @@ public class ClientSetTest extends HazelcastTestSupport {
         };
         UUID registrationId = set.addItemListener(listener, true);
 
-        new Thread() {
-            public void run() {
-                for (int i = 0; i < 5; i++) {
-                    set.add("item" + i);
-                }
-                set.add("done");
+        new Thread(() -> {
+            for (int i = 0; i < 5; i++) {
+                set.add("item" + i);
             }
-        }.start();
+            set.add("done");
+        }).start();
         assertTrue(latch.await(20, TimeUnit.SECONDS));
         set.removeItemListener(registrationId);
     }

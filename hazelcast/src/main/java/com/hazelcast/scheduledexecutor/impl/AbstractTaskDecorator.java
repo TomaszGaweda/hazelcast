@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,8 +74,8 @@ public abstract class AbstractTaskDecorator<V>
         if (clazz.isAssignableFrom(this.getClass())) {
            return true;
         }
-        if (delegate instanceof AbstractTaskDecorator) {
-            return ((AbstractTaskDecorator<?>) delegate).isDecoratedWith(clazz);
+        if (delegate instanceof AbstractTaskDecorator decorator) {
+            return decorator.isDecoratedWith(clazz);
         }
         return clazz.isAssignableFrom(delegate.getClass());
     }
@@ -85,8 +85,8 @@ public abstract class AbstractTaskDecorator<V>
         if (clazz.isAssignableFrom(this.getClass())) {
             return (T) this;
         }
-        if (delegate instanceof AbstractTaskDecorator) {
-            return (T) ((AbstractTaskDecorator) delegate).undecorateTo(clazz);
+        if (delegate instanceof AbstractTaskDecorator decorator) {
+            return (T) decorator.undecorateTo(clazz);
         }
         if (clazz.isAssignableFrom(delegate.getClass())) {
             return (T) delegate;
@@ -95,8 +95,8 @@ public abstract class AbstractTaskDecorator<V>
     }
 
     void initializeContext(ManagedContext context) {
-        if (delegate instanceof AbstractTaskDecorator) {
-            ((AbstractTaskDecorator) delegate).initializeContext(context);
+        if (delegate instanceof AbstractTaskDecorator decorator) {
+            decorator.initializeContext(context);
         } else {
             delegate = context.initialize(delegate);
         }

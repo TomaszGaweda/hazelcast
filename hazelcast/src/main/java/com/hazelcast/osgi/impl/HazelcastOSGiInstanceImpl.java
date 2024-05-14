@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ import java.util.concurrent.ConcurrentMap;
  * {@link com.hazelcast.osgi.HazelcastOSGiInstance} implementation
  * as proxy of delegated {@link com.hazelcast.core.HazelcastInstance} for getting from OSGi service.
  */
-@SuppressWarnings({"checkstyle:classfanoutcomplexity"})
+@SuppressWarnings({"checkstyle:classfanoutcomplexity", "MethodCount"})
 class HazelcastOSGiInstanceImpl
         implements HazelcastOSGiInstance {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class XATransactionContextImpl implements TransactionContext {
     private final NodeEngineImpl nodeEngine;
     private final XATransaction transaction;
     private final Map<TransactionalObjectKey, TransactionalObject> txnObjectMap
-            = new HashMap<TransactionalObjectKey, TransactionalObject>(2);
+            = new HashMap<>(2);
 
     public XATransactionContextImpl(NodeEngineImpl nodeEngine, Xid xid, UUID txOwnerUuid,
                                     int timeout, boolean originatedFromClient) {
@@ -117,9 +117,9 @@ public class XATransactionContextImpl implements TransactionContext {
         }
 
         final Object service = nodeEngine.getService(serviceName);
-        if (service instanceof TransactionalService) {
+        if (service instanceof TransactionalService transactionalService) {
             nodeEngine.getProxyService().initializeDistributedObject(serviceName, name, transaction.getOwnerUuid());
-            obj = ((TransactionalService) service).createTransactionalObject(name, transaction);
+            obj = transactionalService.createTransactionalObject(name, transaction);
             txnObjectMap.put(key, obj);
         } else {
             throw new IllegalArgumentException("Service[" + serviceName + "] is not transactional!");
